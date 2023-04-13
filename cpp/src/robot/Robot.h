@@ -51,6 +51,9 @@ public:
 
     void RebootServos(float sleepTime);
 
+    void SetServosLedPolicyUser();
+    void SetServosLedPolicySystem();
+
 };
 
 }

@@ -16,6 +16,11 @@
 #define SET_TORQUE_OFF 2
 #define SET_POSITION_CONTROL_SERVO_ON 3
 
+const uint8_t XYZServoLedPolicy::SystemAlarm = 0;
+const uint8_t XYZServoLedPolicy::User = 1;
+const uint8_t XYZServoLedPolicy::SystemAlarmAll = 0;
+const uint8_t XYZServoLedPolicy::UserAll = 0x0F;
+
 static uint8_t jog_data_buffer[5*256];
 
 XYZServo::XYZServo(SerialStream *stream, uint8_t id) {
@@ -353,4 +358,24 @@ void XYZServo::memoryRead(uint8_t cmd, uint8_t startAddress, uint8_t *data, uint
         lastError = XYZServoError::ReadLengthWrong;
         return;
     }
+}
+
+void XYZServo::setLedPolicy(uint8_t color){
+    uint8_t buffer[1] = {color};
+    ramWrite(2, buffer, 1);
+}
+
+void XYZServo::setLedPolicy(uint8_t r, uint8_t g, uint8_t b, uint8_t w){
+    uint8_t buffer[1] = {(w | b<<1 | g<<2 | r<<3) & 0x0F};
+    ramWrite(2, buffer, 1);
+}
+
+void XYZServo::setLedColor(uint8_t color){
+    uint8_t buffer[1] = {color};
+    ramWrite(53, buffer, 1);
+}
+
+void XYZServo::setLedColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w){
+    uint8_t buffer[1] = {(w | b<<1 | g<<2 | r<<3) & 0x0F};
+    ramWrite(53, buffer, 1);
 }

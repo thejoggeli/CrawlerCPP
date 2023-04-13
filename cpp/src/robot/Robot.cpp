@@ -163,6 +163,10 @@ void Robot::Startup(){
 
     // move servos to initial position
     LogInfo("Robot", "moving to default position");
+    SetServosLedPolicyUser();
+    for(Joint* joint : jointsList){
+        joint->SetServoLedColor(1, 0, 1, 0);
+    }
     for(Leg* leg : legs){
         leg->joints[0]->SetTargetAngle(DEG_2_RADf * 0.0f);
         leg->joints[1]->SetTargetAngle(DEG_2_RADf * -30.0f);
@@ -171,7 +175,26 @@ void Robot::Startup(){
     }
     MoveJointsToTargetSync(2.0f);
     Time::Sleep(2.5f);
+    for(Leg* leg : legs){
+        leg->joints[0]->SetServoLedColor(1, 0, 0, 0);
+        leg->joints[1]->SetServoLedColor(0, 1, 0, 0);
+        leg->joints[2]->SetServoLedColor(0, 0, 1, 0);
+        leg->joints[3]->SetServoLedColor(0, 0, 0, 1);
+    }
+    // SetServosLedPolicySystem();
     
+}
+
+void Robot::SetServosLedPolicyUser(){
+    for(Joint* joint : jointsList){
+        joint->SetServoLedPolicyUser();
+        joint->SetServoLedColor(1, 0, 1, 0);
+    }
+}
+void Robot::SetServosLedPolicySystem(){
+    for(Joint* joint : jointsList){
+        joint->SetServoLedPolicySystem();
+    }
 }
 
 void Robot::Shutdown(){

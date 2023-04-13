@@ -135,7 +135,7 @@ bool Leg::IKSearch(const Eigen::Vector3f& Q, float phi_target, float angles_out[
 float Leg::IKLoss(float phi_target, float phi_actual, float angles_old[4], float angles_new[4]){
 
     const float w_phi = 1.0f;
-    const float w_angle = 0.5f;
+    const float w_angle = 1.5f;
 
     float loss = 0.0f;
     

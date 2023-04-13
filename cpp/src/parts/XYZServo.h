@@ -102,6 +102,14 @@ enum class XYZServoAckPolicy {
     All = 2,
 };
 
+class XYZServoLedPolicy {
+public:
+    static const uint8_t SystemAlarm;
+    static const uint8_t User;
+    static const uint8_t SystemAlarmAll;
+    static const uint8_t UserAll;
+};
+
 enum class XYZServoSpdctrlPolicy {
     OpenLoop = 0,
     CloseLoop = 1,
@@ -317,6 +325,12 @@ class XYZServo {
 
     /// Get the servo ID assigned to this object.
     uint8_t getId() const { return id; }
+
+    void setLedPolicy(uint8_t color);
+    void setLedPolicy(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+
+    void setLedColor(uint8_t color);
+    void setLedColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
 
    private:
     int flushRead();

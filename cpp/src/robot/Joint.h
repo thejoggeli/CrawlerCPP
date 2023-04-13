@@ -32,6 +32,10 @@ public:
 
     void SetTargetAngle(float angle);
 
+    void SetServoLedPolicyUser();
+    void SetServoLedPolicySystem();
+    void SetServoLedColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+
     uint16_t AngleToXYZ(float angle);
 
 };    

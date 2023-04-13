@@ -60,7 +60,8 @@
 			"chrono": "cpp",
 			"condition_variable": "cpp",
 			"ratio": "cpp",
-			"thread": "cpp"
+			"thread": "cpp",
+			"core": "cpp"
 		}
 	}
 }

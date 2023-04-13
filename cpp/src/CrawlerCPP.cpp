@@ -16,6 +16,7 @@
 #include "math/Mathf.h"
 #include <cassert>
 #include "util/HardwareButton.h"
+#include "util/MonoLED.h"
 #include <JetsonGPIO.h>
 #include <signal.h>
 
@@ -31,14 +32,9 @@ const unsigned int mainButtonPin = 24;
 HardwareButton mainButton(mainButtonPin, 200*1000);
 
 const unsigned int mainButtonLedPin = 22;
-bool mainButtonLedState = 1;
+MonoLED mainButtonLed(mainButtonLedPin);
 
 bool exitRequested = false;
-
-void toggleMainButtonLed(){
-    mainButtonLedState = !mainButtonLedState;
-    GPIO::output(mainButtonLedPin, mainButtonLedState);
-}
 
 unsigned int sigIntCounter = 0;
 
@@ -68,10 +64,10 @@ SurferBrain* createSurferBrain(Robot* robot){
     float feetPhi = 0.0 * DEG_2_RADf;
     brain->SetStance(feetXY, feetZ, hipAngle, feetPhi);
 
-    Eigen::Vector3f pivot = robot->legs[3]->hipTranslation.translation();
+    // Eigen::Vector3f pivot = robot->legs[3]->hipTranslation.translation();
     // pivot[2] -= 0.04f; 
     // Eigen::Vector3f pivot = robot->legs[3]->hipTranslation.translation();
-    brain->SetPivot(pivot);
+    // brain->SetPivot(pivot);
     
     return brain;
 }
@@ -144,7 +140,7 @@ void runDebug(){
         mainButton.Update();
         if(mainButton.onPress){
             Log(iLog << "mainBUtton.onPress");
-            toggleMainButtonLed();
+            mainButtonLed.ToggleState();
         }
         Time::SleepMicros(500);
     }
@@ -168,11 +164,12 @@ int main(){
     // set gpio mode
     LogInfo("Main", "GPIO setup");
     GPIO::setmode(GPIO::BCM);
-    GPIO::setup(mainButtonLedPin, GPIO::OUT);
-    GPIO::output(mainButtonLedPin, mainButtonLedState);
 
     // init buttons
     mainButton.Init();
+
+    // init leds
+    mainButtonLed.Init(true);
 
     // create robot
     LogInfo("Main", "create robot");
@@ -194,10 +191,10 @@ int main(){
     LogInfo("Main", "serial stream close");
     robot->CloseSerialStream();
 
-    // gpio cleanup
-    LogInfo("Main", "GPIO cleanup");
-    GPIO::cleanup(mainButtonLedPin);
+    // cleanup
+    LogInfo("Main", "cleanup");
     mainButton.Cleanup();
+    mainButtonLed.Cleanup();
 
     // done
     return EXIT_SUCCESS;

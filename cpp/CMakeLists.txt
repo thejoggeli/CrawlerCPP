@@ -47,6 +47,7 @@ add_executable (
     src/brain/EmptyBrain.cpp
     src/math/Mathf.cpp
     src/util/HardwareButton.cpp
+    src/util/MonoLED.cpp
     src/util/Strings.cpp
 )
 set_property(TARGET CrawlerCPP PROPERTY CXX_STANDARD 20)

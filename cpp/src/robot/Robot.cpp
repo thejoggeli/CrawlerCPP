@@ -156,7 +156,7 @@ void Robot::RebootServos(float sleepTime = 3.5f){
 
 void Robot::Startup(){
 
-    LogInfo("Robot", "startup");
+    LogInfo("Robot", "startup begin");
 
     // reboot servos
     RebootServos(3.5f);

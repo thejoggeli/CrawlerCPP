@@ -61,7 +61,7 @@ void Log(LogLevel level, const std::string& source, const std::string& str){
         default: levelChar = 'E'; break;
     }
 
-	sprintf(prefixBuffer, "%c %s %s ", levelChar, timeBuffer, source.c_str());
+	sprintf(prefixBuffer, "[%c/%s/%s] ", levelChar, timeBuffer, source.c_str());
 	if(str.length() > max_str_len){
         cout << prefixBuffer << str.substr(0, max_str_len_cut) << "..." << endl;
 	} else {

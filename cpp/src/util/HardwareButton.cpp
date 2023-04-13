@@ -1,5 +1,6 @@
 #include "HardwareButton.h"
 #include "core/Time.h"
+#include "core/Log.h"
 #include <JetsonGPIO.h>
 
 using namespace std;
@@ -11,6 +12,7 @@ HardwareButton::HardwareButton(unsigned int pin, uint64_t debounceTimeMicros){
 }
 
 void HardwareButton::Init(){
+    LogInfo("HardwareButton", iLog << "init, pin=" << pin << ", debounceTimeMicros" << debounceTimeMicros);
     GPIO::setup(pin, GPIO::IN);
     GPIO::add_event_detect(pin, GPIO::FALLING, nullptr, debounceTimeMicros/1000);
 }
@@ -36,6 +38,7 @@ void HardwareButton::Update(){
 }
 
 void HardwareButton::Cleanup(){
+    LogInfo("HardwareButton", iLog << "cleanup, pin=" << pin);
     GPIO::cleanup(pin);
 }
 

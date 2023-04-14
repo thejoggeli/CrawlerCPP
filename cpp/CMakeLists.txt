@@ -5,6 +5,7 @@ include_directories(
 )
 
 find_package(JetsonGPIO)
+find_package(Seasocks)
 
 add_executable (
     TestTime
@@ -49,7 +50,17 @@ add_executable (
     src/util/HardwareButton.cpp
     src/util/MonoLED.cpp
     src/util/Strings.cpp
+    src/util/Timer.cpp
+    src/remote/SocketServer.cpp
+    src/remote/SocketMessage.cpp
+    src/remote/SeasocksHandler.cpp
+    src/remote/GamepadKeys.cpp
+    src/remote/Client.cpp 
+    src/remote/ClientManager.cpp
+    src/events/EventManager.cpp
+    src/events/Event.cpp
 )
 set_property(TARGET CrawlerCPP PROPERTY CXX_STANDARD 20)
 target_link_libraries(CrawlerCPP JetsonGPIO::JetsonGPIO)
+target_link_libraries(CrawlerCPP Seasocks::seasocks)
 

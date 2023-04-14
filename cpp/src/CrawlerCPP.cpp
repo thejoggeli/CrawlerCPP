@@ -17,9 +17,14 @@
 #include <cassert>
 #include "util/HardwareButton.h"
 #include "util/MonoLED.h"
+#include "util/Timer.h"
 #include <JetsonGPIO.h>
 #include <signal.h>
 
+#include "remote/SocketServer.h"
+#include "remote/ClientManager.h"
+#include "remote/Client.h"
+#include "events/EventManager.h"
 
 // #include <Eigen/Dense>
 
@@ -36,7 +41,15 @@ MonoLED mainButtonLed(mainButtonLedPin);
 
 bool exitRequested = false;
 
+const uint64_t frameDurationTargetMicros = 1000 * 2;
+
 unsigned int sigIntCounter = 0;
+
+unsigned int fpsCounter = 0;
+float fps = 0;
+const float statusTimerInterval = 10.0f;
+Timer statusTimer;
+uint64_t longestDeltaTimeMicros = 0;
 
 void mySigIntHandler(int s){
     exitRequested = true;
@@ -92,12 +105,32 @@ void run(){
     // the beginning of time
     Time::Start();
 
+    // status timer
+    statusTimer.Start(statusTimerInterval);
+
     // main loop
     LogInfo("Main", "start main loop");
     while(!exitRequested){
         
         // update time
         Time::Update();
+
+        // comput
+        if(Time::deltaTimeMicros > longestDeltaTimeMicros){
+            longestDeltaTimeMicros = Time::deltaTimeMicros;
+        }
+
+        // poll socket server
+        SocketServer::Poll();
+
+        // clear events from last tick
+        EventManager::PopNewEvents();
+        
+        // update clients
+        ClientManager::Update();
+
+        // fire events
+        EventManager::Update();
 
         // update buttons
         mainButton.Update();
@@ -114,8 +147,33 @@ void run(){
             lastUpdateTimeMicros = Time::currentTimeMicros;
         }
 
+        // update status
+        fpsCounter++;
+        if(statusTimer.IsFinished()){
+            statusTimer.Restart(true);
+            fps = (float) fpsCounter / statusTimerInterval;
+            float fixedDeltaTimeUsage = (float)longestDeltaTimeMicros/(float)Time::fixedDeltaTimeMicros;
+            LogInfo("Main", iLog 
+                << "FPS=" << fps << ", "
+                << "LongestFrame=" << (longestDeltaTimeMicros*1.0e-3f) << "ms, "
+                << "FDTU=" << (fixedDeltaTimeUsage*100.0f) << "%, "
+                << "Clients=" << ClientManager::GetAllCients().size() << ", "
+                << "Connections=" << SocketServer::GetNumConnections() << ", "
+                << "Events=" << EventManager::eventCounterTemp << "/" << EventManager::eventCounterTotal
+                << ""
+            );
+		    EventManager::eventCounterTemp = 0;
+            fpsCounter = 0;
+            longestDeltaTimeMicros = 0;
+        }
+
+        // compute how long the current frame took
+        uint64_t frameDurationMicros = Time::GetTimeMicros() - Time::currentTimeMicros;
+
         // wait for a short time before next loop
-        usleep(500);
+        if(frameDurationMicros < frameDurationTargetMicros){
+            usleep(frameDurationTargetMicros - frameDurationMicros);
+        }
 
     }
 
@@ -149,10 +207,34 @@ void runDebug(){
 int main(){
 
     // init config
-    Config::Init();
+	if(!Config::Init()){
+		LogError("Main", "Config initialization failed");
+		return false;
+	}
 
     // init log levels
-    LogLevels::Init();
+    if(!LogLevels::Init()){
+		LogError("Main", "LogLevels initialization failed");
+		return false;
+    }
+
+    // init event manager/ event manager
+	if(!EventManager::Init()){
+		LogError("Main", "EventManager initialization failed");
+		return false;
+	}
+
+	// init client manager
+	if(!ClientManager::Init()){
+		LogError("Main", "ClientManager initialization failed");
+		return false;
+	}
+
+	// init socket server
+	if(!SocketServer::Init()){
+		Log(LOG_ERROR, "Ledlib", "ServerManager initialization failed");
+		return false;
+	}
 
     // sigint handler
     struct sigaction sigIntHandler;

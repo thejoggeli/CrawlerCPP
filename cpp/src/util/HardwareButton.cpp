@@ -12,7 +12,7 @@ HardwareButton::HardwareButton(unsigned int pin, uint64_t debounceTimeMicros){
 }
 
 void HardwareButton::Init(){
-    LogInfo("HardwareButton", iLog << "init, pin=" << pin << ", debounceTimeMicros" << debounceTimeMicros);
+    LogInfo("HardwareButton", iLog << "init, pin=" << pin << ", debounceTimeMicros=" << debounceTimeMicros);
     GPIO::setup(pin, GPIO::IN);
     GPIO::add_event_detect(pin, GPIO::FALLING, nullptr, debounceTimeMicros/1000);
 }

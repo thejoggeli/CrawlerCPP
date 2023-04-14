@@ -327,10 +327,10 @@ class XYZServo {
     uint8_t getId() const { return id; }
 
     void setLedPolicy(uint8_t color);
-    void setLedPolicy(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+    void setLedPolicy(int r, int g, int b, int w);
 
     void setLedColor(uint8_t color);
-    void setLedColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+    void setLedColor(int r, int g, int b, int w);
 
    private:
     int flushRead();

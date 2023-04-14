@@ -61,7 +61,12 @@
 			"condition_variable": "cpp",
 			"ratio": "cpp",
 			"thread": "cpp",
-			"core": "cpp"
+			"core": "cpp",
+			"bitset": "cpp",
+			"regex": "cpp",
+			"shared_mutex": "cpp",
+			"set": "cpp",
+			"mutex": "cpp"
 		}
 	}
 }

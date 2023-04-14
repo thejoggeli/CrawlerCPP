@@ -365,8 +365,8 @@ void XYZServo::setLedPolicy(uint8_t color){
     ramWrite(2, buffer, 1);
 }
 
-void XYZServo::setLedPolicy(uint8_t r, uint8_t g, uint8_t b, uint8_t w){
-    uint8_t buffer[1] = {(w | b<<1 | g<<2 | r<<3) & 0x0F};
+void XYZServo::setLedPolicy(int r, int g, int b, int w){
+    uint8_t buffer[1] = {(uint8_t)((w | b<<1 | g<<2 | r<<3) & 0x0F)};
     ramWrite(2, buffer, 1);
 }
 
@@ -375,7 +375,7 @@ void XYZServo::setLedColor(uint8_t color){
     ramWrite(53, buffer, 1);
 }
 
-void XYZServo::setLedColor(uint8_t r, uint8_t g, uint8_t b, uint8_t w){
-    uint8_t buffer[1] = {(w | b<<1 | g<<2 | r<<3) & 0x0F};
+void XYZServo::setLedColor(int r, int g, int b, int w){
+    uint8_t buffer[1] = {(uint8_t)((w | b<<1 | g<<2 | r<<3) & 0x0F)};
     ramWrite(53, buffer, 1);
 }

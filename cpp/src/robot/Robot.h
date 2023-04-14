@@ -41,10 +41,11 @@ public:
 
     void SetBrain(Brain* brain);
 
-
     void Update();
 
     void FixedUpdate();
+
+    bool PingServos();
 
     void Startup();
     void Shutdown();

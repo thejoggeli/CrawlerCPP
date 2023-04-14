@@ -4,18 +4,23 @@
 #include <cassert>
 #include <iostream>
 #include "math/Mathf.h"
+#include "Robot.h"
+#include "core/Log.h"
 
 using namespace std;
 
 namespace Crawler {
 
-Leg::Leg(){
+Leg::Leg(Robot* robot, const std::string& name){
+
+    this->robot = robot;
+    this->name = name;
 
     // create joints
-    for(int i = 0; i < 4; i++){
-        Joint* joint = new Joint();
-        joints.push_back(joint);
-    }
+    joints.push_back(new Joint(this, JointType::H0));
+    joints.push_back(new Joint(this, JointType::K1));
+    joints.push_back(new Joint(this, JointType::K2));
+    joints.push_back(new Joint(this, JointType::K3));
 
     // set joint limits
     joints[0]->limitMin = -PIf * 0.5f;
@@ -26,6 +31,12 @@ Leg::Leg(){
     joints[2]->limitMax = +PIf * 0.5f;
     joints[3]->limitMin = -PIf * 0.5f;
     joints[3]->limitMax = +PIf * 0.5f;
+
+    // ik search config
+    const int numPhiVals = 251;
+    const float phiMin = -45.0f * DEG_2_RADf;
+    const float phiMax = +45.0f * DEG_2_RADf;
+    IKSearchConfig(numPhiVals, phiMin, phiMax);
     
 }
 
@@ -58,110 +69,173 @@ bool Leg::IKExact(const Eigen::Vector3f& Q, float phi, float angles_out[4]){
     float v = (xy * xy + z * z - L1 * L1 - L2 * L2) / (2.0f * L1 * L2);
 
     if(v < -1.0f || v > 1.0f){
-        return false;
+        if(v > 1.0f && v < 1.0001f){
+            v = 1.0f;
+        } else if(v < -1.0f && v > -1.0001f){
+            v = -1.0f;
+        } else {
+            // LogDebug("Leg", iLog << "v out of limits " << v);
+            return false;
+        }
     }
     
-    float a2 = -acos(v);
-    a2 = Mathf::angle_to_symmetric(a2);
+    float a2 = -acos(v); 
+    a2 = Mathf::angleToSymmetric(a2);
     if(a2 < joints[2]->limitMin || a2 > joints[2]->limitMax){
+        // LogDebug("Leg", iLog << "a2 out of limits " << a2 * RAD_2_DEGf);
         return false;
     }
 
     float a1 = atan2(z, xy) - atan2(L2 * sin(a2), L1 + L2 * cos(a2));
-    a1 = Mathf::angle_to_symmetric(a1);
+    a1 = Mathf::angleToSymmetric(a1);
     if(a1 < joints[1]->limitMin || a1 > joints[1]->limitMax){
+        // LogDebug("Leg", iLog << "a1 out of limits " << a1 * RAD_2_DEGf);
         return false;
     }
 
     float a3 = phi - a1 - a2 - PIf * 0.5f;
-    a3 = Mathf::angle_to_symmetric(a3);
+    a3 = Mathf::angleToSymmetric(a3);
     if(a3 < joints[3]->limitMin || a3 > joints[3]->limitMax){
+        // LogDebug("Leg", iLog << "a3 out of limits " << a3 * RAD_2_DEGf);
         return false;
     }
 
     float a0 = atan2(Q[1], Q[0]);
-    a0 = Mathf::angle_to_symmetric(a0);
+    a0 = Mathf::angleToSymmetric(a0);
     if(a0 < joints[0]->limitMin || a0 > joints[0]->limitMax){
+        // LogDebug("Leg", iLog << "a0 out of limits " << a0 * RAD_2_DEGf);
         return false;
     }
     
     angles_out[0] = a0;
-    angles_out[1] = a1;
-    angles_out[2] = a2;
-    angles_out[3] = a3;
+    angles_out[1] = -a1;
+    angles_out[2] = -a2;
+    angles_out[3] = -a3;
     
     return true;
 
 }
 
-bool Leg::IKSearch(const Eigen::Vector3f& Q, float phi_target, float angles_out[4], float angles_old[4]){
+void Leg::IKSearchConfig(int numPhiVals, float phiMin, float phiMax){
 
-    float phi_min = -50.0f * DEG_2_RADf;
-    float phi_max = +50.0f * DEG_2_RADf;
-    int num_phi_vals = 256;
+    // clear search phi list
+    ikSearchPhiValues.clear();
 
-    bool has_result = false;
-    float best_loss = numeric_limits<float>::infinity();
-    float best_phi = 0.0f;
-    float angles_ik[4];
-
-    float phi_step = (phi_max - phi_min) / (float)(num_phi_vals-1);
-
-    for(int i = 0; i < num_phi_vals; i++){
-        float phi = phi_min + phi_step * (int)i;
-
-        bool result = IKExact(Q, phi, angles_ik);
-
-        if(result){
-            float loss_val = IKLoss(phi_target, phi, angles_old, angles_ik);
-            if(loss_val < best_loss){
-                best_loss = loss_val;
-                best_phi = phi;
-                has_result = true;
-            }
-        }
-
+    // fill search phi list with new values
+    float phiStep = (phiMax - phiMin) / (float)(numPhiVals-1);
+    for(int i = 0; i < numPhiVals; i++){
+        float phi = phiMin + phiStep * (float)i;
+        ikSearchPhiValues.push_back(phi);
     }
 
-    if(has_result){
-        bool result = IKExact(Q, best_phi, angles_out);
+}
+
+bool Leg::IKSearch(const Eigen::Vector3f& Q, float phiTarget, float phiOld, float anglesOld[4], float anglesOut[4]){
+
+    bool hasResult = false;
+    float bestLoss = numeric_limits<float>::infinity();
+    float bestPhi = 0.0f;
+    float anglesTest[4];
+
+    // test IK for all phi values
+    for(float phiTest : ikSearchPhiValues){
+        bool result = IKExact(Q, phiTest, anglesTest);
+        if(result){
+            float lossVal = IKLoss(phiTarget, phiOld, phiTest, anglesOld, anglesTest);
+            if(lossVal < bestLoss){
+                bestLoss = lossVal;
+                bestPhi = phiTest;
+                hasResult = true;
+            }
+        }
+    }
+
+    if(hasResult){
+        bool result = IKExact(Q, bestPhi, anglesOut);
         assert(result == true);
     }
 
-    return has_result;
+    return hasResult;
     
 }
 
-float Leg::IKLoss(float phi_target, float phi_actual, float angles_old[4], float angles_new[4]){
+float Leg::IKLoss(float phiTarget, float phiOld, float phiNew, float anglesOld[4], float anglesNew[4]){
 
-    const float w_phi = 1.0f;
-    const float w_angle = 1.5f;
+    const float phiErrorWeight = 10.0f; // phi deviation from target value
+    const float phiDeltaWeight = 0.0f; // phi change since last frame
+    const float angleDeltaWeight = 0.0f; // joint angles change since last frame 
 
     float loss = 0.0f;
     
-    float dphi = phi_target - phi_actual;
-    loss += ((dphi*dphi) + abs(dphi)) * w_phi;
+    // error phi
+    float phiError = phiTarget - phiNew;
+    loss += (phiError*phiError)*phiErrorWeight;
 
-    float da_max = 0.0f;
+    // delta phi
+    float phiDelta = phiNew - phiOld;
+    loss += (phiDelta*phiDelta)*phiDeltaWeight;
+
+    // find max angle error
+    float angleDeltaMax = 0.0f;
     for(int i = 0; i < 4; i++){
-        float da = angles_old[i] - angles_new[i];
-        if(da > da_max){
-            da_max = da;
+        float angleDelta = abs(anglesOld[i] - anglesNew[i]);
+        if(angleDelta > angleDeltaMax){
+            angleDeltaMax = angleDelta;
         }
     }
 
-    loss += ((da_max*da_max) + abs(da_max))*w_angle;
+    // add max angle loss
+    loss += (angleDeltaMax*angleDeltaMax)*angleDeltaWeight;
 
+    // return final loss
     return loss;
 
 }
 
-void Leg::FKFoot(){
+float Leg::FKPhi(float angles[4]){
+    return PIf*0.5f - (angles[1] + angles[2] + angles[3]);
+}
 
-} 
+void Leg::FKJoints(float angles[4]){
 
-void Leg::FKChain(){
+    fkJointsResult.jointPositions[0][0] = 0.0f;
+    fkJointsResult.jointPositions[0][1] = 0.0f;
+    fkJointsResult.jointPositions[0][2] = 0.0f;
 
+    float cos_a0 = cos(angles[0]);
+    float sin_a0 = sin(angles[0]);
+
+    fkJointsResult.jointPositions[1][0] = joints[0]->length * cos_a0;
+    fkJointsResult.jointPositions[1][1] = joints[0]->length * sin_a0;
+    fkJointsResult.jointPositions[1][2] = 0.0f;
+
+    float angleCum = 0.0f;
+    for(int i = 1; i < 4; i++){
+        angleCum += angles[i];
+        float cos_aCum = cos(angleCum);
+        fkJointsResult.jointPositions[i+1][0] = fkJointsResult.jointPositions[i][0] + cos_a0 * joints[i]->length * cos_aCum;
+        fkJointsResult.jointPositions[i+1][1] = fkJointsResult.jointPositions[i][1] + sin_a0 * joints[i]->length * cos_aCum;
+        fkJointsResult.jointPositions[i+1][2] = fkJointsResult.jointPositions[i][2] - sin(angleCum) * joints[i]->length;
+    }
+
+}
+
+void Leg::GetJointsCurrentTargetAngles(float angles[4]){
+    for(int i = 0; i < joints.size(); i++){
+        angles[i] = joints[i]->currentTargetAngle;
+    }
+}
+
+void Leg::GetJointsMeasuredAngles(float angles[4]){
+    for(int i = 0; i < joints.size(); i++){
+        angles[i] = joints[i]->measuredAngle;
+    }
+}
+
+void Leg::GetJointsLastTargetAngles(float angles[4]){
+    for(int i = 0; i < joints.size(); i++){
+        angles[i] = joints[i]->lastTargetAngle;
+    }
 }
 
 

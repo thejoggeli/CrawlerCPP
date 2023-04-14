@@ -110,6 +110,18 @@ XYZServoStatus XYZServo::readStatus() {
     return status;
 }
 
+uint16_t XYZServo::readPosition() {
+    uint16_t pos;
+    ramRead(60, (uint8_t *)&pos, 2);
+    return pos;
+}
+
+uint16_t XYZServo::readIBus() {
+    uint16_t iBus;
+    ramRead(66, (uint8_t *)&iBus, 2);
+    return iBus;
+}
+
 void XYZServo::setPosition(const uint16_t position, uint8_t playtime) { 
     jog_data_buffer[0] = position & 0xFF;
     jog_data_buffer[1] = position >> 8 & 0xFF;

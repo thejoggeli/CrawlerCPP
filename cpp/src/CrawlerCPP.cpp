@@ -26,6 +26,9 @@
 #include "remote/Client.h"
 #include "events/EventManager.h"
 
+#include <fstream>
+#include <iomanip>
+
 // #include <Eigen/Dense>
 
 using namespace std;
@@ -74,11 +77,11 @@ SurferBrain* createSurferBrain(Robot* robot){
     robot->SetBrain(brain); // pass ownership of brain to robot
 
     // surfer stance
-    float hipAngle = 0.0f * DEG_2_RADf;
-    float feetXY = 0.12f;
-    float feetZ = -0.15f;
-    float feetPhi = 0.0 * DEG_2_RADf;
-    brain->SetStance(feetXY, feetZ, hipAngle, feetPhi);
+    // float hipAngle = 0.0f * DEG_2_RADf;
+    // float feetXY = 0.125f;
+    // float feetZ = -0.125f;
+    // float feetPhi = 0.0 * DEG_2_RADf;
+    // brain->SetStance(feetXY, feetZ, hipAngle, feetPhi);
 
     // Eigen::Vector3f pivot = robot->legs[3]->hipTranslation.translation();
     // pivot[2] -= 0.04f; 
@@ -91,6 +94,20 @@ SurferBrain* createSurferBrain(Robot* robot){
 void run(){
 
     LogInfo("Main", "run()");
+
+    // ping servos
+    LogError("Main", "Robot::PingServos()");
+    if(!robot->PingServos()){
+        LogError("Main", "Robot::PingServos() failed");
+        // mark successfully pinged servos
+        robot->SetServosLedPolicyUser();
+        for(Joint* joint: robot->jointsList){
+            if(joint->lastPingServoResult){
+               joint->SetServoLedColor(0, 1, 0, 0); 
+            }
+        }
+        return;
+    }
 
     // start up robot
     robot->Startup();
@@ -127,6 +144,7 @@ void run(){
         SocketServer::Poll();
 
         // clear events from last tick
+        ClientManager::PopNewEvents();
         EventManager::PopNewEvents();
         
         // update clients
@@ -207,22 +225,103 @@ void runDebug(){
 
     LogInfo("Main", "runDebug()");
 
+    // reboot servos
     robot->RebootServos(3.5f);
-    robot->legs[1]->joints[3]->servo->setPosition(511, 100);
-    Time::Sleep(1.5f);
 
-    Time::Start();
-
-    LogInfo("Main", "start main loop");
-    while(!exitRequested){
-        Time::Update();
-        mainButton.Update();
-        if(mainButton.onPress){
-            Log(iLog << "mainBUtton.onPress");
-            mainButtonLed.ToggleState();
-        }
-        Time::SleepMicros(500);
+    // move servos to initial position
+    for(Joint* joint : robot->jointsList){
+        joint->SetTargetAngle(30.0f * DEG_2_RADf);
+        joint->MoveServoToTargetAngle(2.5f);
     }
+
+    // read servos angle
+    for(Joint* joint : robot->jointsList){
+        if(joint->UpdateMeasuredAngle()){
+            LogInfo("Main", iLog << joint->debugName << " angle is " << (joint->measuredAngle*RAD_2_DEGf));
+        }
+    }
+
+    // read servos current
+    float servosCurrentSum = 0.0f;
+    for(Joint* joint : robot->jointsList){
+        if(joint->UpdateMeasuredCurrent()){
+            servosCurrentSum += joint->measuredCurrent;
+            LogInfo("Main", iLog << joint->debugName << " current is " << joint->measuredCurrent);
+        }
+    }
+    LogInfo("Main", iLog << "total current is " << servosCurrentSum);
+
+    // FK phi test
+    float angles[4] = {
+        1.3f * DEG_2_RADf,
+        3.7f * DEG_2_RADf,
+        4.2f * DEG_2_RADf,
+        80.0f * DEG_2_RADf,
+    };
+    Leg* leg = robot->legs[0];
+    leg->FKJoints(angles);
+    float phi = robot->legs[0]->FKPhi(angles);
+    LogInfo("Main", iLog << leg->fkJointsResult.jointPositions[0].transpose());
+    LogInfo("Main", iLog << leg->fkJointsResult.jointPositions[1].transpose());
+    LogInfo("Main", iLog << leg->fkJointsResult.jointPositions[2].transpose());
+    LogInfo("Main", iLog << leg->fkJointsResult.jointPositions[3].transpose());
+    LogInfo("Main", iLog << leg->fkJointsResult.jointPositions[4].transpose());
+    LogInfo("Main", iLog << leg->fkJointsResult.footPosition.transpose());
+    LogInfo("Main", iLog << "phi=" << (phi * RAD_2_DEGf));
+
+    // IK test
+    // Eigen::Vector3f Q = Eigen::Vector3f();
+    float anglesIK[4];
+
+    leg->IKExact(leg->fkJointsResult.footPosition, phi, anglesIK);
+    for(int i = 0; i < 4; i++){
+        LogDebug("Main", iLog << "a" << i << ": " << anglesIK[i] * RAD_2_DEGf);
+    }
+
+    // grid search
+    Leg* gridSearchLeg = robot->legs[1];
+    ofstream myfile(string(CRAWLER_ROOT_PATH) + string("/export/gridsearch-newleg.csv"));
+    myfile << "result,a0,a1,a2,a3,x,y,z,phi" << endl;
+    float scale = 0.01f;
+    for(int x = -35; x <= 35; x+=1){
+        float xf = (float)x*scale;
+        float progress = (float)(x+35.0f) / 70.0f;
+        LogDebug("Main", iLog << "progress: " << progress*100.0f << "%");
+        for(int y = -35; y <= 35; y+=1){
+            float yf = (float)y*scale;
+            for(int z = -35; z <= 35; z+=1){
+                float zf = (float)z*scale;
+                Eigen::Vector3f pos(xf, yf, zf);
+                for(int phi = -180; phi <= 180; phi+=5){
+                    float phif = (float)phi*DEG_2_RADf;
+                    bool result = gridSearchLeg->IKExact(pos, phif, anglesIK);
+                    stringstream ss;
+                    ss << setprecision(6);
+                    if(result){
+                        ss << "1,";
+                        ss << anglesIK[0] << ",";
+                        ss << anglesIK[1] << ",";
+                        ss << anglesIK[2] << ",";
+                        ss << anglesIK[3] << ",";
+                    } else {
+                        ss << "0,";
+                        ss << (int)0 << ",";
+                        ss << (int)0 << ",";
+                        ss << (int)0 << ",";
+                        ss << (int)0 << ",";
+                    }
+                    ss << xf << "," ;
+                    ss << yf << "," ;
+                    ss << zf << "," ;
+                    ss << phif << "," ;
+                    myfile << ss.str() << endl;
+                }                
+            }
+        }
+    }
+    myfile.close();
+
+
 }
 
 int main(){
@@ -287,8 +386,8 @@ int main(){
     }
 
     // start program
-    // runDebug();
-    run();
+    runDebug();
+    // run();
 
     // close servo serial stream
     LogInfo("Main", "serial stream close");

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="ISO-8859-1"> 
+		<title>Matrix-Raspi</title>
+		<script src="jquery-3.3.1.min.js"></script>
+		<script src="script.js"></script>
+		<link rel="icon" href="swiss.ico">
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<meta name="viewport" content="minimal-ui, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	</head>
+	<body>
+		<div class="gamepad fullscreen-flexbox">
+			<div class="sector left">
+				<div class="dpad-row top">
+					<div class="inp-btn button up" data-keycode="10">
+						<div class="inner"></div>
+					</div>				
+				</div>
+				<div class="dpad-row middle">
+					<div class="inp-btn button left" data-keycode="12">
+						<div class="inner rot270"></div>
+					</div>		
+					<div class="inp-btn button right" data-keycode="13">
+						<div class="inner rot90"></div>
+					</div>
+				</div>
+				<div class="dpad-row bottom">
+					<div class="inp-btn button down" data-keycode="11">
+						<div class="inner rot180"></div>
+					</div>
+				</div>
+			</div>
+			<div class="sector middle">
+				<div class="button enter-fullscreen">
+					<div class="inner">FS</div>
+				</div>
+				<div class="button leave-fullscreen">
+					<div class="inner">FS</div>
+				</div>
+				<div class="inp-btn button start" data-keycode="20">
+					<div class="inner"></div>
+				</div>
+				<div class="inp-btn button select" data-keycode="21">
+					<div class="inner"></div>
+				</div>				
+			</div>
+			<div class="sector right">
+				<div class="inp-btn button a" data-keycode="1">
+						<div class="inner"></div>
+				</div>
+				<div class="inp-btn button b" data-keycode="0">
+					<div class="inner"></div>
+				</div>
+			</div>
+		</div>
+	<!--
+		<div class="header">
+			Matrix-Raspi:
+			<span class="connected-state">disconnected</span>
+		</div>		
+		<div class="button-row">
+		</div>
+		<div class="button-row">
+			<button class="inp-btn" data-keycode="0">A</button>
+			<button class="inp-btn" data-keycode="1">B</button>
+			<button class="inp-btn" data-keycode="2">X</button>
+			<button class="inp-btn" data-keycode="3">Y</button>
+		</div>
+		<div class="button-row">
+			<button class="cmd-btn" data-cmd="set_brightness" data-params='1'>1%</button>
+			<button class="cmd-btn" data-cmd="set_brightness" data-params='25'>25%</button>
+			<button class="cmd-btn" data-cmd="set_brightness" data-params='50'>50%</button>
+			<button class="cmd-btn" data-cmd="set_brightness" data-params='75'>75%</button>
+			<button class="cmd-btn" data-cmd="set_brightness" data-params='100'>100%</button>
+		</div>
+		<div class="button-row">
+			<button class="msg-btn" data-msg="quit">Quit</button>
+			<button class="cmd-btn" data-cmd="launch_app" data-params='pong'>Pong</button>
+			<button class="cmd-btn" data-cmd="launch_app" data-params='snake'>Snake</button>
+			<button class="cmd-btn" data-cmd="launch_app" data-params='tetris'>Tetris</button>
+		</div>
+	-->
+	</body>
+</html>

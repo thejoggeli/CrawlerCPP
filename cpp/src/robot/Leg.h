@@ -7,9 +7,30 @@
 
 namespace Crawler {
 
+class Robot;
+
 class Leg {
+private:
+
+    float phiMin = 0.0f;
+    float phiMiax = 0.0f;
+    std::vector<float> ikSearchPhiValues;
 
 public:
+
+    struct FKJointsResult {
+        // all positions are in the hip coordinate system
+        // [0] H0 position is always (0,0,0)
+        // [1] K1 position
+        // [2] K2 position
+        // [3] K3 position
+        // [4] footPosition
+        Eigen::Vector3f jointPositions[5];
+        const Eigen::Vector3f& footPosition = jointPositions[4];
+    };
+
+    Robot* robot;
+    std::string name;
 
     std::vector<Joint*> joints;
 
@@ -23,16 +44,25 @@ public:
     Eigen::Affine3f hipRotationInverse = Eigen::Affine3f::Identity();
     Eigen::Affine3f hipTransformInverse = Eigen::Affine3f::Identity();
 
-    Leg();
+    FKJointsResult fkJointsResult;
+
+    Leg(Robot* robot, const std::string& name);
 
     void SetHipTransform(const Eigen::Vector3f& translation, float angle);
 
-    bool IKExact(const Eigen::Vector3f& Q, float phi, float angles_out[4]);
-    bool IKSearch(const Eigen::Vector3f& Q, float phi_target, float angles_out[4], float angles_old[4]);
-    float IKLoss(float phi_target, float phi_actual, float angles_old[4], float angles_new[4]);
+    bool IKExact(const Eigen::Vector3f& Q, float phi, float anglesOut[4]);
 
-    void FKFoot(); 
-    void FKChain();
+    void IKSearchConfig(int numPhiVals, float phiMin, float phiMax);
+    bool IKSearch(const Eigen::Vector3f& Q, float phiTarget, float phiOld, float anglesOld[4], float anglesOut[4]);
+
+    float IKLoss(float phiTarget, float phiOld, float phiNew, float anglesOld[4], float angleNew[4]);
+
+    void FKJoints(float angles[4]);
+    float FKPhi(float angles[4]);
+
+    void GetJointsCurrentTargetAngles(float angles[4]);
+    void GetJointsMeasuredAngles(float angles[4]);
+    void GetJointsLastTargetAngles(float angles[4]);
 
 };
 

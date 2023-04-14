@@ -1,6 +1,7 @@
 #include "Client.h"
 #include "events/EventManager.h"
 #include "events/Event.h"
+#include "core/Log.h"
 
 using namespace std;
 

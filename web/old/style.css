@@ -1,0 +1,122 @@
+/*body {background:#111;font-family:arial;}
+button {width:100px;height:50px;}
+.button-row {margin-bottom:10px;}
+.header {font-size:32px;font-weight:bold;margin-bottom:10px;color:white;}
+.connected-state.connected {color:lime;}
+.connected-state.disconnected {color:red;} */
+
+*{
+	outline:0;
+	user-select:none;-moz-user-select: none;-webkit-user-select: none;-ms-user-select: none;
+}
+body{margin:0;padding:0;font-family:arial;}
+.leave-fullscreen {display:none !important;}
+.fullscreen-flexbox {
+	display:flex;flex-direction:row;flex-wrap:nowrap;align-content:stretch;
+}
+
+.rot90 {
+    -moz-transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+.rot180 {
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+.rot270 {
+    -moz-transform: rotate(270deg);
+    -webkit-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    -ms-transform: rotate(270deg);
+    transform: rotate(270deg);
+}
+
+
+/* Gamepad */
+.gamepad {background:red;width:100vw;height:100vh;background:#eee;box-sizing:border-box;}
+
+/* Gamepad sectors */
+.gamepad .sector {
+	box-sizing:border-box;
+	flex:1 0 0;align-self:stretch;
+	display:flex;flex-direction:column;flex-wrap:nowrap;align-content:stretch;
+}
+.gamepad .sector.left {min-width:40%;}
+.gamepad .sector.middle {}
+.gamepad .sector.right {min-width:40%;}
+
+/* Gamepad buttons */
+.gamepad .sector .button {
+	box-sizing:border-box;display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:center;align-items:center;
+}
+.gamepad .sector .button > .inner {
+	flex:1 0 0;order:0;align-self:stretch;
+	display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:center;align-content:center;
+}
+.gamepad .sector .button > .inner > .label {
+	text-align:center;color:#eee;
+}
+/* Gamepad middle */
+.gamepad .sector.middle .button {flex:1 0 0;align-self:stretch;}
+
+/* Gamepad right */
+.gamepad .sector.right .button {flex:1 0 0;align-self:stretch;}
+.gamepad .sector.right .button {font-size:3.0em;}
+
+/* Gamepad left */
+.gamepad .sector.left .button {font-size:5.0em;}
+.gamepad .sector.left .dpad-row {
+	flex:1 0 0;align-self:stretch;
+	display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:center;align-items:center;align-content:center;
+}
+.gamepad .sector.left .button {
+	flex:1 0 0;align-self:stretch;
+}
+.gamepad .sector.left .dpad-row.top .button > .inner,
+.gamepad .sector.left .dpad-row.bottom .button > .inner {
+	flex:1 0 0;align-self:stretch;
+	max-width:50%;	
+}
+.gamepad .button.bottom {padding-bottom:5px;}
+
+/* Gamepad button icons */
+.gamepad .button .inner {background-size:100% 100%; background-position:center; background-repeat:no-repeat;}
+.gamepad .button.a .inner {background-image:url("svg/gamepad_button_a0.svg");}
+.gamepad .button.a:active .inner {background-image:url("svg/gamepad_button_a1.svg");}
+.gamepad .button.b .inner {background-image:url("svg/gamepad_button_b0.svg");}
+.gamepad .button.b:active .inner {background-image:url("svg/gamepad_button_b1.svg");}
+.gamepad .button.up .inner {background-image:url("svg/gamepad_button_arr0.svg");}
+.gamepad .button.up:active .inner {background-image:url("svg/gamepad_button_arr1.svg");}
+.gamepad .button.down .inner {background-image:url("svg/gamepad_button_arr0.svg");}
+.gamepad .button.down:active .inner {background-image:url("svg/gamepad_button_arr1.svg");}
+.gamepad .button.left .inner {background-image:url("svg/gamepad_button_arr0.svg");}
+.gamepad .button.left:active .inner {background-image:url("svg/gamepad_button_arr1.svg");}
+.gamepad .button.right .inner {background-image:url("svg/gamepad_button_arr0.svg");}
+.gamepad .button.right:active .inner {background-image:url("svg/gamepad_button_arr1.svg");}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

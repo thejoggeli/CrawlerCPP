@@ -1,0 +1,356 @@
+#painter {
+	color:white;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: stretch;
+    align-items: flex-start;
+}
+
+#painter .toolbar-target {
+	background:#333;border-left:2px solid black;
+	text-align:center;position:relative;	
+	cursor:pointer;
+}
+#painter .toolbar-target:active {
+	background:#666;
+}
+#painter .toolbar-target svg {	
+/*
+	width:15px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+*/ 
+}
+#painter .toolbar-label-container {	
+	position: absolute;
+    top: 50%;
+    left: 50%;
+}
+#painter .toolbar-label * {
+	white-space:nowrap;
+}
+#painter .toolbar-label {
+	transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+	white-space:nowrap;
+	font-size:16px;
+	font-weight:bold;
+}
+#painter .toolbar-label-extra-color {
+	display:inline-block;height:10px;width:10px;margin-left:3px;position:relative;top:2px;
+	border:2px solid white;
+}
+#painter .flex-container {
+    width:100%;
+    height:100%;
+}
+
+#painter .canvas-target {
+    order: 0;
+    flex: 1 1 auto;
+    align-self: stretch;
+    overflow:hidden;
+}
+
+#painter .toolbar-target {
+    order: 1;
+    flex: 0 1 32px;
+    align-self: stretch;
+}
+
+#painter .toolbar-overlay {
+	height:100%;
+	position:absolute;
+	z-index:20005;
+	right:0px;
+	top:0px;
+    display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: stretch;
+    align-items: flex-start;
+    width:286px;
+    max-width:95%;
+}
+#painter .toolbar-overlay-label-container {	
+	position: relative;
+    left:50%;
+    top:50%;
+}
+#painter .toolbar-overlay-label * {	
+	white-space:nowrap;
+}
+#painter .toolbar-overlay-label {	
+	transform: translateX(-50%) translateY(-50%) rotate(-90deg); 
+	white-space:nowrap;
+	font-size:16px;
+	font-weight:bold;
+	position:absolute;
+}
+#painter .toolbar-overlay-left {
+    order: 0;
+    flex: 0 1 32px;
+    align-self: stretch;
+    background:#333;
+    border-left:2px solid black;
+    min-width:32px;
+    max-width:32px;
+	cursor:pointer;
+}
+
+#painter .toolbar-overlay-left:active {
+	background:#666;
+}
+
+#painter .toolbar-overlay-right {
+    order: 1;
+    flex: 1 1 auto;
+    align-self: stretch;
+    background:#666;
+    overflow-y: auto;
+    border-left:2px solid black;
+    padding-bottom:20vh;
+}
+
+#painter .tools-head {
+	display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: stretch;
+    align-items: flex-start;
+}
+
+#painter .tools-head > .tool-button span {
+	margin: auto;
+	display:block;
+}
+#painter .tools-head > .tool-button svg {
+	margin: auto;
+	display:block;
+}
+#painter .tools-head > .tool-button:active {
+	background:#666;
+}
+#painter .tools-head > .tool-button.selected {
+	background:#000;
+}
+
+#painter .tools-head > .tool-button {
+    order: 0;
+    flex: 1 1 0px;
+    align-self: stretch;
+    text-align:center;
+    height:60px;
+    background:#333;
+    color:white;font-size:16px;font-weight:bold;
+    border:0;
+    border-right:2px solid black;
+    display: flex; 
+	cursor:pointer;
+}
+#painter .tools-head > .tool-button:last-child {
+	border-right:0;
+}
+
+#painter .tool-options {}
+#painter .tool-options.menu {border-top:2px solid black;}
+#painter .tool-options-button-container {
+	display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: stretch;
+    align-items: flex-start;
+	margin:10px;
+}
+#painter .tool-options-button-container .tool-options-button:last-child {
+	border-right:2px solid black;
+}
+#painter .tool-options-button {
+	margin-bottom:0;
+	background:#333;color:white;
+	font-size:16px;font-weight:bold;
+	display:block;
+	width:auto;
+	height:60px;
+	box-sizing:border-box;
+	border:2px solid black;
+	border-right:0;
+	border-radius:0;	
+	display:flex;
+	cursor:pointer;
+    order: 0;
+    flex: 1 1 0px;
+    align-self: stretch;
+}
+#painter .tool-options-button.disabled:active,
+#painter .tool-options-button.disabled {
+	cursor:default;
+	background:#999;
+	color:#ccc;
+}
+#painter .tool-options-button:active {
+	background:#666;
+}
+#painter .tool-options-button span{
+	margin:auto;
+}
+#painter .tool-options .range-container {
+	padding:10px;
+}
+#painter .tool-options-label {font-weight:bold;text-align:center;padding:10px;font-size:16px;background:#333;border-bottom:2px solid black;border-top:2px solid black;}
+#painter .tool-options.colorpicker .color-boxes {
+	padding:5px;
+	
+}
+#painter .tool-options.colorpicker .color-box-row {
+	display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: stretch;
+    align-items: flex-start;
+}
+#painter .tool-options.colorpicker .color-box {
+    order: 0;
+    flex: 1 1 auto;
+    align-self: stretch;
+    height:38px;
+    margin:5px;
+    box-sizing:border-box;
+    border:2px solid #333;
+	cursor:pointer;
+}
+#painter .tool-options.colorpicker .color-box.white.selected {
+	border:2px solid red;
+}
+#painter .tool-options.colorpicker .color-box.selected {
+	border:2px solid white;
+}
+#painter .tool-options.colorpicker .lightness-container {
+	display:flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: stretch;
+    align-items: flex-start;
+	margin:10px;
+}
+#painter .tool-options.colorpicker .lightness-container .lightness-button:last-child {
+	border-right:2px solid black;
+}
+#painter .tool-options.colorpicker .lightness-button {
+	margin-bottom:0;
+	background:#333;color:white;
+	font-size:16px;font-weight:bold;
+	display:block;
+	width:auto;
+	height:60px;
+	box-sizing:border-box;
+	border:2px solid black;
+	border-right:0;
+	border-radius:0;	
+	display:flex;
+	cursor:pointer;
+    order: 0;
+    flex: 1 1 0px;
+    align-self: stretch;
+}
+#painter .tool-options.colorpicker .lightness-button span {
+	margin:auto;
+}
+#painter .tool-options.colorpicker .lightness-button.selected {
+	background:black;
+}
+
+/* Brightness Slider */
+
+#painter .tools input[type=range] {
+  -webkit-appearance: none;
+  width:100%;
+  margin: 7.3px 0;
+}
+#painter .tools input[type=range]:focus {
+  outline: none;
+}
+#painter .tools input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 11.4px;
+  cursor: pointer;
+  background: rgba(51, 51, 51, 1);
+  border-radius: 1.3px;
+  border: 0.2px solid #010101;
+}
+#painter .tools input[type=range]::-webkit-slider-thumb {
+  border: 1.8px solid #00001e;
+  height: 32px;
+  width: 32px;
+  border-radius:100px;
+  background: #ffffff;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -10.5px;
+}
+#painter .tools input[type=range]:focus::-webkit-slider-runnable-track {
+  background: rgba(51, 51, 51, 1);
+}
+#painter .tools input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 11.4px;
+  cursor: pointer;
+  background: rgba(51, 51, 51, 1);
+  border-radius: 1.3px;
+  border: 0.2px solid #010101;
+}
+#painter .tools input[type=range]::-moz-range-thumb {
+  border: 1.8px solid #00001e;
+  height: 26px;
+  width: 26px;
+  border-radius: 15px;
+  background: #ffffff;
+  cursor: pointer;
+}s
+#painter .tools input[type=range]::-ms-track {
+  width: 100%;
+  height: 11.4px;
+  cursor: pointer;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+#painter .tools input[type=range]::-ms-fill-lower {
+  background: rgba(51, 51, 51, 1);
+  border: 0.2px solid #010101;
+  border-radius: 2.6px;
+}
+#painter .tools input[type=range]::-ms-fill-upper {
+  background: rgba(51, 51, 51, 1);
+  border: 0.2px solid #010101;
+  border-radius: 2.6px;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+#painter .tools input[type=range]::-ms-thumb {
+  border: 1.8px solid #00001e;
+  height: 26px;
+  width: 26px;
+  border-radius: 15px;
+  background: #ffffff;
+  cursor: pointer;
+  height: 11.4px;
+}
+#painter .tools input[type=range]:focus::-ms-fill-lower {
+  background: rgba(51, 51, 51, 1);
+}
+#painter .tools input[type=range]:focus::-ms-fill-upper {
+  background: rgba(51, 51, 51, 1);
+}
+
+
+

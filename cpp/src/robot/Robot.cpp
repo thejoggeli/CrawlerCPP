@@ -7,6 +7,7 @@
 #include "math/Mathf.h"
 #include "core/Log.h"
 #include "core/Time.h"
+#include <string>
 
 using namespace std;
 
@@ -21,17 +22,20 @@ Robot::Robot(){
     servoIds = {
          7,  8,  9, 10, // front-left  
          1,  2,  4,  3, // back-left   
-        15, 16, 17, 18, // back-right  
-        11, 12, 13, 14, // front right 
+        15, 16, 33, 18, // back-right  
+        11, 12, 13, 44, // front right 
     };
 
     // servo angle scale
     float servoAngleScale[] = {
-        -1.05f, -1.05f, -1.05f, -1.05f, // front-left  
-        -1.05f, +1.05f, +1.05f, +1.05f, // back-left   
-        -1.05f, -1.05f, -1.05f, -1.05f, // back-right  
-        -1.05f, -1.05f, -1.05f, -1.05f, // front right 
+        -1.05f, +1.05f, +1.05f, +1.05f, // front+left  
+        -1.05f, -1.05f, -1.05f, -1.05f, // back+left   
+        -1.05f, +1.05f, +1.05f, +1.05f, // back+right  
+        -1.05f, +1.05f, +1.05f, +1.05f, // front right 
     };
+
+    // leg names
+    string legNames[4] = {"FL0", "BL1", "BR2", "FR3"};
 
     // create master servo
     masterServo = new XYZServo(servoSerialStream, 254);
@@ -45,7 +49,7 @@ Robot::Robot(){
     // create the legs
     for(int i = 0; i < 4; i++){
 
-        Leg* leg = new Leg();
+        Leg* leg = new Leg(this, legNames[i]);
         legs.push_back(leg);
 
         // set leg joint lengths
@@ -83,10 +87,11 @@ Robot::Robot(){
     hip_dy = hip_diagonal * SQRT2_INVf;
     hip_dz = 0.0f;
     legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 135.0f * DEG_2_RADf);
-    legs[1]->joints[0]->length = 0.068;
-    legs[1]->joints[1]->length = 0.078;
-    legs[1]->joints[2]->length = 0.078;
-    legs[1]->joints[3]->length = 0.027 + 0.063 + 0.01;
+    legs[1]->joints[0]->length = 0.068f;
+    legs[1]->joints[1]->length = 0.078f;
+    legs[1]->joints[2]->length = 0.078f;
+    // legs[1]->joints[3]->length = 0.027f + 0.063f + 0.01f;
+    legs[1]->joints[3]->length = 0.068f;
     legs[1]->joints[1]->limitMin = -100.0f * DEG_2_RADf;
     legs[1]->joints[1]->limitMax = +100.0f * DEG_2_RADf;
     legs[1]->joints[2]->limitMin = -150.0f * DEG_2_RADf;
@@ -111,6 +116,7 @@ void Robot::SetBrain(Brain* brain){
 
     if(this->brain != nullptr){
         this->brain->Destroy();
+        delete this->brain;
     }
 
     this->brain = brain;
@@ -154,6 +160,17 @@ void Robot::RebootServos(float sleepTime = 3.5f){
     Time::Sleep(sleepTime);
 }
 
+bool Robot::PingServos(){
+    bool result = true;
+    for(Joint* joint : jointsList){
+        joint->PingServo();
+        if(!joint->lastPingServoResult){
+            result = false;
+        }
+    }
+    return result;
+}
+
 void Robot::Startup(){
 
     LogInfo("Robot", "startup begin");
@@ -161,27 +178,38 @@ void Robot::Startup(){
     // reboot servos
     RebootServos(3.5f);
 
-    // move servos to initial position
-    LogInfo("Robot", "moving to default position");
+    // set LED colors
     SetServosLedPolicyUser();
     for(Joint* joint : jointsList){
         joint->SetServoLedColor(1, 0, 1, 0);
     }
+
+    // move servos to initial position
+    LogInfo("Robot", "moving to default position");
     for(Leg* leg : legs){
         leg->joints[0]->SetTargetAngle(DEG_2_RADf * 0.0f);
-        leg->joints[1]->SetTargetAngle(DEG_2_RADf * -30.0f);
-        leg->joints[2]->SetTargetAngle(DEG_2_RADf * -30.0f);
-        leg->joints[3]->SetTargetAngle(DEG_2_RADf * -30.0f);
+        leg->joints[1]->SetTargetAngle(DEG_2_RADf * -45.0f);
+        leg->joints[2]->SetTargetAngle(DEG_2_RADf * +90.0f);
+        leg->joints[3]->SetTargetAngle(DEG_2_RADf * +45.0f);
     }
     MoveJointsToTargetSync(2.0f);
     Time::Sleep(2.5f);
+
+    // set LED colors
     for(Leg* leg : legs){
-        leg->joints[0]->SetServoLedColor(1, 0, 0, 0);
+        leg->joints[0]->SetServoLedColor(0, 1, 1, 0);
         leg->joints[1]->SetServoLedColor(0, 1, 0, 0);
         leg->joints[2]->SetServoLedColor(0, 0, 1, 0);
-        leg->joints[3]->SetServoLedColor(0, 0, 0, 1);
+        leg->joints[3]->SetServoLedColor(1, 1, 0, 0);
     }
     // SetServosLedPolicySystem();
+
+    // set servo last target angles to measured angles
+    for(Joint* joint : jointsList){
+        if(joint->UpdateMeasuredAngle()){
+            joint->lastTargetAngle = joint->measuredAngle;
+        }
+    }
     
 }
 
@@ -200,6 +228,10 @@ void Robot::SetServosLedPolicySystem(){
 void Robot::Shutdown(){
 
     LogInfo("Robot", "shutdown");
+
+    for(Joint* joint : jointsList){
+        joint->TorqueOff();
+    }
 
 }
 

@@ -253,7 +253,7 @@ class XYZServo {
     /// Uses a STAT command to read the servo position.
     ///
     /// See readStatus().
-    uint16_t readPosition() { return readStatus().position; }
+    uint16_t readPosition();
 
     /// Uses a STAT command to read the servo position goal.
     ///
@@ -266,7 +266,7 @@ class XYZServo {
     /// Uses a STAT command to read the bus current.
     ///
     /// See readStatus().
-    uint16_t readIBus() { return readStatus().iBus; }
+    uint16_t readIBus();
 
     /// Sends an I-JOG command to set the target/goal position for this servo.
     ///

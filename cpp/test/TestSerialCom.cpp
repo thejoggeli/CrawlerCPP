@@ -184,6 +184,8 @@ int main(){
 
     read_servos_eeprom();
 
+    return EXIT_SUCCESS;
+
     uint8_t servo_ids[] = {1,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
     const unsigned int NUM_SERVOS = sizeof(servo_ids)/sizeof(uint8_t);
 

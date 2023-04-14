@@ -15,7 +15,7 @@ const float SQRT2_INVf = 1.0 / MATHF_SQRT2;
 const float RAD_2_DEGf = 1.0 / MATHF_PI * 180.0;
 const float DEG_2_RADf = 1.0 / 180.0 * MATHF_PI;
 
-float Mathf::angle_to_symmetric(float angle){
+float Mathf::angleToSymmetric(float angle){
     if(angle > +PIf){
         return angle - PI2f;
     } else if(angle < -PIf) {

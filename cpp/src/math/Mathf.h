@@ -11,7 +11,7 @@ extern const float DEG_2_RADf;
 
 class Mathf {
 public:
-    static float angle_to_symmetric(float angle);
+    static float angleToSymmetric(float angle);
 
 };
 

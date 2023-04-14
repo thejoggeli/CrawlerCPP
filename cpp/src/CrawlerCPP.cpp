@@ -41,15 +41,18 @@ MonoLED mainButtonLed(mainButtonLedPin);
 
 bool exitRequested = false;
 
-const uint64_t frameDurationTargetMicros = 1000 * 2;
+const uint64_t frameDurationTargetMicros = 1000;
 
 unsigned int sigIntCounter = 0;
 
-unsigned int fpsCounter = 0;
-float fps = 0;
+unsigned int upsCounter = 0;
+unsigned int fixedUpsCounter = 0;
+float ups = 0.0f;
+float fixedUps = 0.0f;
 const float statusTimerInterval = 10.0f;
 Timer statusTimer;
 uint64_t longestDeltaTimeMicros = 0;
+uint64_t totalSleepTimeMicros = 0;
 
 void mySigIntHandler(int s){
     exitRequested = true;
@@ -144,26 +147,42 @@ void run(){
         // fixed update
         if(Time::currentTimeMicros - lastUpdateTimeMicros >= Time::fixedDeltaTimeMicros){
             robot->FixedUpdate();
-            lastUpdateTimeMicros = Time::currentTimeMicros;
+            fixedUpsCounter += 1;
+
+            // add fixed delta time (prevents UPS drift)
+            lastUpdateTimeMicros += Time::fixedDeltaTimeMicros;
+
+            // prevent frame debt buildup if actual UPS drops below target UPS
+            if(Time::currentTimeMicros - lastUpdateTimeMicros >= Time::fixedDeltaTimeMicros){
+                LogDebug("Main", "FixedUpdate frame drift prevention");
+                lastUpdateTimeMicros = Time::currentTimeMicros;
+            }
+
         }
 
         // update status
-        fpsCounter++;
+        upsCounter++;
         if(statusTimer.IsFinished()){
             statusTimer.Restart(true);
-            fps = (float) fpsCounter / statusTimerInterval;
-            float fixedDeltaTimeUsage = (float)longestDeltaTimeMicros/(float)Time::fixedDeltaTimeMicros;
+            ups = (float) upsCounter / statusTimerInterval;
+            fixedUps = (float) fixedUpsCounter / statusTimerInterval;
+            float capacity = (float)longestDeltaTimeMicros/(float)Time::fixedDeltaTimeMicros;
+            float totalSleepTime = (float) totalSleepTimeMicros * 1.0e-6;
             LogInfo("Main", iLog 
-                << "FPS=" << fps << ", "
-                << "LongestFrame=" << (longestDeltaTimeMicros*1.0e-3f) << "ms, "
-                << "FDTU=" << (fixedDeltaTimeUsage*100.0f) << "%, "
+                << "UPS=" << ups << ", "
+                << "FixedUPS=" << fixedUps << ", "
+                << "MaxDT=" << (longestDeltaTimeMicros*1.0e-3f) << "ms, "
+                << "Capacity=" << (capacity*100.0f) << "%, " // capacity = LongestDeltaTime / FixedDeltaTime
+                << "Sleep=" << (totalSleepTime/statusTimerInterval*100.0f) << "%, "
                 << "Clients=" << ClientManager::GetAllCients().size() << ", "
                 << "Connections=" << SocketServer::GetNumConnections() << ", "
                 << "Events=" << EventManager::eventCounterTemp << "/" << EventManager::eventCounterTotal
                 << ""
             );
+            totalSleepTimeMicros = 0;
 		    EventManager::eventCounterTemp = 0;
-            fpsCounter = 0;
+            upsCounter = 0;
+            fixedUpsCounter = 0;
             longestDeltaTimeMicros = 0;
         }
 
@@ -172,7 +191,9 @@ void run(){
 
         // wait for a short time before next loop
         if(frameDurationMicros < frameDurationTargetMicros){
-            usleep(frameDurationTargetMicros - frameDurationMicros);
+            uint64_t sleepTimeMicros = frameDurationTargetMicros - frameDurationMicros;
+            totalSleepTimeMicros += sleepTimeMicros;
+            usleep(sleepTimeMicros);
         }
 
     }

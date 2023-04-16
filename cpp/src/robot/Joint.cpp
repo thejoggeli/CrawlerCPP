@@ -72,12 +72,52 @@ bool Joint::UpdateMeasuredAngle(){
 }
 
 bool Joint::UpdateMeasuredCurrent(){
-    uint16_t iBus = servo->readIBus();
+    uint16_t iBus = servo->readCurrent();
     if(servo->getLastError()){
-        LogError("Joint", iLog << debugName << " readIBus() failed");
+        LogError("Joint", iLog << debugName << " readCurrent() failed");
         return false;
     }
-    measuredCurrent = iBus * 0.01f;
+    measuredCurrent = (float)iBus * (1000.0f / 200.0f);
+    return true;
+}
+
+bool Joint::UpdateMeasuredVoltage(){
+    uint8_t voltage = servo->readVoltage();
+    if(servo->getLastError()){
+        LogError("Joint", iLog << debugName << " readVoltage() failed");
+        return false;
+    }
+    measuredVoltage = (float)voltage * (1.0f / 200.0f);
+    return true;
+}
+
+bool Joint::UpdateMeasuredTemperature(){
+    uint8_t temperature = servo->readTemperature();
+    if(servo->getLastError()){
+        LogError("Joint", iLog << debugName << " readTemperature() failed");
+        return false;
+    }
+    measuredTemperature = (float)temperature;
+    return true;
+}
+
+bool Joint::UpdateStatusError(){
+    uint8_t statusError = servo->readStatusError();
+    if(servo->getLastError()){
+        LogError("Joint", iLog << debugName << " readStatusError() failed");
+        return false;
+    }
+    this->statusError = statusError;
+    return true;
+}
+
+bool Joint::UpdateStatusDetail(){
+    uint8_t statusDetail = servo->readStatusDetail();
+    if(servo->getLastError()){
+        LogError("Joint", iLog << debugName << " readStatusDetail() failed");
+        return false;
+    }
+    this->statusDetail = statusDetail;
     return true;
 }
 

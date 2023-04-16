@@ -266,7 +266,11 @@ class XYZServo {
     /// Uses a STAT command to read the bus current.
     ///
     /// See readStatus().
-    uint16_t readIBus();
+    uint16_t readCurrent();
+    uint8_t readTemperature();
+    uint8_t readVoltage();
+    uint8_t readStatusError();
+    uint8_t readStatusDetail();
 
     /// Sends an I-JOG command to set the target/goal position for this servo.
     ///

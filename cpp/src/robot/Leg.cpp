@@ -9,6 +9,8 @@
 
 using namespace std;
 
+// #define DEBUG_LEG_IK
+
 namespace Crawler {
 
 Leg::Leg(Robot* robot, const std::string& name){
@@ -74,36 +76,46 @@ bool Leg::IKExact(const Eigen::Vector3f& Q, float phi, float angles_out[4]){
         } else if(v < -1.0f && v > -1.0001f){
             v = -1.0f;
         } else {
-            // LogDebug("Leg", iLog << "v out of limits " << v);
+            #ifdef DEBUG_LEG_IK
+                LogDebug("Leg", iLog << "v out of limits " << v);
+            #endif
             return false;
         }
     }
     
     float a2 = -acos(v); 
-    a2 = Mathf::angleToSymmetric(a2);
+    a2 = Mathf::AngleToSymmetric(a2);
     if(a2 < joints[2]->limitMin || a2 > joints[2]->limitMax){
-        // LogDebug("Leg", iLog << "a2 out of limits " << a2 * RAD_2_DEGf);
+        #ifdef DEBUG_LEG_IK
+            LogDebug("Leg", iLog << "a2 out of limits " << a2 * RAD_2_DEGf);
+        #endif
         return false;
     }
 
     float a1 = atan2(z, xy) - atan2(L2 * sin(a2), L1 + L2 * cos(a2));
-    a1 = Mathf::angleToSymmetric(a1);
+    a1 = Mathf::AngleToSymmetric(a1);
     if(a1 < joints[1]->limitMin || a1 > joints[1]->limitMax){
-        // LogDebug("Leg", iLog << "a1 out of limits " << a1 * RAD_2_DEGf);
+        #ifdef DEBUG_LEG_IK
+            LogDebug("Leg", iLog << "a  1 out of limits " << a1 * RAD_2_DEGf);
+        #endif
         return false;
     }
 
     float a3 = phi - a1 - a2 - PIf * 0.5f;
-    a3 = Mathf::angleToSymmetric(a3);
+    a3 = Mathf::AngleToSymmetric(a3);
     if(a3 < joints[3]->limitMin || a3 > joints[3]->limitMax){
-        // LogDebug("Leg", iLog << "a3 out of limits " << a3 * RAD_2_DEGf);
+        #ifdef DEBUG_LEG_IK
+            LogDebug("Leg", iLog << "a3 out of limits " << a3 * RAD_2_DEGf);
+        #endif
         return false;
     }
 
     float a0 = atan2(Q[1], Q[0]);
-    a0 = Mathf::angleToSymmetric(a0);
+    a0 = Mathf::AngleToSymmetric(a0);
     if(a0 < joints[0]->limitMin || a0 > joints[0]->limitMax){
-        // LogDebug("Leg", iLog << "a0 out of limits " << a0 * RAD_2_DEGf);
+        #ifdef DEBUG_LEG_IK
+            LogDebug("Leg", iLog << "a0 out of limits " << a0 * RAD_2_DEGf);
+        #endif
         return false;
     }
     

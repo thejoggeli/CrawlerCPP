@@ -6,7 +6,6 @@
 
 namespace Crawler {
 
-
 uint64_t Time::fixedDeltaTimeMicros = 0;
 float Time::fixedDeltaTime = 0.0f;
 

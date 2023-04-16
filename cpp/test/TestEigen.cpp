@@ -2,11 +2,13 @@
 #include "Eigen/Geometry"
 #include <iostream>
 #include "core/Time.h"
+#include "math/Mathf.h"
+#include "core/Log.h"
 
 using namespace std;
 using namespace Crawler;
 
-int main(){
+void testSpeed(){
 
     Time::Start();
 
@@ -35,6 +37,36 @@ int main(){
     cout << "t_duration: " << t_duration << endl;
     cout << "operations: " << operations << endl;
     cout << "operations_per_second: " << operations_per_second << endl;
+
+}
+
+int main(){
+
+    // testSpeed();
+
+    LogDebug("Test", iLog <<  (RIGHT_2_UNITY_3x3f * Eigen::Vector3f(1,0,0)).transpose());
+    LogDebug("Test", iLog <<  (RIGHT_2_UNITY_3x3f * Eigen::Vector3f(0,1,0)).transpose());
+    LogDebug("Test", iLog <<  (RIGHT_2_UNITY_3x3f * Eigen::Vector3f(0,0,1)).transpose());
+
+    Eigen::Vector3f vec(1, 0, 0);
+    vec = RIGHT_2_UNITY_3x3f * vec;
+    vec[1] = 2;
+    vec = UNITY_2_RIGHT_3x3f * vec;
+
+    LogDebug("Test", iLog << vec.transpose());
+
+    Eigen::Vector3f forward(1,1,1);
+    Eigen::Vector3f upwards(0,0,1);
+    Eigen::Matrix3f matrix = Mathf::LookRotationNew(forward, upwards);
+    Eigen::Vector3f result = matrix * Eigen::Vector3f(1,0,0);
+
+    LogDebug("Test", iLog << "matrix:\n" << matrix);
+    LogDebug("Test", iLog << "forward: " << forward.transpose());
+    LogDebug("Test", iLog << "upwards: " << upwards.transpose());
+    LogDebug("Test", iLog << "result: " << result.transpose());
+
+
+
 
     // done
     return EXIT_SUCCESS;

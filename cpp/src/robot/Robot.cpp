@@ -53,7 +53,7 @@ Robot::Robot(){
         legs.push_back(leg);
 
         // set leg joint lengths
-        leg->joints[0]->length = 0.068;
+        leg->joints[0]->length = 0.052;
         leg->joints[1]->length = 0.068;
         leg->joints[2]->length = 0.068;
         leg->joints[3]->length = 0.096;
@@ -72,25 +72,27 @@ Robot::Robot(){
     }
 
     // set legs hip transform
-    float hip_diagonal = 0.155*0.5;
-    float hip_dx = hip_diagonal * SQRT2_INVf;
-    float hip_dy = hip_diagonal * SQRT2_INVf;
+    float hip_dx = 0.06f;
+    float hip_dy = 0.06f;
     float hip_dz = 0.0f;
+    legs[0]->SetHipTransform(Eigen::Vector3f(+hip_dx, +hip_dy, hip_dz), 0.0f * DEG_2_RADf);
+    legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 180.0f * DEG_2_RADf);
+    legs[2]->SetHipTransform(Eigen::Vector3f(-hip_dx, -hip_dy, hip_dz), 180.0f * DEG_2_RADf);
+    legs[3]->SetHipTransform(Eigen::Vector3f(+hip_dx, -hip_dy, hip_dz), 0.0f * DEG_2_RADf);
 
-    legs[0]->SetHipTransform(Eigen::Vector3f(+hip_dx, +hip_dy, hip_dz), 45.0f * DEG_2_RADf);
-    legs[2]->SetHipTransform(Eigen::Vector3f(-hip_dx, -hip_dy, hip_dz), -135.0f * DEG_2_RADf);
-    legs[3]->SetHipTransform(Eigen::Vector3f(+hip_dx, -hip_dy, hip_dz), -45.0f * DEG_2_RADf);
+    legs[0]->joints[0]->limitMin = 0.0f * DEG_2_RADf;
+    legs[0]->joints[0]->limitMax = 90.0f * DEG_2_RADf;
+    legs[1]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
+    legs[1]->joints[0]->limitMax = 0.0f * DEG_2_RADf;
+    legs[2]->joints[0]->limitMin = 0.0f * DEG_2_RADf;
+    legs[2]->joints[0]->limitMax = 90.0f * DEG_2_RADf;
+    legs[3]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
+    legs[3]->joints[0]->limitMax = 0.0f * DEG_2_RADf;
 
     // set new leg hip transform and lengths
-    hip_diagonal = 0.068;
-    hip_dx = hip_diagonal * SQRT2_INVf;
-    hip_dy = hip_diagonal * SQRT2_INVf;
-    hip_dz = 0.0f;
-    legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 135.0f * DEG_2_RADf);
     legs[1]->joints[0]->length = 0.068f;
     legs[1]->joints[1]->length = 0.078f;
     legs[1]->joints[2]->length = 0.078f;
-    // legs[1]->joints[3]->length = 0.027f + 0.063f + 0.01f;
     legs[1]->joints[3]->length = 0.068f;
     legs[1]->joints[1]->limitMin = -100.0f * DEG_2_RADf;
     legs[1]->joints[1]->limitMax = +100.0f * DEG_2_RADf;
@@ -152,8 +154,8 @@ void Robot::FixedUpdate(){
     brain->FixedUpdate();
 }
 
-void Robot::RebootServos(float sleepTime = 3.5f){
-    LogInfo("Robot", iLog << "rebooting servos (sleepTime=" << sleepTime << ")");
+void Robot::RebootServos(float sleepTime){
+    LogInfo("Robot", iLog << "RebootServos(sleepTime=" << sleepTime << ")");
     for(XYZServo* servo : jointServos){
         servo->reboot();
     }
@@ -161,6 +163,7 @@ void Robot::RebootServos(float sleepTime = 3.5f){
 }
 
 bool Robot::PingServos(){
+    LogInfo("Robot", "PingServos()");
     bool result = true;
     for(Joint* joint : jointsList){
         joint->PingServo();
@@ -168,15 +171,17 @@ bool Robot::PingServos(){
             result = false;
         }
     }
+    if(result){
+        LogError("Robot", "PingServos() success");
+    } else {
+        LogInfo("Robot", "PingServos() failed");
+    }
     return result;
 }
 
 void Robot::Startup(){
 
-    LogInfo("Robot", "startup begin");
-
-    // reboot servos
-    RebootServos(3.5f);
+    LogInfo("Robot", "Startup()");
 
     // set LED colors
     SetServosLedPolicyUser();
@@ -187,11 +192,14 @@ void Robot::Startup(){
     // move servos to initial position
     LogInfo("Robot", "moving to default position");
     for(Leg* leg : legs){
-        leg->joints[0]->SetTargetAngle(DEG_2_RADf * 0.0f);
         leg->joints[1]->SetTargetAngle(DEG_2_RADf * -45.0f);
         leg->joints[2]->SetTargetAngle(DEG_2_RADf * +90.0f);
         leg->joints[3]->SetTargetAngle(DEG_2_RADf * +45.0f);
     }
+    legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * 45.0f);
+    legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
+    legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * 45.0f);
+    legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
     MoveJointsToTargetSync(2.0f);
     Time::Sleep(2.5f);
 
@@ -202,7 +210,6 @@ void Robot::Startup(){
         leg->joints[2]->SetServoLedColor(0, 0, 1, 0);
         leg->joints[3]->SetServoLedColor(1, 1, 0, 0);
     }
-    // SetServosLedPolicySystem();
 
     // set servo last target angles to measured angles
     for(Joint* joint : jointsList){
@@ -227,12 +234,102 @@ void Robot::SetServosLedPolicySystem(){
 
 void Robot::Shutdown(){
 
-    LogInfo("Robot", "shutdown");
+    LogInfo("Robot", "Shutdown()");
 
     for(Joint* joint : jointsList){
         joint->TorqueOff();
     }
 
+}
+
+void Robot::UpdateAndPrintServosStatus(){
+    LogInfo("Robot", "Status Error:");
+    char buffer[100];
+    for(Joint* joint : jointsList){
+        joint->UpdateStatusError();
+    }
+    for(Leg* leg : legs){
+        sprintf(buffer, "%s %02X %02X %02X %02X", leg->name.c_str(),
+            leg->joints[0]->statusError,
+            leg->joints[1]->statusError,
+            leg->joints[2]->statusError,
+            leg->joints[3]->statusError
+        );
+        LogInfo("Robot", buffer);
+    }
+    LogInfo("Robot", "Status Detail:");
+    for(Joint* joint : jointsList){
+        joint->UpdateStatusDetail();
+    }
+    for(Leg* leg : legs){
+        sprintf(buffer, "%s %02X %02X %02X %02X", leg->name.c_str(),
+            leg->joints[0]->statusDetail,
+            leg->joints[1]->statusDetail,
+            leg->joints[2]->statusDetail,
+            leg->joints[3]->statusDetail
+        );
+        LogInfo("Robot", buffer);
+    }
+    LogInfo("Robot", "Measured Angles (deg):");
+    for(Joint* joint : jointsList){
+        joint->UpdateMeasuredAngle();
+    }
+    for(Leg* leg : legs){
+        sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
+            leg->joints[0]->measuredAngle * RAD_2_DEGf,
+            leg->joints[1]->measuredAngle * RAD_2_DEGf,
+            leg->joints[2]->measuredAngle * RAD_2_DEGf,
+            leg->joints[3]->measuredAngle * RAD_2_DEGf
+        );
+        LogInfo("Robot", buffer);
+    }
+    LogInfo("Robot", "Measured Temperature (degC):");
+    for(Joint* joint : jointsList){
+        joint->UpdateMeasuredTemperature();
+    }
+    for(Leg* leg : legs){
+        sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
+            leg->joints[0]->measuredTemperature,
+            leg->joints[1]->measuredTemperature,
+            leg->joints[2]->measuredTemperature,
+            leg->joints[3]->measuredTemperature
+        );
+        LogInfo("Robot", buffer);
+    }
+    LogInfo("Robot", "Measured Voltage (V):");
+    for(Joint* joint : jointsList){
+        joint->UpdateMeasuredVoltage();
+    }
+    for(Leg* leg : legs){
+        sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
+            leg->joints[0]->measuredVoltage,
+            leg->joints[1]->measuredVoltage,
+            leg->joints[2]->measuredVoltage,
+            leg->joints[3]->measuredVoltage
+        );
+        LogInfo("Robot", buffer);
+    }
+    float currentSumRobot = 0;
+    for(Joint* joint : jointsList){
+        joint->UpdateMeasuredCurrent();
+        currentSumRobot += joint->measuredCurrent;
+    }
+    LogInfo("Robot", "Measured Current (mA):");
+    for(Leg* leg : legs){
+        float currentSumLeg = 0;
+        for(Joint* joint : leg->joints){
+            currentSumLeg += joint->measuredCurrent;
+        }
+        sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f   sum = %6.1f", leg->name.c_str(),
+            leg->joints[0]->measuredCurrent,
+            leg->joints[1]->measuredCurrent,
+            leg->joints[2]->measuredCurrent,
+            leg->joints[3]->measuredCurrent,
+            currentSumLeg
+        );
+        LogInfo("Robot", buffer);
+    }
+    LogInfo("Robot", iLog << "Total Current (mA): " << currentSumRobot);
 }
 
 }

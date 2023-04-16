@@ -6,6 +6,8 @@
 using namespace std;
 using namespace Crawler;
 
+namespace Crawler {
+
 HardwareButton::HardwareButton(unsigned int pin, uint64_t debounceTimeMicros){
     this->pin = pin;
     this->debounceTimeMicros = debounceTimeMicros;
@@ -42,4 +44,4 @@ void HardwareButton::Cleanup(){
     GPIO::cleanup(pin);
 }
 
-
+}

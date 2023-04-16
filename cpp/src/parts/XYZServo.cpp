@@ -110,17 +110,42 @@ XYZServoStatus XYZServo::readStatus() {
     return status;
 }
 
+uint8_t XYZServo::readStatusError() {
+    uint8_t statusError;
+    ramRead(48, (uint8_t *)&statusError, 1);
+    return statusError;
+}
+
+uint8_t XYZServo::readStatusDetail() {
+    uint8_t statusDetail;
+    ramRead(49, (uint8_t *)&statusDetail, 1);
+    return statusDetail;
+}
+
 uint16_t XYZServo::readPosition() {
     uint16_t pos;
     ramRead(60, (uint8_t *)&pos, 2);
     return pos;
 }
 
-uint16_t XYZServo::readIBus() {
+uint16_t XYZServo::readCurrent() {
     uint16_t iBus;
     ramRead(66, (uint8_t *)&iBus, 2);
     return iBus;
 }
+
+uint8_t XYZServo::readVoltage() {
+    uint8_t voltage;
+    ramRead(54, (uint8_t *)&voltage, 1);
+    return voltage;
+}
+
+uint8_t XYZServo::readTemperature() {
+    uint8_t temperature;
+    ramRead(55, (uint8_t *)&temperature, 1);
+    return temperature;
+}
+
 
 void XYZServo::setPosition(const uint16_t position, uint8_t playtime) { 
     jog_data_buffer[0] = position & 0xFF;

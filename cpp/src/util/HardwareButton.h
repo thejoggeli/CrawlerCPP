@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+namespace Crawler {
+
 class HardwareButton {
 public:
 
@@ -19,3 +21,5 @@ public:
     void Cleanup();
 
 };
+
+}

@@ -1,4 +1,3 @@
-
 include_directories(
     "${CMAKE_CURRENT_LIST_DIR}/src"
     "${CMAKE_CURRENT_LIST_DIR}/libs"
@@ -7,32 +6,8 @@ include_directories(
 find_package(JetsonGPIO)
 find_package(Seasocks)
 
-add_executable (
-    TestTime
-    test/TestTime.cpp
-    src/core/Time.cpp
-)
-set_property(TARGET TestTime PROPERTY CXX_STANDARD 20)
-
-add_executable (
-    TestEigen
-    test/TestEigen.cpp
-    src/core/Time.cpp
-)
-set_property(TARGET TestEigen PROPERTY CXX_STANDARD 20)
-
-add_executable (
-    TestSerialCom
-    test/TestSerialCom.cpp
-    libs/serialib/Serialib.cpp
-    src/comm/SerialStream.cpp
-    src/parts/XYZServo.cpp
-    src/core/Time.cpp
-)
-set_property(TARGET TestSerialCom PROPERTY CXX_STANDARD 20)
-
-add_executable (
-    CrawlerCPP
+set(
+    CRAWLER_SOURCE_FILES
     src/CrawlerCPP.cpp
     libs/serialib/Serialib.cpp
     src/comm/SerialStream.cpp
@@ -59,8 +34,42 @@ add_executable (
     src/remote/ClientManager.cpp
     src/events/EventManager.cpp
     src/events/Event.cpp
+    src/crawler/Main.cpp
 )
-set_property(TARGET CrawlerCPP PROPERTY CXX_STANDARD 20)
-target_link_libraries(CrawlerCPP JetsonGPIO::JetsonGPIO)
-target_link_libraries(CrawlerCPP Seasocks::seasocks)
+
+# seasocks has to be built with:
+# $ mkdir build && cd build
+# $ cmake -D SEASOCKS_SHARED=ON ..
+# $ sudo make install
+find_library(
+	libseasocks_location
+	NAMES libseasocks.so
+	PATHS /usr/local/lib/ /usr/lib
+)
+message("libseasocks_location: " ${libseasocks_location})
+add_library(libseasocks SHARED IMPORTED)
+set_property(
+	TARGET libseasocks
+	PROPERTY IMPORTED_LOCATION
+	${libseasocks_location}
+)
+
+# make library
+add_library(libCrawler SHARED ${CRAWLER_SOURCE_FILES})
+set_property(TARGET libCrawler PROPERTY CXX_STANDARD 20)
+set_property(TARGET libCrawler PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+target_link_libraries(libCrawler JetsonGPIO::JetsonGPIO)
+target_link_libraries(libCrawler libseasocks)
+
+function(CreateCrawlerExecutable ExecutableName ExecutableMain)
+    add_executable (${ExecutableName} ${ExecutableMain})
+    set_property(TARGET ${ExecutableName} PROPERTY CXX_STANDARD 20)
+    target_link_libraries(${ExecutableName} libCrawler)
+endfunction()
+
+CreateCrawlerExecutable(TestTime "test/TestTime.cpp")
+CreateCrawlerExecutable(TestEigen "test/TestEigen.cpp")
+CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")
+CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
+
 

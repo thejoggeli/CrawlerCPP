@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Crawler {
+
 class MonoLED {
 public:
 
@@ -13,3 +15,5 @@ public:
     void Cleanup();
 
 };
+
+}

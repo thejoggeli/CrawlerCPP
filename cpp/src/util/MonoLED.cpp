@@ -2,7 +2,7 @@
 #include <JetsonGPIO.h>
 #include "core/Log.h"
 
-using namespace Crawler;
+namespace Crawler {
 
 MonoLED::MonoLED(unsigned int pin){
     this->pin = pin;
@@ -33,5 +33,4 @@ void MonoLED::Cleanup(){
     GPIO::cleanup(pin);
 }
 
-
-
+}

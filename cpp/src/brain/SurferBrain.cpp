@@ -45,46 +45,16 @@ void SurferBrain::Update(){
     }
 
     if(client){
+
+        if(client->OnKeyDown(KeyCode::Select)){
+            robot->UpdateAndPrintServosStatus();
+        }
+
         if(client->OnKeyDown(KeyCode::A)){
             surfMode = (surfMode+1)%3;
-        }
-        if(client->OnKeyDown(KeyCode::B)){
-            stanceMode = (stanceMode+1)%2;
+            LogInfo("SurferBrain", iLog << "Surf Mode is now " << surfMode);
         }
 
-        if(stanceMode == 0){
-
-            // move base up and down
-            if(client->IsKeyDown(KeyCode::Down)){
-                SetSurfTranslationTarget(surfTranslationTarget[0], surfTranslationTarget[1], surfTranslationTarget[2] - 0.05f * Time::deltaTime);
-            } else if(client->IsKeyDown(KeyCode::Up)){
-                SetSurfTranslationTarget(surfTranslationTarget[0], surfTranslationTarget[1], surfTranslationTarget[2] + 0.05f * Time::deltaTime);
-            }
-
-            // change target phi angles
-            if(client->IsKeyDown(KeyCode::Left)){
-                stancePhi -= 25.0f * Time::deltaTime * DEG_2_RADf;
-            } else if(client->IsKeyDown(KeyCode::Right)){
-                stancePhi += 25.0f * Time::deltaTime * DEG_2_RADf;
-            }
-
-        } else if(stanceMode == 1){
-
-            // narrow or widen stance 
-            if(client->IsKeyDown(KeyCode::Down)){
-                SetStance(stanceXY - 0.05f * Time::deltaTime, stanceZ, stanceHipAngle, stancePhi);
-            } else if(client->IsKeyDown(KeyCode::Up)){
-                SetStance(stanceXY + 0.05f * Time::deltaTime, stanceZ, stanceHipAngle, stancePhi);
-            }
-
-            // change stance hip angle 
-            if(client->IsKeyDown(KeyCode::Left)){
-                SetStance(stanceXY, stanceZ, stanceHipAngle - 25.0f * Time::deltaTime * DEG_2_RADf, stancePhi);
-            } else if(client->IsKeyDown(KeyCode::Right)){
-                SetStance(stanceXY, stanceZ, stanceHipAngle + 25.0f * Time::deltaTime * DEG_2_RADf, stancePhi);
-            }
-
-        }
     }
     
 
@@ -106,19 +76,67 @@ void SurferBrain::FixedUpdate(){
         Eigen::Vector2f input = client->GetJoystickPosition(KeyCode::LeftJoystick);
 
         if(surfMode == 0){
+
             float rx = input[0] * 20.0f * DEG_2_RADf;
             float ry = input[1] * 20.0f * DEG_2_RADf;
             // LogDebug("SurferBrain", iLog << "rx=" << rx << ", ry=" << ry);
             SetSurfRotationTarget(rx, ry, 0.0f);
+
+            // move base up and down
+            if(client->IsKeyDown(KeyCode::Down)){
+                SetSurfTranslationTarget(surfTranslationTarget[0], surfTranslationTarget[1], surfTranslationTarget[2] - 0.05f * Time::fixedDeltaTime);
+            } else if(client->IsKeyDown(KeyCode::Up)){
+                SetSurfTranslationTarget(surfTranslationTarget[0], surfTranslationTarget[1], surfTranslationTarget[2] + 0.05f * Time::fixedDeltaTime);
+            }
+
+            // change target phi angles
+            if(client->IsKeyDown(KeyCode::Left)){
+                stancePhi -= 25.0f * Time::fixedDeltaTime * DEG_2_RADf;
+            } else if(client->IsKeyDown(KeyCode::Right)){
+                stancePhi += 25.0f * Time::fixedDeltaTime * DEG_2_RADf;
+            }
+
         } else if(surfMode == 1) {
+
             float dx = input[1] *   0.05f;
             float dy = -input[0] * 0.05f;
             // LogDebug("SurferBrain", iLog << "dx=" << dx << ", dy=" << dy);
             SetSurfTranslationTarget(dx, dy, surfTranslationTarget[2]);
+
+            // narrow or widen stance 
+            if(client->IsKeyDown(KeyCode::Down)){
+                SetStance(stanceXY - 0.05f * Time::fixedDeltaTime, stanceZ, stanceHipAngle, stancePhi);
+            } else if(client->IsKeyDown(KeyCode::Up)){
+                SetStance(stanceXY + 0.05f * Time::fixedDeltaTime, stanceZ, stanceHipAngle, stancePhi);
+            }
+
+            // change stance hip angle 
+            if(client->IsKeyDown(KeyCode::Left)){
+                SetStance(stanceXY, stanceZ, stanceHipAngle - 25.0f * Time::fixedDeltaTime * DEG_2_RADf, stancePhi);
+            } else if(client->IsKeyDown(KeyCode::Right)){
+                SetStance(stanceXY, stanceZ, stanceHipAngle + 25.0f * Time::fixedDeltaTime * DEG_2_RADf, stancePhi);
+            }
+
         } else if(surfMode == 2){
-            float rz = input[0] * 30.0f * DEG_2_RADf;
+            // float rz = input[0] * 30.0f * DEG_2_RADf;
             // SetSurfRotationTarget(rx, ry, 0.0f);
-            SetSurfRotationTarget(0.0f, 0.0f, rz);
+            // SetSurfRotationTarget(0.0f, 0.0f, rz);
+            float dx = 0.5f;
+            float dy = -input[0] * 0.5f;
+            float dz = -input[1] * 0.5f;
+            float rx = surfRotationTarget[0];
+            float ry = atan2(dz, dx);
+            float rz = atan2(dy, dx);
+
+            // change stance hip angle 
+            if(client->IsKeyDown(KeyCode::Left)){
+                rx -= Time::fixedDeltaTime * DEG_2_RADf * 20.0f;
+            } else if(client->IsKeyDown(KeyCode::Right)){
+                rx += Time::fixedDeltaTime * DEG_2_RADf * 20.0f;
+            }
+            
+            SetSurfRotationTarget(rx, ry, rz);
+
         }
 
     }

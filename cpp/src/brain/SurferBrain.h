@@ -60,6 +60,7 @@ public:
 
     void SetSurfRotationTarget(float x, float y, float z);
     void SetSurfRotationTarget(const Eigen::Vector3f& rotation);
+    void SetSurfRotationTarget(const Eigen::Matrix3f& rotation);
 
     void SetSurfTranslationSpeed(float speed);
     void SetSurfRotationSpeed(float speed);

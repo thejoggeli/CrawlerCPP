@@ -48,8 +48,12 @@ public:
 
     float servoAngleScale = 1.0f;
 
-    float measuredAngle = 0.0f;
-    float measuredCurrent = 0.0f;
+    float measuredAngle = 0.0f; // rad
+    float measuredCurrent = 0.0f; // mA
+    float measuredTemperature = 0.0f; // degC
+    float measuredVoltage = 0.0f; // V
+    uint8_t statusDetail = 0;
+    uint8_t statusError;
     
     XYZServo* servo = nullptr;
     bool lastPingServoResult = false;
@@ -67,6 +71,10 @@ public:
 
     bool UpdateMeasuredAngle();
     bool UpdateMeasuredCurrent();
+    bool UpdateMeasuredTemperature();
+    bool UpdateMeasuredVoltage();
+    bool UpdateStatusError();
+    bool UpdateStatusDetail();
 
     void SetServoLedPolicyUser();
     void SetServoLedPolicySystem();

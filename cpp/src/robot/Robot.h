@@ -42,18 +42,18 @@ public:
     void SetBrain(Brain* brain);
 
     void Update();
-
     void FixedUpdate();
-
-    bool PingServos();
 
     void Startup();
     void Shutdown();
-
-    void RebootServos(float sleepTime);
+    
+    bool PingServos();
+    void RebootServos(float sleepTime = 3.5f);
 
     void SetServosLedPolicyUser();
     void SetServosLedPolicySystem();
+
+    void UpdateAndPrintServosStatus();
 
 };
 

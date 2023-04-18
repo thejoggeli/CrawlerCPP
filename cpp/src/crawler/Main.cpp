@@ -14,6 +14,7 @@
 #include "remote/ClientManager.h"
 #include "events/EventManager.h"
 #include "brain/SurferBrain.h"
+#include "brain/GaitBrain.h"
 
 using namespace std;
 using namespace Crawler;
@@ -158,7 +159,8 @@ bool Main::Run(){
     // start up robot
     robot->Startup();
     robot->UpdateAndPrintServosStatus();
-    robot->SetBrain(new SurferBrain());
+    // robot->SetBrain(new SurferBrain());
+    robot->SetBrain(new GaitBrain());
 
     // the beginning of time
     Time::Start();

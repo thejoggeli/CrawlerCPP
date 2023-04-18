@@ -80,13 +80,13 @@ void SurferBrain::FixedUpdate(){
             float rx = input[0] * 20.0f * DEG_2_RADf;
             float ry = input[1] * 20.0f * DEG_2_RADf;
             // LogDebug("SurferBrain", iLog << "rx=" << rx << ", ry=" << ry);
-            SetSurfRotationTarget(rx, ry, 0.0f);
+            SetBodyRotationTarget(rx, ry, 0.0f);
 
             // move base up and down
             if(client->IsKeyDown(KeyCode::Down)){
-                SetSurfTranslationTarget(surfTranslationTarget[0], surfTranslationTarget[1], surfTranslationTarget[2] - 0.05f * Time::fixedDeltaTime);
+                SetBodyTranslationTarget(bodyTranslationTarget[0], bodyTranslationTarget[1], bodyTranslationTarget[2] - 0.05f * Time::fixedDeltaTime);
             } else if(client->IsKeyDown(KeyCode::Up)){
-                SetSurfTranslationTarget(surfTranslationTarget[0], surfTranslationTarget[1], surfTranslationTarget[2] + 0.05f * Time::fixedDeltaTime);
+                SetBodyTranslationTarget(bodyTranslationTarget[0], bodyTranslationTarget[1], bodyTranslationTarget[2] + 0.05f * Time::fixedDeltaTime);
             }
 
             // change target phi angles
@@ -101,7 +101,7 @@ void SurferBrain::FixedUpdate(){
             float dx = input[1] *   0.05f;
             float dy = -input[0] * 0.05f;
             // LogDebug("SurferBrain", iLog << "dx=" << dx << ", dy=" << dy);
-            SetSurfTranslationTarget(dx, dy, surfTranslationTarget[2]);
+            SetBodyTranslationTarget(dx, dy, bodyTranslationTarget[2]);
 
             // narrow or widen stance 
             if(client->IsKeyDown(KeyCode::Down)){
@@ -119,12 +119,12 @@ void SurferBrain::FixedUpdate(){
 
         } else if(surfMode == 2){
             // float rz = input[0] * 30.0f * DEG_2_RADf;
-            // SetSurfRotationTarget(rx, ry, 0.0f);
-            // SetSurfRotationTarget(0.0f, 0.0f, rz);
+            // SetbodyRotationTarget(rx, ry, 0.0f);
+            // SetbodyRotationTarget(0.0f, 0.0f, rz);
             float dx = 0.5f;
             float dy = -input[0] * 0.5f;
             float dz = -input[1] * 0.5f;
-            float rx = surfRotationTarget[0];
+            float rx = bodyRotationTarget[0];
             float ry = atan2(dz, dx);
             float rz = atan2(dy, dx);
 
@@ -135,16 +135,18 @@ void SurferBrain::FixedUpdate(){
                 rx += Time::fixedDeltaTime * DEG_2_RADf * 20.0f;
             }
             
-            SetSurfRotationTarget(rx, ry, rz);
+            SetBodyRotationTarget(rx, ry, rz);
 
         }
 
     }
 
+    float footAngles[4] = {stancePhi, stancePhi, stancePhi, stancePhi};
+
     // AutoSurf();
     SurfTowardsTarget();
-    UpdateSurfTransform();
-    ApplySurfToJoints();
+    UpdateBodyTransform();
+    ApplyPoseToJoints(footPositions, footAngles, bodyTransform, Time::fixedDeltaTime);
 
 }
 
@@ -168,83 +170,17 @@ void SurferBrain::AutoSurf(){
     float ry = sin(PI2f * surfFrequency * Time::currentTime * 1.0f) * 20.0f * DEG_2_RADf;
     // float rz = sin(PI2f * surf_freq * Time::currentTime * 2.0f) * 60.0f * DEG_2_RADf;
 
-    SetSurfTranslationTarget(dx, dy, dz);
-    SetSurfRotationTarget(rx, ry, rz);
+    SetBodyTranslationTarget(dx, dy, dz);
+    SetBodyRotationTarget(rx, ry, rz);
     
 }
 
-bool SurferBrain::ApplySurfToJoints(){
-
-    // LogDebug("SurferBrain", iLog << stancePhi * RAD_2_DEGf);
-
-    float outAngles[4][4];
-
-    bool ikSuccess[4];
-    bool ikSuccessAll = true;
-    
-    for(int i = 0; i < 4; i++){
-
-        Leg* leg = robot->legs[i];
-
-        float oldAngles[4] = {
-            leg->joints[0]->lastTargetAngle,
-            leg->joints[1]->lastTargetAngle,
-            leg->joints[2]->lastTargetAngle,
-            leg->joints[3]->lastTargetAngle,
-        };
-
-        float oldPhi = leg->FKPhi(oldAngles);
-
-        Eigen::Vector3f footPosTransformed = stancePosFeetRelative[i];
-        footPosTransformed = leg->hipTransform * footPosTransformed;
-        // footPosTransformed = pivotTransformInverse * footPosTransformed;
-        footPosTransformed = surfTransformInverse * footPosTransformed;
-        // footPosTransformed = pivotTransform * footPosTransformed;
-        footPosTransformed = leg->hipTransformInverse * footPosTransformed;
-
-        bool result = leg->IKSearch(footPosTransformed, stancePhi, oldPhi, oldAngles, outAngles[i]);
-
-        ikSuccess[i] = result;        
-        if(!result){
-            ikSuccessAll = false;
-        }
-
-    }
-
-    if(ikSuccessAll){
-        // IK successful
-        // set new target postion for all servos
-        int k = 0;
-        for(int i = 0; i < 4; i++){
-            for(int j = 0; j < 4; j++){
-                float angle = outAngles[i][j];
-                assert(!isnan(angle));
-                robot->legs[i]->joints[j]->SetTargetAngle(angle);
-            }
-        }
-        // move servos to target position sync
-        robot->MoveJointsToTargetSync(Time::fixedDeltaTime);
-    } else {
-        // IK failed
-        LogDebug("SurferBrain", "inverse kinematics search failed");
-    }
-
-    // set IK servo colors
-    for(int i = 0; i < 4; i++){
-        Leg* leg = robot->legs[i];
-        int r, g, b, w;
-        if(ikSuccess[i]){
-            r = 0; g = 1; b = 1; w = 0;
-        } else {
-            r = 1; g = 1; b = 0; w = 0;
-        }
-        for(Joint* joint : leg->joints){
-            joint->SetServoLedColor(r, g, b, w);
-        }
-    }
-    
-    return ikSuccessAll;
-    
+void SurferBrain::UpdateBodyTransform(){
+    bodyTransform.setIdentity();
+    bodyTransform.rotate(Eigen::AngleAxisf(bodyRotation[1], Eigen::Vector3f::UnitY()));
+    bodyTransform.rotate(Eigen::AngleAxisf(bodyRotation[0], Eigen::Vector3f::UnitX()));
+    bodyTransform.rotate(Eigen::AngleAxisf(bodyRotation[2], Eigen::Vector3f::UnitZ()));
+    bodyTransform.translate(bodyTranslation);
 }
 
 void SurferBrain::Destroy(){
@@ -256,10 +192,10 @@ void SurferBrain::SetStance(float xy, float z, float hipAngle, float phi){
     this->stanceZ = z;
     this->stanceHipAngle = hipAngle;
     this->stancePhi = phi; 
-    this->stancePosFeetRelative[0] = Eigen::Vector3f(xy * cos(+hipAngle), xy * sin(+hipAngle), z);
-    this->stancePosFeetRelative[1] = Eigen::Vector3f(xy * cos(-hipAngle), xy * sin(-hipAngle), z);
-    this->stancePosFeetRelative[2] = Eigen::Vector3f(xy * cos(+hipAngle), xy * sin(+hipAngle), z);
-    this->stancePosFeetRelative[3] = Eigen::Vector3f(xy * cos(-hipAngle), xy * sin(-hipAngle), z);
+    this->footPositions[0] = robot->legs[0]->hipTransform * Eigen::Vector3f(xy * cos(+hipAngle), xy * sin(+hipAngle), z);
+    this->footPositions[1] = robot->legs[1]->hipTransform * Eigen::Vector3f(xy * cos(-hipAngle), xy * sin(-hipAngle), z);
+    this->footPositions[2] = robot->legs[2]->hipTransform * Eigen::Vector3f(xy * cos(+hipAngle), xy * sin(+hipAngle), z);
+    this->footPositions[3] = robot->legs[3]->hipTransform * Eigen::Vector3f(xy * cos(-hipAngle), xy * sin(-hipAngle), z);
 }
 
 void SurferBrain::SetPivot(const Eigen::Vector3f& pivot){
@@ -268,65 +204,56 @@ void SurferBrain::SetPivot(const Eigen::Vector3f& pivot){
     pivotTransformInverse = pivotTransform.inverse();
 }
 
-void SurferBrain::SetSurfTranslationSpeed(float speed){
-    this->surfTranslationSpeed = speed;
+void SurferBrain::SetbodyTranslationSpeed(float speed){
+    this->bodyTranslationSpeed = speed;
 }
 
-void SurferBrain::SetSurfRotationSpeed(float speed){
-    this->surfRotationSpeed = speed;
+void SurferBrain::SetbodyRotationSpeed(float speed){
+    this->bodyRotationSpeed = speed;
 }
 
-void SurferBrain::SetSurfTranslationTarget(float x, float y, float z){
-    SetSurfTranslationTarget(Eigen::Vector3f(x, y, z));
+void SurferBrain::SetBodyTranslationTarget(float x, float y, float z){
+    SetbodyTranslationTarget(Eigen::Vector3f(x, y, z));
 }
 
-void SurferBrain::SetSurfTranslationTarget(const Eigen::Vector3f& translation){
-    surfTranslationStart = surfTranslation;
-    surfTranslationTarget = translation;
-    surfTranslationDelta = surfTranslationTarget - surfTranslationStart;
-    float norm = surfTranslationDelta.norm();
-    surfTranslationTime = 0.0f;
-    surfTranslationDuration = norm/surfTranslationSpeed;
+void SurferBrain::SetbodyTranslationTarget(const Eigen::Vector3f& translation){
+    bodyTranslationStart = bodyTranslation;
+    bodyTranslationTarget = translation;
+    bodyTranslationDelta = bodyTranslationTarget - bodyTranslationStart;
+    float norm = bodyTranslationDelta.norm();
+    bodyTranslationTime = 0.0f;
+    bodyTranslationDuration = norm/bodyTranslationSpeed;
 }
 
-void SurferBrain::SetSurfRotationTarget(float x, float y, float z){
-    SetSurfRotationTarget(Eigen::Vector3f(x, y, z));
+void SurferBrain::SetBodyRotationTarget(float x, float y, float z){
+    SetbodyRotationTarget(Eigen::Vector3f(x, y, z));
 }
 
-void SurferBrain::SetSurfRotationTarget(const Eigen::Vector3f& rotation){
-    surfRotationStart = surfRotation;
-    surfRotationTarget = rotation;
-    surfRotationDelta = surfRotationTarget - surfRotationStart;
-    float norm = surfRotationDelta.norm();
-    surfRotationTime = 0.0f;
-    surfRotationDuration = norm/surfRotationSpeed;
+void SurferBrain::SetbodyRotationTarget(const Eigen::Vector3f& rotation){
+    bodyRotationStart = bodyRotation;
+    bodyRotationTarget = rotation;
+    bodyRotationDelta = bodyRotationTarget - bodyRotationStart;
+    float norm = bodyRotationDelta.norm();
+    bodyRotationTime = 0.0f;
+    bodyRotationDuration = norm/bodyRotationSpeed;
 }
 
 void SurferBrain::SurfTowardsTarget(){
 
     // move translation towards target translation
-    if(surfTranslationTime < surfTranslationDuration){
-        surfTranslationTime = min(surfTranslationDuration, surfTranslationTime + Time::fixedDeltaTime);
-        float t = surfTranslationTime / surfTranslationDuration;
-        surfTranslation = surfTranslationStart + surfTranslationDelta * t;
+    if(bodyTranslationTime < bodyTranslationDuration){
+        bodyTranslationTime = min(bodyTranslationDuration, bodyTranslationTime + Time::fixedDeltaTime);
+        float t = bodyTranslationTime / bodyTranslationDuration;
+        bodyTranslation = bodyTranslationStart + bodyTranslationDelta * t;
     }   
 
     // move rotation towards target rotation
-    if(surfRotationTime < surfRotationDuration){
-        surfRotationTime = min(surfRotationDuration, surfRotationTime + Time::fixedDeltaTime);
-        float t = surfRotationTime / surfRotationDuration;
-        surfRotation = surfRotationStart + surfRotationDelta * t;
+    if(bodyRotationTime < bodyRotationDuration){
+        bodyRotationTime = min(bodyRotationDuration, bodyRotationTime + Time::fixedDeltaTime);
+        float t = bodyRotationTime / bodyRotationDuration;
+        bodyRotation = bodyRotationStart + bodyRotationDelta * t;
     }
 
-}
-
-void SurferBrain::UpdateSurfTransform(){
-    surfTransform.setIdentity();
-    surfTransform.rotate(Eigen::AngleAxisf(surfRotation[1], Eigen::Vector3f::UnitY()));
-    surfTransform.rotate(Eigen::AngleAxisf(surfRotation[0], Eigen::Vector3f::UnitX()));
-    surfTransform.rotate(Eigen::AngleAxisf(surfRotation[2], Eigen::Vector3f::UnitZ()));
-    surfTransform.translate(surfTranslation);
-    surfTransformInverse = surfTransform.inverse();
 }
 
 }

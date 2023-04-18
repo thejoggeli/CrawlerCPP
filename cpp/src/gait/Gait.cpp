@@ -34,6 +34,10 @@ void Gait::AddTransition(float transitionTime){
 }
 
 void Gait::StepForward(float deltaTime){
+    
+    if(deltaTime == 0.0f){
+        return;
+    }
 
     // if delta time is negative, step backward
     if(deltaTime < 0.0f){
@@ -64,11 +68,16 @@ void Gait::StepForward(float deltaTime){
 
 void Gait::StepBackward(float deltaTime){
 
+    if(deltaTime == 0.0f){
+        return;
+    }
+
     // if delta time is negative, step forward
     if(deltaTime < 0.0f){
         Gait::StepForward(-deltaTime);
         return;
     }
+
 
     // advance frame time
     time -= deltaTime;

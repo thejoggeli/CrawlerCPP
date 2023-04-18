@@ -12,15 +12,16 @@ set(
     libs/serialib/Serialib.cpp
     src/comm/SerialStream.cpp
     src/parts/XYZServo.cpp
+    src/brain/Brain.cpp
+    src/brain/SurferBrain.cpp
+    src/brain/GaitBrain.cpp
+    src/brain/EmptyBrain.cpp
     src/core/Time.cpp
     src/core/Log.cpp
     src/core/Config.cpp
     src/robot/Robot.cpp
     src/robot/Leg.cpp
     src/robot/Joint.cpp
-    src/brain/Brain.cpp
-    src/brain/SurferBrain.cpp
-    src/brain/EmptyBrain.cpp
     src/math/Mathf.cpp
     src/util/HardwareButton.cpp
     src/util/MonoLED.cpp

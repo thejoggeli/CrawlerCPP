@@ -35,6 +35,8 @@ set(
     src/events/EventManager.cpp
     src/events/Event.cpp
     src/crawler/Main.cpp
+    src/gait/Gait.cpp
+    src/gait/GaitFrame.cpp
 )
 
 # seasocks has to be built with:
@@ -70,6 +72,7 @@ endfunction()
 CreateCrawlerExecutable(TestTime "test/TestTime.cpp")
 CreateCrawlerExecutable(TestEigen "test/TestEigen.cpp")
 CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")
+CreateCrawlerExecutable(TestGait "test/TestGait.cpp")
 CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
 
 

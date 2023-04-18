@@ -20,7 +20,7 @@ Robot::Robot(){
 
     // all servo ids in order [hip, knee, knee, knee] 
     servoIds = {
-         7,  8,  9, 10, // front-left  
+         7,  5,  9, 10, // front-left  
          1,  2,  4,  3, // back-left   
         15, 16, 33, 18, // back-right  
         11, 12, 13, 44, // front right 
@@ -28,7 +28,7 @@ Robot::Robot(){
 
     // servo angle scale
     float servoAngleScale[] = {
-        -1.05f, +1.05f, +1.05f, +1.05f, // front+left  
+        -1.05f, -1.05f, -1.05f, -1.05f, // front+left  
         -1.05f, -1.05f, -1.05f, -1.05f, // back+left   
         -1.05f, +1.05f, +1.05f, +1.05f, // back+right  
         -1.05f, +1.05f, +1.05f, +1.05f, // front right 

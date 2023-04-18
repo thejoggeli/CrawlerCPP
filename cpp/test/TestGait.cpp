@@ -7,12 +7,14 @@ using namespace Crawler;
 void printGait(const Gait& gait){
 
     auto& p = gait.bodyPosition;
+    auto& p0 = gait.bodyPosition;
 
     LogInfo("TestGait", iLog 
         << "time=" << gait.time << " / "
         << "currFrameIndex=" << gait.currFrameIndex << " / "
         << "nextFrameIndex=" << gait.nextFrameIndex << " / "
-        << "bodyPosition=(" << p.x() << ", " << p.y() << ", " << p.z() << ")" 
+        << "bodyPosition=(" << p.x() << ", " << p.y() << ", " << p.z() << ") / " 
+        << "footPosition[0]=(" << p0.x() << ", " << p0.y() << ", " << p0.z() << ")" 
     );
 }
 

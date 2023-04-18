@@ -39,11 +39,11 @@ bool Brain::ApplyPoseToJoints(Eigen::Vector3f footPositions[4], float footAngles
 
         float oldPhi = leg->FKPhi(oldAngles);
 
-        Eigen::Vector3f footPositionsTransformed = footPositions[i];
-        footPositionsTransformed = bodyTransform.inverse() * footPositionsTransformed;
-        footPositionsTransformed = leg->hipTransformInverse * footPositionsTransformed;
+        Eigen::Vector3f footPositionTransformed = footPositions[i];
+        footPositionTransformed = bodyTransform.inverse() * footPositionTransformed;
+        footPositionTransformed = leg->hipTransformInverse * footPositionTransformed;
 
-        bool result = leg->IKSearch(footPositionsTransformed, footAngles[i], oldPhi, oldAngles, outAngles[i]);
+        bool result = leg->IKSearch(footPositionTransformed, footAngles[i], oldPhi, oldAngles, outAngles[i]);
 
         ikSuccess[i] = result;        
         if(!result){

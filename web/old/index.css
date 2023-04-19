@@ -1,0 +1,9 @@
+*{
+	outline:0;
+	user-select:none;-moz-user-select: none;-webkit-user-select: none;-ms-user-select: none;
+}
+html, body {}
+body {margin:0;padding:0;font-family:arial;background:#111;position: absolute;overflow-x:hidden;width:100%;}
+.fullscreen {position:fixed;top:0;left:0;right:0;bottom:0;overflow:hidden;}
+.disconnected-overlay {position: absolute; top:0; left:0; width:100vw; height:100vh; background-color: rgba(0,0,0,0.75);}
+.disconnected-icon {position:absolute;top:10px;left:10px;height:100px;}

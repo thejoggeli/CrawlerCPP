@@ -106,19 +106,19 @@ void GaitBrain::Init(){
         gait->AddFrame(frame); 
         gait->AddTransition(1.0);
 
-        frame.bodyPosition = Eigen::Vector3f(0, 0, 0.06f);
-        gait->AddFrame(frame);
-        gait->AddTransition(1.0);
+        // frame.bodyPosition = Eigen::Vector3f(0, 0, 0.06f);
+        // gait->AddFrame(frame);
+        // gait->AddTransition(1.0);
 
-        frame.bodyRotation = Eigen::Vector3f(20.0f * DEG_2_RADf, 0.0f, 0.0f);
-        // frame.footPositions[i] = footUp;
-        gait->AddFrame(frame);
-        gait->AddTransition(1.0);
+        // frame.bodyRotation = Eigen::Vector3f(20.0f * DEG_2_RADf, 0.0f, 0.0f);
+        // // frame.footPositions[i] = footUp;
+        // gait->AddFrame(frame);
+        // gait->AddTransition(1.0);
 
-        frame.bodyRotation = Eigen::Vector3f(-20.0f * DEG_2_RADf, 0.0f, 0.0f);
-        // frame.footPositions[i] = footDown;
-        gait->AddFrame(frame);
-        gait->AddTransition(1.0);
+        // frame.bodyRotation = Eigen::Vector3f(-20.0f * DEG_2_RADf, 0.0f, 0.0f);
+        // // frame.footPositions[i] = footDown;
+        // gait->AddFrame(frame);
+        // gait->AddTransition(1.0);
 
         frame.bodyRotation = Eigen::Vector3f(0, 0, 0);
         gait->AddFrame(frame);

@@ -12,9 +12,11 @@
 #include "core/Config.h"
 #include "remote/SocketServer.h"
 #include "remote/ClientManager.h"
+#include "remote/Client.h"
 #include "events/EventManager.h"
 #include "brain/SurferBrain.h"
 #include "brain/GaitBrain.h"
+#include "brain/EmptyBrain.h"
 
 using namespace std;
 using namespace Crawler;
@@ -161,6 +163,7 @@ bool Main::Run(){
     robot->UpdateAndPrintServosStatus();
     // robot->SetBrain(new SurferBrain());
     robot->SetBrain(new GaitBrain());
+    // robot->SetBrain(new EmptyBrain());
 
     // the beginning of time
     Time::Start();
@@ -197,6 +200,16 @@ bool Main::Run(){
         mainButton->Update();
         if(mainButton->onPress){
             RequestExit();
+        }
+
+        // print debug info
+        auto& clients = ClientManager::GetAllCients();
+
+        if(clients.size() > 0){
+            Client* client = clients[0].get();
+            if(client->OnKeyDown(KeyCode::Select)){
+                robot->UpdateAndPrintServosStatus();
+            }
         }
 
         // update robot

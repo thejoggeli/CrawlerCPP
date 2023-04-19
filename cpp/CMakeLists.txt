@@ -70,6 +70,7 @@ function(CreateCrawlerExecutable ExecutableName ExecutableMain)
     target_link_libraries(${ExecutableName} libCrawler)
 endfunction()
 
+CreateCrawlerExecutable(TestServer "test/TestServer.cpp")
 CreateCrawlerExecutable(TestTime "test/TestTime.cpp")
 CreateCrawlerExecutable(TestEigen "test/TestEigen.cpp")
 CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")

@@ -29,6 +29,12 @@ void Joint::SetServo(XYZServo* servo){
     sprintf(nameBuffer, "XYZServo:%03d", servo->getId());
     this->servoName = nameBuffer; 
     this->debugName = this->nameWithLeg + "/" + this->servoName;
+
+    // override PID values
+    uint16_t pid_buffer[3] = {
+        0x0F00, 0x0800, 0x0000, 
+    };
+    servo->ramWrite(24, (uint8_t*)pid_buffer, 6);
 }
 
 bool Joint::PingServo(){

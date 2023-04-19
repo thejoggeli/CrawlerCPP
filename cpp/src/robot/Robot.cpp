@@ -28,10 +28,10 @@ Robot::Robot(){
 
     // servo angle scale
     float servoAngleScale[] = {
-        -1.05f, -1.05f, -1.05f, -1.05f, // front+left  
-        -1.05f, -1.05f, -1.05f, -1.05f, // back+left   
-        -1.05f, +1.05f, +1.05f, +1.05f, // back+right  
-        -1.05f, +1.05f, +1.05f, +1.05f, // front right 
+        -1.091f, -1.091f, -1.091f, -1.091f, // front+left  
+        -1.091f, -1.091f, -1.091f, -1.091f, // back+left   
+        -1.091f, +1.091f, +1.091f, +1.091f, // back+right  
+        -1.091f, +1.091f, +1.091f, +1.091f, // front right 
     };
 
     // leg names
@@ -53,10 +53,10 @@ Robot::Robot(){
         legs.push_back(leg);
 
         // set leg joint lengths
-        leg->joints[0]->length = 0.052;
+        leg->joints[0]->length = 0.055;
         leg->joints[1]->length = 0.068;
         leg->joints[2]->length = 0.068;
-        leg->joints[3]->length = 0.096;
+        leg->joints[3]->length = 0.093;
 
         // add all joints of current leg to jointsList
         for(Joint* joint : leg->joints){
@@ -93,7 +93,7 @@ Robot::Robot(){
     legs[1]->joints[0]->length = 0.068f;
     legs[1]->joints[1]->length = 0.078f;
     legs[1]->joints[2]->length = 0.078f;
-    legs[1]->joints[3]->length = 0.068f;
+    legs[1]->joints[3]->length = 0.065f;
     legs[1]->joints[1]->limitMin = -100.0f * DEG_2_RADf;
     legs[1]->joints[1]->limitMax = +100.0f * DEG_2_RADf;
     legs[1]->joints[2]->limitMin = -150.0f * DEG_2_RADf;
@@ -192,6 +192,9 @@ void Robot::Startup(){
     // move servos to initial position
     LogInfo("Robot", "moving to default position");
     for(Leg* leg : legs){
+        // leg->joints[1]->SetTargetAngle(DEG_2_RADf * +30.0f);
+        // leg->joints[2]->SetTargetAngle(DEG_2_RADf * +30.0f);
+        // leg->joints[3]->SetTargetAngle(DEG_2_RADf * +30.0f);
         leg->joints[1]->SetTargetAngle(DEG_2_RADf * -45.0f);
         leg->joints[2]->SetTargetAngle(DEG_2_RADf * +90.0f);
         leg->joints[3]->SetTargetAngle(DEG_2_RADf * +45.0f);
@@ -270,6 +273,16 @@ void Robot::UpdateAndPrintServosStatus(){
         );
         LogInfo("Robot", buffer);
     }
+    LogInfo("Robot", "Target Angles (deg):");
+    for(Leg* leg : legs){
+        sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
+            leg->joints[0]->currentTargetAngle * RAD_2_DEGf,
+            leg->joints[1]->currentTargetAngle * RAD_2_DEGf,
+            leg->joints[2]->currentTargetAngle * RAD_2_DEGf,
+            leg->joints[3]->currentTargetAngle * RAD_2_DEGf
+        );
+        LogInfo("Robot", buffer);
+    }
     LogInfo("Robot", "Measured Angles (deg):");
     for(Joint* joint : jointsList){
         joint->UpdateMeasuredAngle();
@@ -280,6 +293,19 @@ void Robot::UpdateAndPrintServosStatus(){
             leg->joints[1]->measuredAngle * RAD_2_DEGf,
             leg->joints[2]->measuredAngle * RAD_2_DEGf,
             leg->joints[3]->measuredAngle * RAD_2_DEGf
+        );
+        LogInfo("Robot", buffer);
+    }
+    LogInfo("Robot", "(Measured - Target) Angles (deg):");
+    for(Joint* joint : jointsList){
+        joint->UpdateMeasuredAngle();
+    }
+    for(Leg* leg : legs){
+        sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
+            (leg->joints[0]->measuredAngle - leg->joints[0]->currentTargetAngle) * RAD_2_DEGf,
+            (leg->joints[1]->measuredAngle - leg->joints[1]->currentTargetAngle) * RAD_2_DEGf,
+            (leg->joints[2]->measuredAngle - leg->joints[2]->currentTargetAngle) * RAD_2_DEGf,
+            (leg->joints[3]->measuredAngle - leg->joints[3]->currentTargetAngle) * RAD_2_DEGf
         );
         LogInfo("Robot", buffer);
     }

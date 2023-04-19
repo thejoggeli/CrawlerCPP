@@ -46,10 +46,6 @@ void SurferBrain::Update(){
 
     if(client){
 
-        if(client->OnKeyDown(KeyCode::Select)){
-            robot->UpdateAndPrintServosStatus();
-        }
-
         if(client->OnKeyDown(KeyCode::A)){
             surfMode = (surfMode+1)%3;
             LogInfo("SurferBrain", iLog << "Surf Mode is now " << surfMode);

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16.3)
 project (CrawlerCPP)
 
 set(CRAWLER_CONFIG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/config")
-set(CRAWLER_WEB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/web")
+set(CRAWLER_WEB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/web/dist")
 set(CRAWLER_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_definitions(

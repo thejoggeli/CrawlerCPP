@@ -67,7 +67,8 @@
 			"shared_mutex": "cpp",
 			"set": "cpp",
 			"mutex": "cpp",
-			"geometry": "cpp"
+			"geometry": "cpp",
+			"csignal": "cpp"
 		}
 	}
 }

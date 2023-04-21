@@ -10,7 +10,6 @@ namespace seasocks {
 	class PrintfLogger;
 }
 
-
 namespace Crawler {
 
 class Client;
@@ -36,6 +35,11 @@ public:
 	static void Send(std::string& string);
 	static void SendMessage(SocketMessage& message, int clientId);
 	static void Shutdown();
+
+	static void SubscribePacket();
+	static void UnsubscribePacket();
+	static void SendPacket();
+
 };
 
 }

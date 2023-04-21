@@ -33,8 +33,11 @@ set(
     src/remote/GamepadKeys.cpp
     src/remote/Client.cpp 
     src/remote/ClientManager.cpp
+    src/remote/PacketType.cpp
+    src/remote/PacketParser.cpp
     src/events/EventManager.cpp
     src/events/Event.cpp
+    src/events/Event2.cpp
     src/crawler/Main.cpp
     src/gait/Gait.cpp
     src/gait/GaitFrame.cpp
@@ -70,6 +73,7 @@ function(CreateCrawlerExecutable ExecutableName ExecutableMain)
     target_link_libraries(${ExecutableName} libCrawler)
 endfunction()
 
+CreateCrawlerExecutable(TestEvents "test/TestEvents.cpp")
 CreateCrawlerExecutable(TestServer "test/TestServer.cpp")
 CreateCrawlerExecutable(TestTime "test/TestTime.cpp")
 CreateCrawlerExecutable(TestEigen "test/TestEigen.cpp")

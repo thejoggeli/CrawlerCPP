@@ -4,7 +4,6 @@
 #include "core/Config.h"
 #include "remote/SocketServer.h"
 #include "remote/ClientManager.h"
-#include "events/EventManager.h"
 #include <csignal>
 
 using namespace std;
@@ -35,12 +34,6 @@ bool init(){
 		return false;
     }
 
-    // init event manager/ event manager
-	if(!EventManager::Init()){
-		LogError("Main", "EventManager initialization failed");
-		return false;
-	}
-
 	// init client manager
 	if(!ClientManager::Init()){
 		LogError("Main", "ClientManager initialization failed");
@@ -57,7 +50,19 @@ bool init(){
 
 }
 
+bool is_big_endian(void)
+{
+    union {
+        uint32_t i;
+        char c[4];
+    } bint = {0x01020304};
+
+    return bint.c[0] == 1;
+}
+
 int main(){
+
+    LogInfo("Endian", iLog << "is_big_endian: " << is_big_endian);
 
     // sigint handler
     struct sigaction sigIntHandler;
@@ -75,16 +80,13 @@ int main(){
 
         // poll socket server
         SocketServer::Poll();
-
-        // clear events from last tick
-        ClientManager::PopNewEvents();
-        EventManager::PopNewEvents();
+        
+        // receive new packets
+        ClientManager::ReceivePackets();
         
         // update clients
         ClientManager::Update();
 
-        // fire events
-        EventManager::Update();
     }
 
     return EXIT_SUCCESS;

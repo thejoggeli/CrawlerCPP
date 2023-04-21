@@ -11,14 +11,18 @@ export default class DynamicBuffer {
             this.buffer = new ArrayBuffer(parseInt(param_1))
             this.view = new DataView(this.buffer)
             this.write_ptr = 0
-            this.read_ptr = 0                
+            this.read_ptr = 0           
         } else {
             // create default size
             this.buffer = new ArrayBuffer(32)
             this.view = new DataView(this.buffer)
             this.write_ptr = 0
             this.read_ptr = 0
-        }
+        }        
+    }
+    reset(){
+        this.write_ptr = 0
+        this.read_ptr = 0
     }
     getDataSize(){
         return this.write_ptr        
@@ -78,7 +82,7 @@ export default class DynamicBuffer {
     }
     readInt32(){
         this.ensureSize(this.read_ptr + 4)
-        var x = this.view.getint32(this.read_ptr)        
+        var x = this.view.getInt32(this.read_ptr)        
         this.read_ptr += 4
         return x
     }
@@ -92,6 +96,12 @@ export default class DynamicBuffer {
         this.ensureSize(this.read_ptr + 4)
         var x = this.view.getFloat32(this.read_ptr)    
         this.read_ptr += 4    
+        return x
+    }
+    readFloat64(){
+        this.ensureSize(this.read_ptr + 8)
+        var x = this.view.getFloat64(this.read_ptr)    
+        this.read_ptr += 8
         return x
     }
     readString(){
@@ -143,6 +153,11 @@ export default class DynamicBuffer {
         this.ensureSize(this.write_ptr + 4)    
         this.view.setFloat32(this.write_ptr, x)
         this.write_ptr += 4
+    }
+    writeFloat64(x){
+        this.ensureSize(this.write_ptr + 8)    
+        this.view.setFloat64(this.write_ptr, x)
+        this.write_ptr += 8
     }
     writeString(str){
         var encoder = DynamicBuffer.TextEncoder

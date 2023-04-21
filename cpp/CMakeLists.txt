@@ -27,6 +27,8 @@ set(
     src/util/MonoLED.cpp
     src/util/Strings.cpp
     src/util/Timer.cpp
+    src/util/SmartBuffer.cpp
+    src/util/ByteBufferReader.cpp
     src/remote/SocketServer.cpp
     src/remote/SocketMessage.cpp
     src/remote/SeasocksHandler.cpp
@@ -34,10 +36,7 @@ set(
     src/remote/Client.cpp 
     src/remote/ClientManager.cpp
     src/remote/PacketType.cpp
-    src/remote/PacketParser.cpp
-    src/events/EventManager.cpp
-    src/events/Event.cpp
-    src/events/Event2.cpp
+    src/remote/Packet.cpp
     src/crawler/Main.cpp
     src/gait/Gait.cpp
     src/gait/GaitFrame.cpp
@@ -73,7 +72,7 @@ function(CreateCrawlerExecutable ExecutableName ExecutableMain)
     target_link_libraries(${ExecutableName} libCrawler)
 endfunction()
 
-CreateCrawlerExecutable(TestEvents "test/TestEvents.cpp")
+CreateCrawlerExecutable(TestBuffer "test/TestBuffer.cpp")
 CreateCrawlerExecutable(TestServer "test/TestServer.cpp")
 CreateCrawlerExecutable(TestTime "test/TestTime.cpp")
 CreateCrawlerExecutable(TestEigen "test/TestEigen.cpp")

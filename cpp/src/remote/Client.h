@@ -8,35 +8,37 @@
 
 namespace Crawler {
 
-class Event;
+class Packet;
 
 class Client {
 public:
 	int id;
 	uint32_t flags = 0;
 	bool connected;
-	std::vector<std::shared_ptr<Event>> events;
-	std::vector<std::shared_ptr<Event>> newEvents;
+
+	std::vector<std::shared_ptr<Packet>> packets;
+	std::vector<std::shared_ptr<Packet>> newPackets;
 
 	Client(int id);
 	void Update();
-	bool IsKeyDown(KeyCode code);
-	bool OnKeyDown(KeyCode code);
-	bool OnKeyUp(KeyCode code);
-	Eigen::Vector2f GetJoystickPosition(KeyCode code);
+	bool IsKeyDown(GamepadKey code);
+	bool OnKeyDown(GamepadKey code);
+	bool OnKeyUp(GamepadKey code);
+	Eigen::Vector2f GetJoystickPosition(GamepadKey code);
 
-	void AddMessage(const std::string& str);
-	void PopNewEvents();
+	void QueuePacket(std::shared_ptr<Packet> packet);
+	void ReceivePackets();
+	void SendPacket(std::shared_ptr<Packet> packet); 
 
 	void SetFlag(uint32_t flag);
 	void UnsetFlag(uint32_t flag);
 	bool IsFlagSet(uint32_t flag);
 
 private:
-	bool isDownMap[static_cast<int>(KeyCode::KEY_CODE_MAX)];
-	bool onDownMap[static_cast<int>(KeyCode::KEY_CODE_MAX)];
-	bool onUpMap[static_cast<int>(KeyCode::KEY_CODE_MAX)];
-	Eigen::Vector2f joystickPositions[2];
+	bool isDownMap[NUM_GAMEPAD_KEYS];
+	bool onDownMap[NUM_GAMEPAD_KEYS];
+	bool onUpMap[NUM_GAMEPAD_KEYS];
+	Eigen::Vector2f joystickPositions[NUM_GAMEPAD_JOYSTICKS];
 };
 
 }

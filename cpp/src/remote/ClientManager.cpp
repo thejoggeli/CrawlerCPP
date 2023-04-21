@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
+#include "Packet.h"
+#include "SocketServer.h"
 
 using namespace std;
 
@@ -11,9 +13,10 @@ namespace Crawler {
 
 int ClientManager::initCounter = 0;
 
-static int currentClientId = 1;
+static int currentClientId = 0;
 static vector<shared_ptr<Client>> clientsVector;
 static unordered_map<int, shared_ptr<Client>> clientsMap;
+static std::unordered_map<PacketType, std::vector<std::pair<void*, void (*)(void*, const Packet&)>>> packetSubscriptions;
 
 bool ClientManager::Init(){
 	if(++initCounter > 1) return false;
@@ -67,19 +70,19 @@ const vector<shared_ptr<Client>>& ClientManager::GetAllCients() {
 	return clientsVector;
 }
 
-bool ClientManager::IsKeyDown(KeyCode code){
+bool ClientManager::IsKeyDown(GamepadKey code){
 	for(vector<shared_ptr<Client>>::iterator it = clientsVector.begin(); it != clientsVector.end(); ++it){
 		if((*it)->IsKeyDown(code)) return true;
 	}
 	return false;
 };
-bool ClientManager::OnKeyDown(KeyCode code){
+bool ClientManager::OnKeyDown(GamepadKey code){
 	for(vector<shared_ptr<Client>>::iterator it = clientsVector.begin(); it != clientsVector.end(); ++it){
 		if((*it)->OnKeyDown(code)) return true;
 	}
 	return false;
 };
-bool ClientManager::OnKeyUp(KeyCode code){
+bool ClientManager::OnKeyUp(GamepadKey code){
 	for(vector<shared_ptr<Client>>::iterator it = clientsVector.begin(); it != clientsVector.end(); ++it){
 		if((*it)->OnKeyUp(code)) return true;
 	}
@@ -90,9 +93,44 @@ int ClientManager::GenerateId(){
 	return currentClientId++;
 }
 
-void ClientManager::PopNewEvents(){
+void ClientManager::SubscribePacket(PacketType type, void* obj, void (*handler)(void*, const Packet&)){
+	std::pair<void*, void (*)(void*, const Packet&)> pair;
+	pair = std::make_pair(obj, handler);
+	packetSubscriptions[type].push_back(pair);
+}
+
+void ClientManager::UnsubscribePacket(PacketType type, void* obj){
+	auto search = packetSubscriptions.find(type);
+	if(search != packetSubscriptions.end()){
+		auto& vector = search->second;
+		for (auto it = vector.begin(); it != vector.end(); ) {
+			if(it->first == obj){
+				it = vector.erase(it);
+			} else {
+				++it;
+			}
+		}
+	}
+}
+
+void ClientManager::SendPacket(std::shared_ptr<Packet> packet, int clientId){
+	SocketServer::SendPacket(packet, clientId);
+}
+
+void ClientManager::ReceivePackets(){
 	for(auto const &client: GetAllCients()){
-		client->PopNewEvents();
+		client->ReceivePackets();
+	}
+	for(auto const &client: GetAllCients()){
+		for(std::shared_ptr<Packet> packet: client->packets){
+			auto search = packetSubscriptions.find(packet->type);
+			if (search != packetSubscriptions.end()){
+				auto& vector = search->second;
+				for(auto& handler: vector){
+					handler.second(handler.first, *packet);
+				}
+			}
+		}
 	}
 }
 

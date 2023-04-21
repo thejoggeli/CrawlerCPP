@@ -3,9 +3,6 @@ import "./App.css";
 import Robot3D from "./Robot3D"
 import Main from "logic/Main"
 import Time from "msl/time/Time"
-import { useState } from 'react';
-import Log from "msl/log/Log"
-import LogTargetConsole from "msl/log/LogTargetConsole"
 
 export default class App extends React.Component {
 
@@ -19,7 +16,7 @@ export default class App extends React.Component {
     componentDidMount(){
         Main.init();
         Time.start();
-        requestAnimationFrame(this.frame.bind(this));
+        requestAnimationFrame(this.frame);
     }
 
     handleClick = e => {
@@ -27,7 +24,15 @@ export default class App extends React.Component {
         // this.setState(calculate(this.state, buttonName));
     };
 
-    frame(){
+    handleClick2 = e => {
+        var packet = Main.packetRecycler.popPacket("GamepadJoystick");
+        packet.pack("GamepadJoystick", {
+            key: 0xF0, state: 0, x: 0.42, y: 13.37
+        });
+        Main.packetSender.addPacket(packet);
+    };
+
+    frame = () => {
         Main.update();
         requestAnimationFrame(this.frame.bind(this));
     }
@@ -41,9 +46,11 @@ export default class App extends React.Component {
         } else {
             button = <button onClick={this.handleClick}>Click me again</button>   
         }
+        var button2 = <button onClick={this.handleClick2}>Send event</button>   
         return (
             <div>    
                 <div>{button}</div>
+                <div>{button2}</div>
                 <div>{robot}</div>
             </div>
         );

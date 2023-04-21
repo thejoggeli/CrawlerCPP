@@ -134,7 +134,7 @@ void GaitBrain::Update(){
     if(clients.size() > 0){
         Client* client = clients[0].get();
 
-        if(client->OnKeyDown(KeyCode::A)){
+        if(client->OnKeyDown(GamepadKey::A)){
             playing = !playing;
             LogDebug("GaitBrain", iLog << "playing=" << (int)playing);
         }
@@ -149,11 +149,11 @@ void GaitBrain::FixedUpdate(){
     if(clients.size() > 0){
         Client* client = clients[0].get();
 
-        if(client->IsKeyDown(KeyCode::Up)){
+        if(client->IsKeyDown(GamepadKey::Up)){
             speed += Time::fixedDeltaTime;
             LogDebug("GaitBrain", iLog << "speed=" << speed);
         }
-        if(client->IsKeyDown(KeyCode::Down)){
+        if(client->IsKeyDown(GamepadKey::Down)){
             speed -= Time::fixedDeltaTime;
             LogDebug("GaitBrain", iLog << "speed=" << speed);
         }

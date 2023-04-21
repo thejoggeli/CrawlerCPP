@@ -38,7 +38,7 @@ class Main {
         Main.messenger.processMessages()
 
         // notify update
-        Main.events.notifySubscribers("Update")
+        Main.events.notifySubscribers("update")
 
         // send packets
         var packets = Main.packetSender.getPackets()

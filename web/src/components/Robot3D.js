@@ -3,6 +3,7 @@ import "./Robot3D.css";
 import * as THREE from "three";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import Time from "msl/time/Time";
+import Main from "logic/Main";
 
 export default class Robot3D extends React.Component {
 
@@ -39,7 +40,7 @@ export default class Robot3D extends React.Component {
         this.directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
         this.scene.add(this.directionalLight);
 
-        this.animationFrameRequest = requestAnimationFrame(this.frame.bind(this));
+        Main.events.subscribe("update", this, this.update);
 
         window.addEventListener("resize", this.handleWindowResize);
 
@@ -47,23 +48,20 @@ export default class Robot3D extends React.Component {
 
     componentWillUnmount(){
         window.removeEventListener("resize", this.handleWindowResize);
-        if(this.animationFrameRequest != null){
-            cancelAnimationFrame(this.animationFrameRequest);
-            this.animationFrameRequest = null;
-        }
+        Main.events.unsubscribe("update", this);
     }
 
     handleWindowResize = () => {
         console.log("Robot3D", "handleWindowResize()")
         // this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        var rendererSize = this.renderer.getSize();
+        this.rendererSize = this.renderer.getSize();
         this.camera.aspect = this.rendererSize.width/this.rendererSize.height;
         this.camera.updateProjectionMatrix();
     }
 
-    frame = () => {
-        console.log("frame");
+    update = () => {
+        console.log("Robot3D update");
 
         this.directionalLight.position.copy(this.camera.position);
         this.directionalLight.lookAt(this.cube.position);
@@ -72,7 +70,6 @@ export default class Robot3D extends React.Component {
         this.cube.rotation.y += 0.0117;
         this.renderer.render(this.scene, this.camera);
 
-        this.animationFrameRequest = requestAnimationFrame(this.frame);
     }
 
     render(){

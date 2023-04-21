@@ -1,14 +1,19 @@
-import Enum             from "msl/util/Enum.js"
-import DynamicBuffer    from "msl/buffer/DynamicBuffer.js"
-import DataType         from "msl/buffer/DataType.js"
-import Log              from "msl/log/Log.js"
+import Enum             from "../util/Enum.js"
+import DynamicBuffer    from "../buffer/DynamicBuffer.js"
+import DataType         from "../buffer/DataType.js"
+import Log              from "../log/Log.js"
 
 export default class Packet {
     constructor(){
         this.type = null
         this.data = null
-        this.buffer = null
         this.initial_buffer_size = 32
+        this.buffer = new DynamicBuffer(this.initial_buffer_size)
+    }
+    reset(){
+        this.type = null
+        this.data = null
+        this.buffer.reset()
     }
     pack(type, data){
         if(typeof type == "string"){
@@ -16,7 +21,6 @@ export default class Packet {
         }
         // data to bytes
         this.data = data
-        this.buffer = new DynamicBuffer(this.initial_buffer_size)
         this.type = type
         this.buffer.beginWrite(0)
         this.buffer.writeUint16(this.type.id)
@@ -47,7 +51,7 @@ export default class Packet {
         } else {
             for(var x in this.type.attributes){
                 var attribute = this.type.attributes[x]
-                this.data[attribute.name] = attribute.type.read(this.buffer)
+                this.data[attribute.name] = attribute.type.read(this.buffer)                
             }
         }
         return this

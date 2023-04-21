@@ -5,6 +5,7 @@
 #include "core/Config.h"
 #include "core/Log.h"
 #include <algorithm>
+#include "Packet.h"
 
 #include <seasocks/Server.h>
 #include <seasocks/WebSocket.h>
@@ -55,28 +56,6 @@ bool SocketServer::Init(){
 	return true;
 }
 
-void SocketServer::Send(std::string& string){
-	for(auto const& it: handler->connections){
-		it->send(string);
-	}
-}
-void SocketServer::SendMessage(SocketMessage& message, int clientId){
-	string& str = message.GetJsonString();
-	Log(LOG_DEBUG, "Server", iLog << "Send (id=" << clientId << ") " << str);
-	if(clientId == 0){
-		for(auto const& it: handler->connections){
-			it->send(str);
-		}
-	} else {
-		for(auto const& it: handler->connections){
-			shared_ptr<Client> c = handler->GetClientByConnection(it);
-			if(c && c->id == clientId){
-				it->send(str);
-			}
-		}
-	}
-}
-
 void SocketServer::Poll(){
 	server->poll(0);
 }
@@ -103,6 +82,42 @@ void SocketServer::Shutdown(){
 	server->terminate();
 	server = nullptr;
 }
+
+void SocketServer::SendPacket(std::shared_ptr<Packet> packet, int clientId){
+	LogDebug("SocketServer", iLog << "Send (id=" << clientId << ") " << *PacketTypeToString(packet->type));
+	if(clientId == -1){
+		for(auto const& connection: handler->connections){
+			connection->send(packet->data.GetBytes(), packet->data.GetSize());
+		}
+	} else {
+		auto const& connection = handler->GetConnectionByClientId(clientId);
+		if(connection){
+			connection->send(packet->data.GetBytes(), packet->data.GetSize());
+		}
+	}
+}
+
+// void SocketServer::Send(std::string& string){
+// 	for(auto const& it: handler->connections){
+// 		it->send(string);
+// 	}
+// }
+// void SocketServer::SendMessage(SocketMessage& message, int clientId){
+// 	string& str = message.GetJsonString();
+// 	Log(LOG_DEBUG, "Server", iLog << "Send (id=" << clientId << ") " << str);
+// 	if(clientId == 0){
+// 		for(auto const& it: handler->connections){
+// 			it->send(str);
+// 		}
+// 	} else {
+// 		for(auto const& it: handler->connections){
+// 			shared_ptr<Client> c = handler->GetClientByConnection(it);
+// 			if(c && c->id == clientId){
+// 				it->send(str);
+// 			}
+// 		}
+// 	}
+// }
 
 }
 

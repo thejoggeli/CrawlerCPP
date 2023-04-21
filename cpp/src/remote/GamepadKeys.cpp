@@ -2,29 +2,29 @@
 
 namespace Crawler {
 
-std::string KeyCodeToString(KeyCode KeyCode){
-	switch(KeyCode){
-	case KeyCode::A: return "A";
-	case KeyCode::B: return "B";
-	case KeyCode::X: return "X";
-	case KeyCode::Y: return "Y";
-	case KeyCode::Up: return "Up";
-	case KeyCode::Down: return "Down";
-	case KeyCode::Left: return "Left";
-	case KeyCode::Right: return "Right";
-	case KeyCode::Start: return "Start";
-	case KeyCode::Select: return "Select";
-	case KeyCode::LeftJoystick: return "LeftJoystick";
-	case KeyCode::RightJoystick: return "RightJoystick";
-	default: return "KeyCode(" + std::to_string(static_cast<int>(KeyCode)) + ")";
+std::string GamepadKeyToString(GamepadKey key){
+	switch(key){
+	case GamepadKey::A: return "A";
+	case GamepadKey::B: return "B";
+	case GamepadKey::X: return "X";
+	case GamepadKey::Y: return "Y";
+	case GamepadKey::Up: return "Up";
+	case GamepadKey::Down: return "Down";
+	case GamepadKey::Left: return "Left";
+	case GamepadKey::Right: return "Right";
+	case GamepadKey::Start: return "Start";
+	case GamepadKey::Select: return "Select";
+	case GamepadKey::LeftJoystick: return "LeftJoystick";
+	case GamepadKey::RightJoystick: return "RightJoystick";
+	default: return "KeyCode(" + std::to_string(static_cast<int>(key)) + ")";
 	}
 }
-std::string KeyStateToString(KeyState keyState){
-	switch(keyState){
-	case KeyState::Pressed: return "Pressed";
-	case KeyState::Released: return "Released";
-	case KeyState::JoystickMove: return "JoystickMove";
-	default: return "KeyState(" + std::to_string(static_cast<int>(keyState)) + ")";
+std::string GamepadKeyStateToString(GamepadKeyState state){
+	switch(state){
+	case GamepadKeyState::Pressed: return "Pressed";
+	case GamepadKeyState::Released: return "Released";
+	case GamepadKeyState::JoystickMove: return "JoystickMove";
+	default: return "KeyState(" + std::to_string(static_cast<int>(state)) + ")";
 	}
 }
 

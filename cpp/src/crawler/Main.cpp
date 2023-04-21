@@ -13,7 +13,6 @@
 #include "remote/SocketServer.h"
 #include "remote/ClientManager.h"
 #include "remote/Client.h"
-#include "events/EventManager.h"
 #include "brain/SurferBrain.h"
 #include "brain/GaitBrain.h"
 #include "brain/EmptyBrain.h"
@@ -52,12 +51,6 @@ bool Main::Init(){
 		LogError("Main", "LogLevels initialization failed");
 		return false;
     }
-
-    // init event manager/ event manager
-	if(!EventManager::Init()){
-		LogError("Main", "EventManager initialization failed");
-		return false;
-	}
 
 	// init client manager
 	if(!ClientManager::Init()){
@@ -186,15 +179,11 @@ bool Main::Run(){
         // poll socket server
         SocketServer::Poll();
 
-        // clear events from last tick
-        ClientManager::PopNewEvents();
-        EventManager::PopNewEvents();
+        // receive new packets
+        ClientManager::ReceivePackets();
         
         // update clients
         ClientManager::Update();
-
-        // fire events
-        EventManager::Update();
 
         // update buttons
         mainButton->Update();
@@ -207,7 +196,7 @@ bool Main::Run(){
 
         if(clients.size() > 0){
             Client* client = clients[0].get();
-            if(client->OnKeyDown(KeyCode::Select)){
+            if(client->OnKeyDown(GamepadKey::Select)){
                 robot->UpdateAndPrintServosStatus();
             }
         }
@@ -246,12 +235,9 @@ bool Main::Run(){
                 << "Capacity=" << (capacity*100.0f) << "%, " // capacity = LongestDeltaTime / FixedDeltaTime
                 << "Sleep=" << (totalSleepTime/statusTimerInterval*100.0f) << "%, "
                 << "Clients=" << ClientManager::GetAllCients().size() << ", "
-                << "Connections=" << SocketServer::GetNumConnections() << ", "
-                << "Events=" << EventManager::eventCounterTemp << "/" << EventManager::eventCounterTotal
-                << ""
+                << "Connections=" << SocketServer::GetNumConnections()
             );
             totalSleepTimeMicros = 0;
-		    EventManager::eventCounterTemp = 0;
             upsCounter = 0;
             fixedUpsCounter = 0;
             longestDeltaTimeMicros = 0;

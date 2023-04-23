@@ -16,6 +16,9 @@ Vec2.setPolar = function(out, angle, length){
 	out.x = Math.cos(angle)*length
 	out.y = Math.sin(angle)*length
 }
+Vec2.clone = function(a){
+	return Vec2.create(a.x, a.y)
+}
 Vec2.copy = function(out, a){
 	out.x = a.x
 	out.y = a.y
@@ -98,8 +101,11 @@ Vec2.getDirectionFromTo = function(out, a, b){
 Vec2.getAngle = function(a){
 	return Math.atan2(a.y, a.x)
 }
+Vec2.getAngleBetween = function(a, b){
+	return Math.atan2(b.y-a.y, b.x-a.x);
+}
 Vec2.getDeltaAngle = function(a, b){
-    Numbers.deltaAngle(Math.atan2(a.y, a.x), Math.atan2(b.y, b.x))
+    return Numbers.deltaAngle(Math.atan2(a.y, a.x), Math.atan2(b.y, b.x))
 }
 Vec2.lookAt = function(source, target){  
     return Math.atan2(target.y - source.y, target.x - source.x)

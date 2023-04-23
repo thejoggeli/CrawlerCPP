@@ -1,4 +1,5 @@
 import Log from "msl/log/Log.js"
+import $ from "jquery"
 
 function Fullscreen(){}
 Fullscreen.timeouts = []

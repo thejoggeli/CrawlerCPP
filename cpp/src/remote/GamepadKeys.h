@@ -2,7 +2,7 @@
 
 #include <string>
 #include <cstdint>
-
+#include <memory>
 
 
 #define NUM_GAMEPAD_KEYS 0xFF
@@ -10,7 +10,6 @@
 #define GAMEPAD_JOYSTICK_MASK 0xF0
 
 namespace Crawler {
-
 
 enum class GamepadKey : uint8_t {
 	    None = 0x00,
@@ -31,10 +30,11 @@ enum class GamepadKey : uint8_t {
 enum class GamepadKeyState : uint8_t {
         Pressed = 0,
         Released = 1,
-		JoystickMove = 2,
 };
 
-std::string KeyCodeToString(GamepadKey key);
-std::string GamepadKeyStateToString(GamepadKeyState state);
+std::shared_ptr<std::string> GamepadKeyToString(GamepadKey key);
+std::shared_ptr<std::string> GamepadKeyToString(uint8_t key);
+std::shared_ptr<std::string> GamepadKeyStateToString(GamepadKeyState state);
+std::shared_ptr<std::string> GamepadKeyStateToString(uint8_t key);
 
 }

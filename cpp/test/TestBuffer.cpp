@@ -1,6 +1,7 @@
 #include "core/Log.h"
 #include "util/SmartBuffer.h"
 #include "remote/Packet.h"
+#include "remote/GamepadKeys.h"
 
 using namespace Crawler;
 
@@ -8,27 +9,26 @@ void testPacket(){
 
     SmartBuffer buffer = SmartBuffer();
 
-    buffer.Add<uint16_t>("type", (uint16_t)PacketType::GamepadJoystick);
-    buffer.Add<uint8_t>("id", 17);
+    buffer.Add<uint16_t>("type", (uint16_t)PacketType::CS_GamepadJoystick);
+    buffer.Add<uint8_t>("key", (uint8_t)GamepadKey::LeftJoystick);
     buffer.Add<float>("x", 0.1337f);
     buffer.Add<float>("y", 4.2f);
 
-    Packet packet = Packet(buffer.GetBytes(), buffer.GetSize());
+    std::shared_ptr<Packet> packet = Packet::Unpack(buffer.GetBytes(), buffer.GetSize());
 
-    LogInfo("TestPacket", iLog << *PacketTypeToString(packet.type));
-    LogInfo("TestPacket", iLog << (int)packet.data.Get<uint8_t>("id"));
-    LogInfo("TestPacket", iLog << packet.data.Get<float>("x"));
-    LogInfo("TestPacket", iLog << packet.data.Get<float>("y"));
+    LogInfo("TestPacket", iLog << *PacketTypeToString(packet->type));
+    LogInfo("TestPacket", iLog << *GamepadKeyToString(packet->data.Get<uint8_t>("key")));
+    LogInfo("TestPacket", iLog << packet->data.Get<float>("x"));
+    LogInfo("TestPacket", iLog << packet->data.Get<float>("y"));
     
-    Packet packet2 = Packet(PacketType::GamepadKey);
-    packet2.data.Add<uint8_t>(13);
-    packet2.data.Add<uint8_t>(37);
+    std::shared_ptr<Packet> packet2 = std::make_shared<Packet>(PacketType::CS_GamepadKey);
+    packet2->data.Add<uint8_t>(13);
+    packet2->data.Add<uint8_t>(37);
 
-    Packet packet3 = Packet(packet2.data.GetBytes(), packet2.data.GetSize());
+    std::shared_ptr<Packet> packet3 = Packet::Unpack(packet2->data.GetBytes(), packet2->data.GetSize());
 
-    LogInfo("TestPacket", iLog << *PacketTypeToString(packet3.type));
-    LogInfo("TestPacket", iLog << (int)packet3.data.Get<uint8_t>("id"));
-    LogInfo("TestPacket", iLog << (int)packet3.data.Get<uint8_t>("state"));
+    LogInfo("TestPacket", iLog << *PacketTypeToString(packet3->type));
+    LogInfo("TestPacket", iLog << *GamepadKeyToString(packet3->data.Get<uint8_t>("key")));
 
 }
 

@@ -32,8 +32,6 @@ export default class Robot3D extends React.Component {
         this.cube = new THREE.Mesh(geometry, material);
         this.scene.add(this.cube);
 
-        this.renderer.render(this.scene, this.camera);
-
         this.cameraControls = new OrbitControls(this.camera, this.renderer.domElement);
         this.cameraControls.target = this.cube.position;
 
@@ -52,16 +50,16 @@ export default class Robot3D extends React.Component {
     }
 
     handleWindowResize = () => {
-        console.log("Robot3D", "handleWindowResize()")
-        // this.renderer.setSize(window.innerWidth, window.innerHeight);
+        // console.log("Robot3D", "handleWindowResize()")
+        // this.renderer.setSize(window.innerWidth, window.innerHeight);    
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.rendererSize = this.renderer.getSize();
+        this.renderer.getSize(this.rendererSize);
         this.camera.aspect = this.rendererSize.width/this.rendererSize.height;
         this.camera.updateProjectionMatrix();
     }
 
     update = () => {
-        console.log("Robot3D update");
+        // console.log("Robot3D update");
 
         this.directionalLight.position.copy(this.camera.position);
         this.directionalLight.lookAt(this.cube.position);

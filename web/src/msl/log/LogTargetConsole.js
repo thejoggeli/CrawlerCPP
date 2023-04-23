@@ -9,11 +9,11 @@ class LogTargetConsole extends LogTargetBase {
         for(var e in Log.Levels.entries){
             Log.Levels.entries[e].color_console = "" 
         }
-        Log.Info.color_console = "color: green"
+        Log.Info.color_console = "color: blue"
         Log.Error.color_console = "color: red"
         Log.Warning.color_console = "color: orange"
-        Log.Unknown.color_console = "color: blue"
-        Log.Debug.color_console = "color: magenta"
+        Log.Unknown.color_console = "color: magenta"
+        Log.Debug.color_console = "color: purple"
     }
     print(level, source, ...message){
         if(level == Log.Error){

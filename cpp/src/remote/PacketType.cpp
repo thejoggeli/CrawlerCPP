@@ -14,9 +14,9 @@ std::shared_ptr<std::string> PacketTypeToString(PacketType type){
     switch(type){
         case PacketType::Invalid: 
             return PrettyPacketString(type, "Invalid");
-        case PacketType::GamepadKey: 
+        case PacketType::CS_GamepadKey: 
             return PrettyPacketString(type, "GamepadButton");
-        case PacketType::GamepadJoystick:
+        case PacketType::CS_GamepadJoystick:
             return PrettyPacketString(type, "GamepadJoystick");
     }
     return PrettyPacketString(type, "PacketType");

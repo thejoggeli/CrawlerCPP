@@ -15,12 +15,12 @@ public:
     PacketType type = PacketType::Invalid;
     SmartBuffer data;
 
-    Packet(const uint8_t* bytes, unsigned int size);
+    // Packet(const uint8_t* bytes, unsigned int size);
     Packet(PacketType type);
 
-private:
+    static std::shared_ptr<Packet> Unpack(const uint8_t* bytes, unsigned int size);
 
-    void Unpack(const uint8_t* bytes, unsigned int size);
+private:
 
 };
 

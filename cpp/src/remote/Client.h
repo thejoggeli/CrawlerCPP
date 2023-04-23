@@ -5,6 +5,7 @@
 #include "GamepadKeys.h"
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 namespace Crawler {
 
@@ -35,6 +36,8 @@ public:
 	bool IsFlagSet(uint32_t flag);
 
 private:
+	std::vector<GamepadKey> downKeys;
+	std::vector<GamepadKey> upKeys;
 	bool isDownMap[NUM_GAMEPAD_KEYS];
 	bool onDownMap[NUM_GAMEPAD_KEYS];
 	bool onUpMap[NUM_GAMEPAD_KEYS];

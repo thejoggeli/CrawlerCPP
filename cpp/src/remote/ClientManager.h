@@ -27,6 +27,8 @@ public:
 	static void RemoveClient(int id);
 	static std::shared_ptr<Client> GetClient(int id);
 	static const std::vector<std::shared_ptr<Client>>& GetAllCients();
+	static std::shared_ptr<Client> GetOldestClient();
+	static std::shared_ptr<Client> GetNewestClient();
 
 	static bool IsKeyDown(GamepadKey code);
 	static bool OnKeyDown(GamepadKey code);
@@ -34,7 +36,7 @@ public:
 
 	static void SubscribePacket(PacketType type, void* obj, void (*handler)(void*, const Packet&));
 	static void UnsubscribePacket(PacketType type, void* obj);
-	static void SendPacket(std::shared_ptr<Packet> packet, int clientId);
+	static void SendPacket(std::shared_ptr<Packet> packet, int clientId = -1);
 	static void ReceivePackets();
 
 };

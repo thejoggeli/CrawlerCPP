@@ -8,6 +8,7 @@
 namespace seasocks {
 	class Server;
 	class PrintfLogger;
+	class WebSocket;
 }
 
 namespace Crawler {
@@ -24,15 +25,19 @@ private:
 	static std::string localUrl;
 	static std::string globalUrl;
 
-	static std::shared_ptr<seasocks::Server> server;
-	static std::shared_ptr<seasocks::PrintfLogger> logger;
-	static std::shared_ptr<SeasocksHandler> handler;
-
     SocketServer();
+
 public:
+
+	static bool logInput;
+	static bool logOutput;
     
 	static bool Init();
 	static void Poll();
+
+	static void OnConnect(seasocks::WebSocket* connection);
+	static void OnData(seasocks::WebSocket* connection, const uint8_t* data, size_t size);
+	static void OnDisconnect(seasocks::WebSocket* connection);
     
 	static int GetNumConnections();
     static int GetPort();
@@ -42,6 +47,10 @@ public:
 	static void Shutdown();
 
 	static void SendPacket(std::shared_ptr<Packet> packet, int clientId);
+
+	static std::shared_ptr<Client> GetClientByConnection(seasocks::WebSocket* connection);
+	static std::shared_ptr<Client> GetClientById(int id);
+	static seasocks::WebSocket* GetConnectionByClientId(int id);
 
 };
 

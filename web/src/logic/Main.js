@@ -1,3 +1,4 @@
+import Gfw from "msl/gfw/Gfw";
 import Log from "msl/log/Log";
 import Connection from "msl/remote/Connection"
 import Packet from "msl/remote/Packet";
@@ -18,18 +19,26 @@ class Main {
     static events = new Subscribable();
 
     static init(){
-        Main.connection.subscribe("Open", Main, () => {});
-        Main.connection.subscribe("OpenFailed", Main, Main.onConnectionOpenFailed);
-        Main.connection.subscribe("Close", Main, Main.onConnectionClose);
-        Main.connection.subscribe("Error", Main, Main.onConnectionError);
-        Main.connection.subscribe("Message", Main, Main.onConnectionMessage);        
+        Gfw.install();
+        Gfw.events.subscribe("beforeUpdate", Main, Main.update)
+        Gfw.events.subscribe("resize", Main, Main.resize)
+        Main.connection.subscribe("open", Main, Main.onConnectionOpen);
+        Main.connection.subscribe("openFailed", Main, Main.onConnectionOpenFailed);
+        Main.connection.subscribe("close", Main, Main.onConnectionClose);
+        Main.connection.subscribe("error", Main, Main.onConnectionError);
+        Main.connection.subscribe("message", Main, Main.onConnectionMessage);        
         Main.connection.connect();
     }
 
-    static update(){
+    static start(){
+        Gfw.start();
+    }
 
-        // update time
-        Time.update();
+    static resize(){
+        Main.events.notifySubscribers("resize")
+    }
+
+    static update(){
 
         // process received packets
         Main.packetReceiver.processPackets()
@@ -91,7 +100,7 @@ class Main {
     }
 
     static onConnectionMessage(event){
-        Log.debug("Main", "onConnectionMessage");
+        // Log.debug("Main", "onConnectionMessage");
         var packet = new Packet()
         packet.unpack(event.data)
         Main.packetReceiver.addPacket(packet)

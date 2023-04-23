@@ -18,7 +18,8 @@ export default class DynamicBuffer {
             this.view = new DataView(this.buffer)
             this.write_ptr = 0
             this.read_ptr = 0
-        }        
+        }
+        this.littleEndian = true;
     }
     reset(){
         this.write_ptr = 0
@@ -70,37 +71,37 @@ export default class DynamicBuffer {
     }
     readInt16(){
         this.ensureSize(this.read_ptr + 2)
-        var x = this.view.getInt16(this.read_ptr)        
+        var x = this.view.getInt16(this.read_ptr, this.littleEndian)        
         this.read_ptr += 2
         return x
     }
     readUint16(){
         this.ensureSize(this.read_ptr + 2)
-        var x = this.view.getUint16(this.read_ptr)        
+        var x = this.view.getUint16(this.read_ptr, this.littleEndian)        
         this.read_ptr += 2
         return x
     }
     readInt32(){
         this.ensureSize(this.read_ptr + 4)
-        var x = this.view.getInt32(this.read_ptr)        
+        var x = this.view.getInt32(this.read_ptr, this.littleEndian)        
         this.read_ptr += 4
         return x
     }
     readUint32(){
         this.ensureSize(this.read_ptr + 4)
-        var x = this.view.getUint32(this.read_ptr)        
+        var x = this.view.getUint32(this.read_ptr, this.littleEndian)        
         this.read_ptr += 4
         return x
     }
     readFloat32(){
         this.ensureSize(this.read_ptr + 4)
-        var x = this.view.getFloat32(this.read_ptr)    
+        var x = this.view.getFloat32(this.read_ptr, this.littleEndian)    
         this.read_ptr += 4    
         return x
     }
     readFloat64(){
         this.ensureSize(this.read_ptr + 8)
-        var x = this.view.getFloat64(this.read_ptr)    
+        var x = this.view.getFloat64(this.read_ptr, this.littleEndian)    
         this.read_ptr += 8
         return x
     }
@@ -131,32 +132,32 @@ export default class DynamicBuffer {
     }
     writeInt16(x){
         this.ensureSize(this.write_ptr + 2)
-        this.view.setInt16(this.write_ptr, x)
+        this.view.setInt16(this.write_ptr, x, this.littleEndian)
         this.write_ptr += 2
     }
     writeUint16(x){
         this.ensureSize(this.write_ptr + 2)
-        this.view.setUint16(this.write_ptr, x)
+        this.view.setUint16(this.write_ptr, x, this.littleEndian)
         this.write_ptr += 2
     }
     writeInt32(x){
         this.ensureSize(this.write_ptr + 4)        
-        this.view.setInt32(this.write_ptr, x)
+        this.view.setInt32(this.write_ptr, x, this.littleEndian)
         this.write_ptr += 4
     }
     writeUint32(x){
         this.ensureSize(this.write_ptr + 4)        
-        this.view.setUint32(this.write_ptr, x)
+        this.view.setUint32(this.write_ptr, x, this.littleEndian)
         this.write_ptr += 4
     }
     writeFloat32(x){
         this.ensureSize(this.write_ptr + 4)    
-        this.view.setFloat32(this.write_ptr, x)
+        this.view.setFloat32(this.write_ptr, x, this.littleEndian)
         this.write_ptr += 4
     }
     writeFloat64(x){
         this.ensureSize(this.write_ptr + 8)    
-        this.view.setFloat64(this.write_ptr, x)
+        this.view.setFloat64(this.write_ptr, x, this.littleEndian)
         this.write_ptr += 8
     }
     writeString(str){

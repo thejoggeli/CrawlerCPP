@@ -1,6 +1,8 @@
 #include "ByteBufferReader.h"
 #include "core/Log.h"
 #include <stdexcept>
+#include "util/Endian.h"
+#include <cstring>
 
 namespace Crawler {
 
@@ -16,10 +18,18 @@ T ByteBufferReader::Read(){
         return 0;
     }
     T val = ((T*)(bytes+readPtr))[0];
+    if(swapEndian){
+        val = SwapEndian<T>(val);
+    }
     readPtr += sizeof(T);
     return val;
 }
 
+const char* ByteBufferReader::ReadString(){
+    const char* str = (char*)(bytes+readPtr);
+    readPtr += std::strlen(str)+1;
+    return str;
+}
 
 template float ByteBufferReader::Read<float>();
 template double ByteBufferReader::Read<double>();

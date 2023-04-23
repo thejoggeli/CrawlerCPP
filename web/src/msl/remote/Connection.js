@@ -23,26 +23,26 @@ export default class Connection extends Subscribable {
         this.websocket.addEventListener("open", (event) => {
             this.connected = true  
             // Log.info("Connection", "connected=" + this.connected)
-            this.notifySubscribers("Open", event)
+            this.notifySubscribers("open", event)
         })
         this.websocket.addEventListener("close", (event) => {
             if(this.connected){
                 this.connected = false
                 // Log.info("Connection", "connected=" + this.connected)
-                this.notifySubscribers("Close", event)
+                this.notifySubscribers("close", event)
             } else {
                 this.connected = false
                 // Log.info("Connection", "connected=" + this.connected)
-                this.notifySubscribers("OpenFailed", event)
+                this.notifySubscribers("openFailed", event)
             }
         })
         this.websocket.addEventListener("error", (event) => {
             // Log.error("Connection", event)
-            this.notifySubscribers("Error", event)
+            this.notifySubscribers("error", event)
         })
         this.websocket.addEventListener("message", (event) => {
             // Log.info("Connection", "message", event)
-            this.notifySubscribers("Message", event)
+            this.notifySubscribers("message", event)
         })
     }
     send(data){

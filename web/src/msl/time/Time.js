@@ -23,7 +23,7 @@ class Time {
         Time.deltaTimeMillis = Time.currentTimeMillis - Time.lastTimeMillis;
 
         Time.lastTime = Time.lastTimeMillis * 0.001;
-        Time.currentTime = Time.currentTime * 0.001
+        Time.currentTime = Time.currentTimeMillis * 0.001
         Time.deltaTime = Time.deltaTimeMillis * 0.001;
     }
 

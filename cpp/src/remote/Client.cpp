@@ -31,48 +31,48 @@ void Client::SendPacket(std::shared_ptr<Packet> packet){
 }
 
 void Client::Update(){
-	for(int i = 0; i < NUM_GAMEPAD_KEYS; i++){
-		onDownMap[i] = onUpMap[i] = false;
+	
+	// clear OnKeyDown() state from last frame
+	for(GamepadKey key : downKeys){
+		onDownMap[(unsigned int)key] = false;
 	}
+	downKeys.clear();
+
+	// clear OnKeyUp() state from last frame
+	for(GamepadKey key : upKeys){
+		onUpMap[(unsigned int)key] = false;
+	}
+	upKeys.clear();
+
+	// process packets
 	for(auto& packet: packets){
 		switch(packet->type){
-		case PacketType::GamepadKey: {
+		case PacketType::CS_GamepadKey: {
 			GamepadKey key = (GamepadKey) packet->data.Get<uint8_t>("key");
 			GamepadKeyState state = (GamepadKeyState) packet->data.Get<uint8_t>("state");
 			switch(state){
 				case GamepadKeyState::Pressed: {
 					isDownMap[(unsigned int)key] = true;
 					onDownMap[(unsigned int)key] = true;
+					downKeys.push_back(key);
 					break;
 				}
 				case GamepadKeyState::Released: {
 					isDownMap[(unsigned int)key] = false;
 					onUpMap[(unsigned int)key] = true;
+					upKeys.push_back(key);
 					break;
 				}
 				default: break;
 			}
 			break;
 		}
-		case PacketType::GamepadJoystick: {
+		case PacketType::CS_GamepadJoystick: {
 			GamepadKey key = (GamepadKey) packet->data.Get<uint8_t>("key");
-			GamepadKeyState state = (GamepadKeyState) packet->data.Get<uint8_t>("state");
-			switch(state){
-				case GamepadKeyState::Pressed: {
-					isDownMap[(unsigned int)key] = true;
-					onDownMap[(unsigned int)key] = true;
-					break;
-				}
-				case GamepadKeyState::Released: {
-					isDownMap[(unsigned int)key] = false;
-					onUpMap[(unsigned int)key] = true;
-					break;
-				}
-				default: break;
-			}
 			unsigned int id = (unsigned int)(key) & GAMEPAD_JOYSTICK_MASK;
 			float x = packet->data.Get<float>("x");
 			float y = packet->data.Get<float>("y");
+			// LogDebug("Client", iLog << "x: " << x << ", y: " << y);
 			joystickPositions[id] = Eigen::Vector2f(x, y);
 			break;
 		}
@@ -93,7 +93,7 @@ bool Client::OnKeyUp(GamepadKey code){
 }
 
 Eigen::Vector2f Client::GetJoystickPosition(GamepadKey code){
-	int id = (code == GamepadKey::LeftJoystick) ? 0 : 1;
+	int id = (uint8_t)(code) & GAMEPAD_JOYSTICK_MASK;
 	return joystickPositions[id];
 }
 

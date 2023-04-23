@@ -12,11 +12,13 @@ public:
     const unsigned int size;
     int readPtr = 0;
     int error = 0;
+    bool swapEndian = false;
 
     ByteBufferReader(const uint8_t* bytes, unsigned int size);
 
     template<typename T>
     T Read();
+    const char* ReadString();
 
 };
 

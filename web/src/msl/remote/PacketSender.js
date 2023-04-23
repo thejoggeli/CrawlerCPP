@@ -3,9 +3,13 @@ import Log from "msl/log/Log.js"
 class PacketSender {
     constructor(){
         this.packets = []
+        this.logDebug = true
     }
     addPacket(packet){
         this.packets.push(packet)
+        if(this.logDebug){
+            console.log(packet.type.name, packet.data)
+        }
     }
     getPackets(){
         return this.packets

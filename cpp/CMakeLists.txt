@@ -29,6 +29,7 @@ set(
     src/util/Timer.cpp
     src/util/SmartBuffer.cpp
     src/util/ByteBufferReader.cpp
+    src/util/Endian.cpp
     src/remote/SocketServer.cpp
     src/remote/SocketMessage.cpp
     src/remote/SeasocksHandler.cpp

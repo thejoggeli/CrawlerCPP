@@ -66,6 +66,20 @@ shared_ptr<Client> ClientManager::GetClient(int id){
 	return nullptr;
 };
 
+std::shared_ptr<Client> ClientManager::GetOldestClient(){
+	if(clientsVector.size() > 0){
+		return clientsVector[0];
+	}
+	return nullptr;
+}
+
+std::shared_ptr<Client> ClientManager::GetNewestClient(){
+	if(clientsVector.size() > 0){
+		return clientsVector[clientsVector.size()-1];
+	}
+	return nullptr;
+}
+
 const vector<shared_ptr<Client>>& ClientManager::GetAllCients() {
 	return clientsVector;
 }

@@ -1,5 +1,6 @@
 #include "SmartBuffer.h"
 #include "core/Log.h"
+#include "util/Endian.h"
 
 namespace Crawler {
 
@@ -13,6 +14,27 @@ SmartBuffer::SmartBuffer(const uint8_t* bytes, unsigned int numBytes){
 
 SmartBuffer::~SmartBuffer(){
 
+}
+
+void SmartBuffer::PrintPretty(bool hex, int lineSize){
+    const char* format = hex ? "%02X " : "%03d ";
+    std::string line = "";
+    for(int i = 0; i < bytes.size(); i++){
+        char buffer[10];
+        if(i%lineSize==0){
+            if(line.length() > 0){
+                LogInfo("SmartBuffer", iLog << line);
+                line = "";
+            }
+            sprintf(buffer, "%04d | ", i);
+            line += buffer;
+        }
+        sprintf(buffer, format, bytes[i]);
+        line += buffer;
+    }
+    if(line.length() > 0){
+        LogInfo("SmartBuffer", iLog << line);
+    }
 }
 
 void SmartBuffer::AddString(const std::string& key, const char* value){
@@ -31,20 +53,18 @@ void SmartBuffer::AddString(unsigned int key, const char* value){
 
 void SmartBuffer::AddString(const char* value){
     unsigned int i = 0;
-    while(true){
+    while(value[i] != '\0'){
         bytes.push_back(value[i]);
-        if(value[i] == '\0'){
-            return;
-        }
         i++;
     }
+    bytes.push_back('\0');
 }
 
 template<typename ValType>
 void SmartBuffer::Add(const std::string& key, ValType value){
     if(!map_str.contains(key)){
         map_str[key] = this->bytes.size();
-        LogDebug("SmartBuffer", iLog << "adding key " << key);
+        // LogDebug("SmartBuffer", iLog << "adding key " << key);
     }
     Add<ValType>(value);
 }
@@ -53,17 +73,19 @@ template<typename ValType>
 void SmartBuffer::Add(unsigned int key, ValType value){
     if(!map_int.contains(key)){
         map_int[key] = this->bytes.size();
-        LogDebug("SmartBuffer", iLog << "adding key " << key);
+        // LogDebug("SmartBuffer", iLog << "adding key " << key);
     }
     Add<ValType>(value);
 }
 
 template<typename ValType>
 void SmartBuffer::Add(ValType value){
-    uint8_t* bytes = (uint8_t*)(&value);
-    for(int i = 0; i < sizeof(ValType); i++){
-        this->bytes.push_back(bytes[i]);
+    if(swapEndian){
+        value = SwapEndian(value);
     }
+    unsigned int s = bytes.size();
+    bytes.resize(s + sizeof(ValType));
+    *(ValType*)(bytes.data()+s) = value;
 }
 
 const char* SmartBuffer::GetString(const std::string& key){
@@ -72,7 +94,7 @@ const char* SmartBuffer::GetString(const std::string& key){
         return nullptr;
     }
     unsigned int bytePos = map_str[key];
-    return (char*)&(bytes[bytePos]);
+    return (char*)(bytes.data()+bytePos);
 }
 
 const char* SmartBuffer::GetString(unsigned int key){
@@ -81,7 +103,7 @@ const char* SmartBuffer::GetString(unsigned int key){
         return nullptr;
     }
     unsigned int bytePos = map_int[key];
-    return (char*)&(bytes[bytePos]);
+    return (char*)(bytes.data()+bytePos);
 }
 
 template<typename ValType>
@@ -92,7 +114,11 @@ ValType SmartBuffer::Get(const std::string& key, unsigned int offset){
     }
     unsigned int bytePos = map_str[key];
     uint8_t* bytes = &(this->bytes.data()[bytePos+offset*sizeof(ValType)]);
-    return *((ValType*)bytes);
+    ValType value = *((ValType*)bytes);
+    if(swapEndian){
+        value = SwapEndian<ValType>(value);
+    }
+    return value;
 }
 
 template<typename ValType>
@@ -103,7 +129,11 @@ ValType SmartBuffer::Get(unsigned int key, unsigned int offset){
     }
     unsigned int bytePos = map_int[key];
     uint8_t* bytes = &(this->bytes.data()[bytePos+offset*sizeof(ValType)]);
-    return *((ValType*)bytes);
+    ValType value = *((ValType*)bytes);
+    if(swapEndian){
+        value = SwapEndian<ValType>(value);
+    }
+    return value;
 }
 
 void SmartBuffer::SetBytes(const uint8_t* bytes, unsigned int numBytes){

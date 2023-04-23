@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 // #include <iostream>
 
 namespace Crawler {
@@ -16,6 +17,8 @@ private:
 
 public:
 
+	bool swapEndian = false;
+
     SmartBuffer(unsigned int reserveBytes=64);
     SmartBuffer(const uint8_t* bytes, unsigned int numBytes);
 	~SmartBuffer();
@@ -23,6 +26,7 @@ public:
     void SetBytes(const uint8_t* bytes, unsigned int numBytes);
 	const uint8_t* GetBytes();
 	unsigned int GetSize();
+	void PrintPretty(bool hex = true, int lineSize = 16);
 
 	// add string
 	void AddString(unsigned int key, const char* value);
@@ -41,6 +45,8 @@ public:
 	// get variable value
 	template<typename ValType> ValType Get(unsigned int key, unsigned int offset=0);
 	template<typename ValType> ValType Get(const std::string& key, unsigned int offset=0);
+
+
 
 };
 

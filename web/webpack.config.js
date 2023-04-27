@@ -20,8 +20,12 @@ module.exports = {
                         options: {
                             limit: 8192
                         }
-                 } ]
-             }
+                    }]
+            },
+            {
+                test: /\.css$/i,
+                use: ["style-loader", "css-loader"],
+            },
         ],
     },
     plugins: [
@@ -31,14 +35,14 @@ module.exports = {
         }),
         new CopyWebpackPlugin({
             patterns: [
-                {from: "public/img", to: "img/"},
-                {from: "public/css", to: "css/"},
-                {from: "public/font", to: "font/"},
+                { from: "public/img", to: "img/" },
+                { from: "public/css", to: "css/" },
+                { from: "public/font", to: "font/" },
             ],
         }),
     ],
     resolve: {
-        alias: {    
+        alias: {
             "logic": path.resolve(__dirname, 'src/logic/'),
             "msl": path.resolve(__dirname, 'src/msl/'),
         },

@@ -4,13 +4,14 @@ import Robot3D from "./Robot3D"
 import Main from "logic/Main"
 import Time from "msl/time/Time"
 import GamepadCanvas from "./GamepadCanvas";
+import Overview from "./Overview";
 
 export default class App extends React.Component {
 
     constructor(props){
         super(props);
         this.state = {
-            showRobot3D: false,
+            view: 0,
         }
     }
 
@@ -19,7 +20,9 @@ export default class App extends React.Component {
     }
 
     handleClick = e => {
-        this.setState({showRobot3D: !this.state.showRobot3D});
+        this.setState({
+            view: (this.state.view+1)%3
+        });
         // this.setState(calculate(this.state, buttonName));
     };
 
@@ -32,23 +35,23 @@ export default class App extends React.Component {
     };
 
     render() {
-        var toggleViewButton;
-        var robot;
-        var gamepad;
-        if(this.state.showRobot3D){
-            toggleViewButton = <button onClick={this.handleClick}>Click me</button>
-            robot = <Robot3D />
+        var view;
+        if(this.state.view == 0){
+            view = <Overview />
+        } else if(this.state.view == 1){
+            view = <Robot3D />
         } else {
-            toggleViewButton = <button onClick={this.handleClick}>Click me again</button>   
-            gamepad = <GamepadCanvas />
+            view = <GamepadCanvas />
         }
-        var sendEventButton = <button onClick={this.handleClick2}>Send event</button>   
         return (
             <div>    
-                <div>{toggleViewButton}</div>
-                <div>{sendEventButton}</div>
-                <div>{robot}</div>
-                <div>{gamepad}</div>
+                <div>
+                    <button onClick={this.handleClick}>State view: {this.state.view}</button>
+                </div>
+                <div>
+                    <button onClick={this.handleClick2}>Send event</button>   
+                </div>
+                <div>{view}</div>
             </div>
         );
     }

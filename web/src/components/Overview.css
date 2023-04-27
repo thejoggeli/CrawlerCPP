@@ -1,0 +1,31 @@
+.overview div {
+    margin-top:2px;
+}
+.overview table {
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.overview table th ,
+.overview table td {
+    background: #EEEEEE;
+    border:1px solid black;
+    padding:4px 8px;
+    text-align: center;
+    min-width: 50px;
+    
+}
+.overview tr:nth-child(1) th{
+    background: #AAAAAA;
+}
+.overview tr:nth-child(2) th{
+    background: #AAAAAA;
+}
+.overview .tr-sum td {
+    font-weight: bold;
+}
+.overview .sum {
+    font-weight: bold;
+}
+.overview .leg {
+    font-weight: bold;
+}

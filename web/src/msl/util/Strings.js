@@ -40,4 +40,19 @@ Strings.pad = function(pad, str, padLeft) {
 	}
 }
 
+Strings.toHexString = function(number, size, upperCase){
+	if(upperCase === undefined){
+		upperCase = true
+	}
+	if(size === undefined){
+		size = 8
+	}
+	var pad = Array(size).fill("0").join("")
+	var str = Strings.pad(pad, number.toString(16), true)
+	if(upperCase){
+		return str.toUpperCase()
+	}
+	return str.toLowerCase()
+}
+
 export default Strings

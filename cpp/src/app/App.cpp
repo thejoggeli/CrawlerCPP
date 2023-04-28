@@ -1,4 +1,4 @@
-#include "Main.h"
+#include "App.h"
 
 #include <JetsonGPIO.h>
 #include "util/HardwareButton.h"
@@ -16,56 +16,61 @@
 #include "brain/SurferBrain.h"
 #include "brain/GaitBrain.h"
 #include "brain/EmptyBrain.h"
+#include "ServoThread.h"
 
 using namespace std;
 using namespace Crawler;
 
 namespace Crawler {
 
-Main::Main(){
+static bool initialized = false;
+static bool exitRequested = false;
+static ServoThread servoThread;
+
+App::App(){
     mainButton = new HardwareButton(24, 200*1000);
     mainButtonLED = new MonoLED(22); 
 }
 
-Main::~Main(){
+App::~App(){
     delete mainButton;
     delete mainButtonLED;
 }
 
-bool Main::Init(){
+bool App::Init(){
 
     if(initialized){
         return false;
     }
 
-    LogInfo("Main", "Init()");
+    LogInfo("App", "Init()");
 
     // init config
 	if(!Config::Init()){
-		LogError("Main", "Config initialization failed");
+		LogError("App", "Config initialization failed");
 		return false;
 	}
 
     // init log levels
     if(!LogLevels::Init()){
-		LogError("Main", "LogLevels initialization failed");
+		LogError("App", "LogLevels initialization failed");
 		return false;
     }
 
 	// init client manager
 	if(!ClientManager::Init()){
-		LogError("Main", "ClientManager initialization failed");
+		LogError("App", "ClientManager initialization failed");
 		return false;
 	}
 
 	// init socket server
 	if(!SocketServer::Init()){
-		Log(LOG_ERROR, "Main", "ServerManager initialization failed");
+		Log(LOG_ERROR, "App", "ServerManager initialization failed");
 		return false;
 	}
 
     // set gpio mode
-    LogInfo("Main", "GPIO setup");
+    LogInfo("App", "GPIO setup");
     GPIO::setmode(GPIO::BCM);
 
     // init main button
@@ -73,24 +78,27 @@ bool Main::Init(){
     mainButtonLED->Init(true);
 
     // create robot
-    LogInfo("Main", "create robot");
+    LogInfo("App", "create robot");
     robot = new Robot();
 
     // open servo serial stream
     if(robot->OpenSerialStream("/dev/ttyTHS0")){
-        LogInfo("Main", "serial stream open");
+        LogInfo("App", "serial stream open");
     } else {
-        LogInfo("Main", "serial stream open failed");
+        LogInfo("App", "serial stream open failed");
         return false;
     }
+
+    // init servo thread
+    servoThread.Init(robot);
 
     // init success
     return true;
 }
 
-bool Main::InitServos(){
+bool App::InitServos(){
 
-    LogInfo("Main", "InitServos()");
+    LogInfo("App", "InitServos()");
 
     // reboot servos
     robot->RebootServos(3.5f);
@@ -108,17 +116,17 @@ bool Main::InitServos(){
     }
 
     // print servo status
-    robot->UpdateAndPrintServosStatus();
+    robot->PrintServoStatus();
 
     return true;
 }
 
-bool Main::Cleanup(){
+bool App::Cleanup(){
 
-    LogInfo("Main", "Cleanup()");
+    LogInfo("App", "Cleanup()");
 
     // close servo serial stream
-    LogInfo("Main", "serial stream close");
+    LogInfo("App", "serial stream close");
     robot->CloseSerialStream();
 
     // main button cleanup
@@ -130,9 +138,9 @@ bool Main::Cleanup(){
 
 }
 
-bool Main::Run(){
+bool App::Run(){
 
-    LogInfo("Main", "Run()");
+    LogInfo("App", "Run()");
 
     // frame & sleep stuff
     const uint64_t frameDurationTargetMicros = 1000;
@@ -148,12 +156,12 @@ bool Main::Run(){
     const float statusTimerInterval = 10.0f;
 
     // set fixed update rate
-    Time::SetFixedDeltaTimeMicros(1000*25);
+    Time::SetFixedDeltaTimeMicros(1000*40);
     uint64_t lastUpdateTimeMicros = 0;
 
     // start up robot
     robot->Startup();
-    robot->UpdateAndPrintServosStatus();
+    robot->PrintServoStatus();
     // robot->SetBrain(new SurferBrain());
     robot->SetBrain(new GaitBrain());
     // robot->SetBrain(new EmptyBrain());
@@ -164,8 +172,13 @@ bool Main::Run(){
     // status timer
     statusTimer.Start(statusTimerInterval);
 
+    // start servo thread
+    servoThread.nextLoopSignal = false;
+    servoThread.serialCommCompleteSignal = true;
+    servoThread.Start();
+
     // main loop
-    LogInfo("Main", "main loop start");
+    LogInfo("App", "main loop start");
     while(!exitRequested){
         
         // update time
@@ -197,7 +210,7 @@ bool Main::Run(){
         if(clients.size() > 0){
             Client* client = clients[0].get();
             if(client->OnKeyDown(GamepadKey::Select)){
-                robot->UpdateAndPrintServosStatus();
+                robot->PrintServoStatus();
             }
         }
 
@@ -206,7 +219,24 @@ bool Main::Run(){
 
         // fixed update
         if(Time::currentTimeMicros - lastUpdateTimeMicros >= Time::fixedDeltaTimeMicros){
+
+            // LogInfo("App", "waiting for serial comm complete");
+            std::unique_lock<std::mutex> serialCommLock(servoThread.serialCommMutex);
+            while(!servoThread.serialCommCompleteSignal){
+                servoThread.serialCommCompleteCv.wait(serialCommLock, [&]{return servoThread.serialCommCompleteSignal == true; });
+            }
+            // LogInfo("App", "ApplyBuffers");
+            servoThread.ApplyBuffers();
+            servoThread.serialCommCompleteSignal = false;
+            serialCommLock.unlock();
+
+            // LogInfo("App", "nextLoopSignal = true");
+            servoThread.nextLoopSignal = true;
+            servoThread.nextLoopCv.notify_all();
+            
             robot->FixedUpdate();
+
+            // increase fixed fps counter
             fixedUpsCounter += 1;
 
             // add fixed delta time (prevents UPS drift)
@@ -214,7 +244,7 @@ bool Main::Run(){
 
             // prevent frame debt buildup if actual UPS drops below target UPS
             if(Time::currentTimeMicros - lastUpdateTimeMicros >= Time::fixedDeltaTimeMicros){
-                LogDebug("Main", "FixedUpdate frame drift prevention");
+                LogDebug("App", "FixedUpdate frame drift prevention");
                 lastUpdateTimeMicros = Time::currentTimeMicros;
             }
 
@@ -228,7 +258,7 @@ bool Main::Run(){
             fixedUps = (float) fixedUpsCounter / statusTimerInterval;
             float capacity = (float)longestDeltaTimeMicros/(float)Time::fixedDeltaTimeMicros;
             float totalSleepTime = (float) totalSleepTimeMicros * 1.0e-6;
-            LogInfo("Main", iLog 
+            LogInfo("App", iLog 
                 << "UPS=" << ups << ", "
                 << "FixedUPS=" << fixedUps << ", "
                 << "MaxDT=" << (longestDeltaTimeMicros*1.0e-3f) << "ms, "
@@ -254,7 +284,7 @@ bool Main::Run(){
         }
 
     }
-    LogInfo("Main", "main loop end");
+    LogInfo("App", "main loop end");
 
     // shut down robot
     robot->Shutdown();
@@ -263,8 +293,8 @@ bool Main::Run(){
     
 }
 
-void Main::RequestExit(){
-    LogInfo("Main", "RequestExit()");
+void App::RequestExit(){
+    LogInfo("App", "RequestExit()");
     exitRequested = true;
 }
 

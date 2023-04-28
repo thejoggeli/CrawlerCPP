@@ -1,7 +1,5 @@
 #pragma once
 
-#define iLog (Crawler::LogConcator::instance)
-
 #include <sstream>
 
 namespace Crawler {
@@ -24,7 +22,6 @@ class LogConcator {
 private:
 public:
 	std::stringstream stringStream;
-	static LogConcator instance;
 	template<typename T>
 	LogConcator& operator << (const T& val){
 		stringStream << val;
@@ -32,8 +29,6 @@ public:
 	}
 };
 
-void Log(LogConcator& log);
-void Log(const std::string& str);
 void Log(LogLevel level, const std::string& source, LogConcator& log);
 void Log(LogLevel level, const std::string& source, const std::string& str);
 
@@ -52,5 +47,6 @@ void LogError(const std::string& str);
 void LogError(const std::string& source, LogConcator& log);
 void LogError(const std::string& source, const std::string& str);
 
-
 }
+
+#define iLog Crawler::LogConcator()

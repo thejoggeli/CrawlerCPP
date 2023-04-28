@@ -6,20 +6,15 @@ class Robot;
 class HardwareButton;
 class MonoLED;
 
-class Main {
-private:
-
-    bool initialized = false;
-    bool exitRequested = false;
-
+class App {
 public:
 
     Robot* robot;
     HardwareButton* mainButton;
     MonoLED* mainButtonLED;
 
-    Main();
-    ~Main();
+    App();
+    ~App();
 
     bool Init();
     bool InitServos();

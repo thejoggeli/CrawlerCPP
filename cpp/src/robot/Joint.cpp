@@ -67,63 +67,109 @@ void Joint::MoveServoToTargetAngle(float seconds){
     servo->setPosition(angle, playtime);
 }
 
-bool Joint::UpdateMeasuredAngle(){
+bool Joint::ReadMeasuredStatus(bool buffer){
+    XYZServoStatus status = servo->readStatus();
+    if(servo->getLastError()){
+        LogError("Joint", iLog << debugName << " readStatus() failed");
+        return false;
+    }
+    if(buffer){
+        measuredAngle.BufferValue(XYZToAngle(status.position));
+        measuredCurrent.BufferValue((float)(status.iBus) * (1000.0f / 200.0f));
+        measuredPwm.BufferValue((float)(status.pwm));
+        statusDetail.BufferValue(status.statusDetail);
+        statusError.BufferValue(status.statusError);
+    } else {
+        measuredAngle.SetValue(XYZToAngle(status.position));
+        measuredCurrent.SetValue((float)(status.iBus) * (1000.0f / 200.0f));
+        measuredPwm.SetValue((float)(status.pwm));
+        statusDetail.SetValue(status.statusDetail);
+        statusError.SetValue(status.statusError);
+    }
+    return true;
+}
+
+bool Joint::ReadMeasuredAngle(bool buffer){
     uint16_t xyz = servo->readPosition();
     if(servo->getLastError()){
         LogError("Joint", iLog << debugName << " readPosition() failed");
         return false;
     }
-    measuredAngle = XYZToAngle(xyz);
+    if(buffer){
+        measuredAngle.BufferValue(XYZToAngle(xyz));
+    } else {
+        measuredAngle.SetValue(XYZToAngle(xyz));
+    }
     return true;
 }
 
-bool Joint::UpdateMeasuredCurrent(){
+bool Joint::ReadMeasuredCurrent(bool buffer){
     uint16_t iBus = servo->readCurrent();
     if(servo->getLastError()){
         LogError("Joint", iLog << debugName << " readCurrent() failed");
         return false;
     }
-    measuredCurrent = (float)iBus * (1000.0f / 200.0f);
+    if(buffer){
+        measuredCurrent.BufferValue((float)iBus * (1000.0f / 200.0f));
+    } else {
+        measuredCurrent.SetValue((float)iBus * (1000.0f / 200.0f));
+    }
     return true;
 }
 
-bool Joint::UpdateMeasuredVoltage(){
+bool Joint::ReadMeasuredVoltage(bool buffer){
     uint8_t voltage = servo->readVoltage();
     if(servo->getLastError()){
         LogError("Joint", iLog << debugName << " readVoltage() failed");
         return false;
     }
-    measuredVoltage = (float)voltage * (1.0f / 200.0f);
+    if(buffer){
+        measuredVoltage.BufferValue((float)voltage * (float)voltage * (1.0f / 16.0f));
+    } else {
+        measuredVoltage.SetValue((float)voltage * (float)voltage * (1.0f / 16.0f));
+    }
     return true;
 }
 
-bool Joint::UpdateMeasuredTemperature(){
+bool Joint::ReadMeasuredTemperature(bool buffer){
     uint8_t temperature = servo->readTemperature();
     if(servo->getLastError()){
         LogError("Joint", iLog << debugName << " readTemperature() failed");
         return false;
     }
-    measuredTemperature = (float)temperature;
+    if(buffer){
+        measuredVoltage.BufferValue((float)temperature);
+    } else {
+        measuredVoltage.SetValue((float)temperature);
+    }
     return true;
 }
 
-bool Joint::UpdateStatusError(){
+bool Joint::ReadStatusError(bool buffer){
     uint8_t statusError = servo->readStatusError();
     if(servo->getLastError()){
         LogError("Joint", iLog << debugName << " readStatusError() failed");
         return false;
     }
-    this->statusError = statusError;
+    if(buffer){
+        this->statusError.BufferValue(statusError);
+    } else {
+        this->statusError.SetValue(statusError);
+    }
     return true;
 }
 
-bool Joint::UpdateStatusDetail(){
+bool Joint::ReadStatusDetail(bool buffer){
     uint8_t statusDetail = servo->readStatusDetail();
     if(servo->getLastError()){
         LogError("Joint", iLog << debugName << " readStatusDetail() failed");
         return false;
     }
-    this->statusDetail = statusDetail;
+    if(buffer){
+        this->statusDetail.BufferValue(statusDetail);
+    } else {
+        this->statusDetail.SetValue(statusDetail);
+    }
     return true;
 }
 

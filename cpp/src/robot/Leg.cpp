@@ -185,8 +185,6 @@ float Leg::IKLoss(float phiTarget, float phiOld, float phiNew, float anglesOld[4
 
     // delta phi
     float phiDelta = phiNew - phiOld;
-    loss += (phiDelta*phiDelta)*phiDeltaWeight;
-
     // find max angle error
     float angleDeltaMax = 0.0f;
     for(int i = 0; i < 4; i++){

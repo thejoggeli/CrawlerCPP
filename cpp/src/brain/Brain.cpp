@@ -63,8 +63,6 @@ bool Brain::ApplyPoseToJoints(Eigen::Vector3f footPositions[4], float footAngles
                 robot->legs[i]->joints[j]->SetTargetAngle(angle);
             }
         }
-        // move servos to target position sync
-        robot->MoveJointsToTargetSync(Time::fixedDeltaTime);
     } else {
         // IK failed
         LogDebug("Brain", "inverse kinematics search failed");

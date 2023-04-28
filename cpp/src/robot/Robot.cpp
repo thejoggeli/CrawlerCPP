@@ -216,7 +216,7 @@ void Robot::Startup(){
 
     // set servo last target angles to measured angles
     for(Joint* joint : jointsList){
-        if(joint->UpdateMeasuredAngle()){
+        if(joint->ReadMeasuredAngle()){
             joint->lastTargetAngle = joint->measuredAngle;
         }
     }
@@ -245,31 +245,25 @@ void Robot::Shutdown(){
 
 }
 
-void Robot::UpdateAndPrintServosStatus(){
+void Robot::PrintServoStatus(){
     LogInfo("Robot", "Status Error:");
     char buffer[100];
-    for(Joint* joint : jointsList){
-        joint->UpdateStatusError();
-    }
     for(Leg* leg : legs){
         sprintf(buffer, "%s %02X %02X %02X %02X", leg->name.c_str(),
-            leg->joints[0]->statusError,
-            leg->joints[1]->statusError,
-            leg->joints[2]->statusError,
-            leg->joints[3]->statusError
+            leg->joints[0]->statusError.value,
+            leg->joints[1]->statusError.value,
+            leg->joints[2]->statusError.value,
+            leg->joints[3]->statusError.value
         );
         LogInfo("Robot", buffer);
     }
     LogInfo("Robot", "Status Detail:");
-    for(Joint* joint : jointsList){
-        joint->UpdateStatusDetail();
-    }
     for(Leg* leg : legs){
         sprintf(buffer, "%s %02X %02X %02X %02X", leg->name.c_str(),
-            leg->joints[0]->statusDetail,
-            leg->joints[1]->statusDetail,
-            leg->joints[2]->statusDetail,
-            leg->joints[3]->statusDetail
+            leg->joints[0]->statusDetail.value,
+            leg->joints[1]->statusDetail.value,
+            leg->joints[2]->statusDetail.value,
+            leg->joints[3]->statusDetail.value
         );
         LogInfo("Robot", buffer);
     }
@@ -284,73 +278,60 @@ void Robot::UpdateAndPrintServosStatus(){
         LogInfo("Robot", buffer);
     }
     LogInfo("Robot", "Measured Angles (deg):");
-    for(Joint* joint : jointsList){
-        joint->UpdateMeasuredAngle();
-    }
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
-            leg->joints[0]->measuredAngle * RAD_2_DEGf,
-            leg->joints[1]->measuredAngle * RAD_2_DEGf,
-            leg->joints[2]->measuredAngle * RAD_2_DEGf,
-            leg->joints[3]->measuredAngle * RAD_2_DEGf
+            leg->joints[0]->measuredAngle.value * RAD_2_DEGf,
+            leg->joints[1]->measuredAngle.value * RAD_2_DEGf,
+            leg->joints[2]->measuredAngle.value * RAD_2_DEGf,
+            leg->joints[3]->measuredAngle.value * RAD_2_DEGf
         );
         LogInfo("Robot", buffer);
     }
     LogInfo("Robot", "(Measured - Target) Angles (deg):");
-    for(Joint* joint : jointsList){
-        joint->UpdateMeasuredAngle();
-    }
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
-            (leg->joints[0]->measuredAngle - leg->joints[0]->currentTargetAngle) * RAD_2_DEGf,
-            (leg->joints[1]->measuredAngle - leg->joints[1]->currentTargetAngle) * RAD_2_DEGf,
-            (leg->joints[2]->measuredAngle - leg->joints[2]->currentTargetAngle) * RAD_2_DEGf,
-            (leg->joints[3]->measuredAngle - leg->joints[3]->currentTargetAngle) * RAD_2_DEGf
+            (leg->joints[0]->measuredAngle.value - leg->joints[0]->currentTargetAngle) * RAD_2_DEGf,
+            (leg->joints[1]->measuredAngle.value - leg->joints[1]->currentTargetAngle) * RAD_2_DEGf,
+            (leg->joints[2]->measuredAngle.value - leg->joints[2]->currentTargetAngle) * RAD_2_DEGf,
+            (leg->joints[3]->measuredAngle.value - leg->joints[3]->currentTargetAngle) * RAD_2_DEGf
         );
         LogInfo("Robot", buffer);
     }
     LogInfo("Robot", "Measured Temperature (degC):");
-    for(Joint* joint : jointsList){
-        joint->UpdateMeasuredTemperature();
-    }
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
-            leg->joints[0]->measuredTemperature,
-            leg->joints[1]->measuredTemperature,
-            leg->joints[2]->measuredTemperature,
-            leg->joints[3]->measuredTemperature
+            leg->joints[0]->measuredTemperature.value,
+            leg->joints[1]->measuredTemperature.value,
+            leg->joints[2]->measuredTemperature.value,
+            leg->joints[3]->measuredTemperature.value
         );
         LogInfo("Robot", buffer);
     }
     LogInfo("Robot", "Measured Voltage (V):");
-    for(Joint* joint : jointsList){
-        joint->UpdateMeasuredVoltage();
-    }
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
-            leg->joints[0]->measuredVoltage,
-            leg->joints[1]->measuredVoltage,
-            leg->joints[2]->measuredVoltage,
-            leg->joints[3]->measuredVoltage
+            leg->joints[0]->measuredVoltage.value,
+            leg->joints[1]->measuredVoltage.value,
+            leg->joints[2]->measuredVoltage.value,
+            leg->joints[3]->measuredVoltage.value
         );
         LogInfo("Robot", buffer);
     }
     float currentSumRobot = 0;
     for(Joint* joint : jointsList){
-        joint->UpdateMeasuredCurrent();
-        currentSumRobot += joint->measuredCurrent;
+        currentSumRobot += joint->measuredCurrent.value;
     }
     LogInfo("Robot", "Measured Current (mA):");
     for(Leg* leg : legs){
         float currentSumLeg = 0;
         for(Joint* joint : leg->joints){
-            currentSumLeg += joint->measuredCurrent;
+            currentSumLeg += joint->measuredCurrent.value;
         }
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f   sum = %6.1f", leg->name.c_str(),
-            leg->joints[0]->measuredCurrent,
-            leg->joints[1]->measuredCurrent,
-            leg->joints[2]->measuredCurrent,
-            leg->joints[3]->measuredCurrent,
+            leg->joints[0]->measuredCurrent.value,
+            leg->joints[1]->measuredCurrent.value,
+            leg->joints[2]->measuredCurrent.value,
+            leg->joints[3]->measuredCurrent.value,
             currentSumLeg
         );
         LogInfo("Robot", buffer);

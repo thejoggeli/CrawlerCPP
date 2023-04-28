@@ -20,10 +20,6 @@ float Time::lastTime = 0.0f;
 float Time::startTime = 0.0f;
 
 void Time::Start(){
-	// time offset
-	struct timespec spec;
-	clock_gettime(CLOCK_REALTIME, &spec);
-
 
 	// start
 	startTimeMicros = GetSystemTimeMicros();
@@ -33,6 +29,7 @@ void Time::Start(){
 	startTime = startTimeMicros * 1.0e-6f;
 	currentTime = 0.0f;
 	lastTime = 0.0f;
+
 
 }
 

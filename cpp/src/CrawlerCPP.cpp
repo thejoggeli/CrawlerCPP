@@ -1,7 +1,7 @@
 #include "Eigen/Fix"
 #include "Eigen/Geometry"
 #include <signal.h>
-#include "crawler/Main.h"
+#include "app/App.h"
 #include "core/Log.h"
 
 // #define RUN_DEBUG
@@ -14,10 +14,10 @@ using namespace Crawler;
 
 unsigned int sigIntCounter = 0;
 
-Main* iMain;
+App* app;
 
 void mySigIntHandler(int s){
-    iMain->RequestExit();
+    app->RequestExit();
     sigIntCounter++;
     if(sigIntCounter >= 3){
         exit(EXIT_FAILURE);
@@ -26,7 +26,7 @@ void mySigIntHandler(int s){
 
 int main(){
 
-    iMain = new Main();
+    app = new App();
 
     // sigint handler
     struct sigaction sigIntHandler;
@@ -36,29 +36,30 @@ int main(){
     sigaction(SIGINT, &sigIntHandler, NULL);
 
     // main init
-    if(!iMain->Init()){
-        LogError("CrawperCPP", "Main::Init() failed");
+    if(!app->Init()){
+        LogError("CrawperCPP", "App::Init() failed");
         return EXIT_FAILURE;
     }
 
     // main run
 #ifndef RUN_DEBUG
 
-    if(!iMain->InitServos()){
-        return EXIT_FAILURE;
+    if(!app->InitServos()){
+        LogError("CrawperCPP", "App::InitServos() failed");
+        // return EXIT_FAILURE;
     }
 
-    if(!iMain->Run()){
-        LogError("CrawperCPP", "Main::Run() failed");
+    if(!app->Run()){
+        LogError("CrawperCPP", "App::Run() failed");
         return EXIT_FAILURE;
     }
 #else
-    Debug(iMain);
+    Debug(iApp);
 #endif
 
     // main cleanup
-    if(!iMain->Cleanup()){
-        LogError("CrawperCPP", "Main::Cleanup() failed");
+    if(!app->Cleanup()){
+        LogError("CrawperCPP", "App::Cleanup() failed");
         return EXIT_FAILURE;
     }
 

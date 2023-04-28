@@ -8,6 +8,8 @@ find_package(Seasocks)
 
 set(
     CRAWLER_SOURCE_FILES
+    src/app/App.cpp
+    src/app/ServoThread.cpp
     src/CrawlerCPP.cpp
     libs/serialib/Serialib.cpp
     src/comm/SerialStream.cpp
@@ -30,6 +32,8 @@ set(
     src/util/SmartBuffer.cpp
     src/util/ByteBufferReader.cpp
     src/util/Endian.cpp
+    src/threading/BufferedValue.cpp
+    src/threading/Semaphore.cpp
     src/remote/SocketServer.cpp
     src/remote/SocketMessage.cpp
     src/remote/SeasocksHandler.cpp
@@ -38,7 +42,6 @@ set(
     src/remote/ClientManager.cpp
     src/remote/PacketType.cpp
     src/remote/Packet.cpp
-    src/crawler/Main.cpp
     src/gait/Gait.cpp
     src/gait/GaitFrame.cpp
 )

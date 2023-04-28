@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include "threading/BufferedValue.h"
 
 class XYZServo;
 
@@ -48,12 +49,13 @@ public:
 
     float servoAngleScale = 1.0f;
 
-    float measuredAngle = 0.0f; // rad
-    float measuredCurrent = 0.0f; // mA
-    float measuredTemperature = 0.0f; // degC
-    float measuredVoltage = 0.0f; // V
-    uint8_t statusDetail = 0;
-    uint8_t statusError;
+    BufferedValue<float> measuredAngle; // radians
+    BufferedValue<float> measuredCurrent; // mA
+    BufferedValue<float> measuredTemperature; // degC
+    BufferedValue<float> measuredVoltage; // V
+    BufferedValue<float> measuredPwm;
+    BufferedValue<uint8_t> statusDetail;
+    BufferedValue<uint8_t> statusError;
     
     XYZServo* servo = nullptr;
     bool lastPingServoResult = false;
@@ -69,12 +71,13 @@ public:
     void SetTargetAngle(float angle);
     void MoveServoToTargetAngle(float seconds);
 
-    bool UpdateMeasuredAngle();
-    bool UpdateMeasuredCurrent();
-    bool UpdateMeasuredTemperature();
-    bool UpdateMeasuredVoltage();
-    bool UpdateStatusError();
-    bool UpdateStatusDetail();
+    bool ReadMeasuredStatus(bool buffer = false); // reads: angle, pwm, current, statusError, statusDetail 
+    bool ReadMeasuredAngle(bool buffer = false);
+    bool ReadMeasuredCurrent(bool buffer = false);
+    bool ReadMeasuredTemperature(bool buffer = false);
+    bool ReadMeasuredVoltage(bool buffer = false);
+    bool ReadStatusError(bool buffer = false);
+    bool ReadStatusDetail(bool buffer = false);
 
     void SetServoLedPolicyUser();
     void SetServoLedPolicySystem();

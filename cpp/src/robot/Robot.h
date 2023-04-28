@@ -53,7 +53,7 @@ public:
     void SetServosLedPolicyUser();
     void SetServosLedPolicySystem();
 
-    void UpdateAndPrintServosStatus();
+    void PrintServoStatus();
 
 };
 

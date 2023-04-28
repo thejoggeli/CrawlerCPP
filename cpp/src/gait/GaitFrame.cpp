@@ -17,7 +17,7 @@ GaitFrame::GaitFrame(const GaitFrame& frame) {
     footAngles = frame.footAngles;
     bodyPosition = frame.bodyPosition;
     bodyRotation = frame.bodyRotation;
-    LogDebug("GaitFrame", "CopyConstructor");
+    // LogDebug("GaitFrame", "CopyConstructor");
 }
 
 void GaitFrame::Interpolate(GaitFrame& out, const GaitFrame& a, const GaitFrame& b, float t){

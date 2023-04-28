@@ -23,6 +23,8 @@ using namespace Crawler;
 
 namespace Crawler {
 
+static uint64_t updateCounter = 0;
+static uint64_t fixedUpdateCounter = 0;
 static bool initialized = false;
 static bool exitRequested = false;
 static ServoThread servoThread;
@@ -143,7 +145,7 @@ bool App::Run(){
     LogInfo("App", "Run()");
 
     // frame & sleep stuff
-    const uint64_t frameDurationTargetMicros = 1000;
+    const uint64_t frameDurationTargetMicros = 4000;
     unsigned int upsCounter = 0;
     unsigned int fixedUpsCounter = 0;
     float ups = 0.0f;
@@ -173,8 +175,9 @@ bool App::Run(){
     statusTimer.Start(statusTimerInterval);
 
     // start servo thread
-    servoThread.nextLoopSignal = false;
-    servoThread.serialCommCompleteSignal = true;
+    servoThread.nextLoopSignal = true;
+    servoThread.serialCommStartedSignal = false;
+    servoThread.serialCommCompleteSignal = false;
     servoThread.Start();
 
     // main loop
@@ -219,32 +222,50 @@ bool App::Run(){
 
         // fixed update
         if(Time::currentTimeMicros - lastUpdateTimeMicros >= Time::fixedDeltaTimeMicros){
-
+            
+            // wait until ServoThread signals that it finished the last loop
             // LogInfo("App", "waiting for serial comm complete");
-            std::unique_lock<std::mutex> serialCommLock(servoThread.serialCommMutex);
-            while(!servoThread.serialCommCompleteSignal){
-                servoThread.serialCommCompleteCv.wait(serialCommLock, [&]{return servoThread.serialCommCompleteSignal == true; });
+            if(servoThread.serialCommCompleteSignal == false){
+                LogWarning("App", iLog 
+                    << "serial comm in ServoThread was not complete at next FixedUpdate "
+                    << "(time was " << (float)servoThread.serialCommTimeMicros*1.0e-3f << " ms)"
+                );
+                std::unique_lock<std::mutex> serialCommCompleteLock(servoThread.serialCommCompleteMutex);
+                servoThread.serialCommCompleteCv.wait(serialCommCompleteLock, [&]{return servoThread.serialCommCompleteSignal == true; });
+                // LogInfo("App", "ApplyBuffers");
+                servoThread.ApplyBuffers(); // swap servo buffers
+                servoThread.serialCommCompleteSignal = false;
+                servoThread.serialCommStartedSignal = false;
+            } else {
+                std::unique_lock<std::mutex> serialCommLock(servoThread.serialCommCompleteMutex);
+                servoThread.ApplyBuffers(); // swap servo buffers
+                servoThread.serialCommCompleteSignal = false;
+                servoThread.serialCommStartedSignal = false;
             }
-            // LogInfo("App", "ApplyBuffers");
-            servoThread.ApplyBuffers();
-            servoThread.serialCommCompleteSignal = false;
-            serialCommLock.unlock();
 
+            // signal ServoThread that it can start the next loop
             // LogInfo("App", "nextLoopSignal = true");
             servoThread.nextLoopSignal = true;
             servoThread.nextLoopCv.notify_all();
-            
+
+            // wait until ServoThread signals that it started the next loop
+            std::unique_lock<std::mutex> serialCommStartedLock(servoThread.serialCommCompleteMutex);
+            servoThread.serialCommStartedCv.wait(serialCommStartedLock, [&]{return servoThread.serialCommStartedSignal == true; });
+            serialCommStartedLock.unlock();
+
+            // call fixed update
             robot->FixedUpdate();
 
             // increase fixed fps counter
             fixedUpsCounter += 1;
+            fixedUpdateCounter += 1;
 
             // add fixed delta time (prevents UPS drift)
             lastUpdateTimeMicros += Time::fixedDeltaTimeMicros;
 
             // prevent frame debt buildup if actual UPS drops below target UPS
             if(Time::currentTimeMicros - lastUpdateTimeMicros >= Time::fixedDeltaTimeMicros){
-                LogDebug("App", "FixedUpdate frame drift prevention");
+                LogWarning("App", "FixedUpdate frame drift prevention");
                 lastUpdateTimeMicros = Time::currentTimeMicros;
             }
 
@@ -252,6 +273,7 @@ bool App::Run(){
 
         // update status
         upsCounter++;
+        updateCounter += 1;
         if(statusTimer.IsFinished()){
             statusTimer.Restart(true);
             ups = (float) upsCounter / statusTimerInterval;
@@ -262,10 +284,11 @@ bool App::Run(){
                 << "UPS=" << ups << ", "
                 << "FixedUPS=" << fixedUps << ", "
                 << "MaxDT=" << (longestDeltaTimeMicros*1.0e-3f) << "ms, "
-                << "Capacity=" << (capacity*100.0f) << "%, " // capacity = LongestDeltaTime / FixedDeltaTime
+                << "Cap=" << (capacity*100.0f) << "%, " // capacity = LongestDeltaTime / FixedDeltaTime
                 << "Sleep=" << (totalSleepTime/statusTimerInterval*100.0f) << "%, "
                 << "Clients=" << ClientManager::GetAllCients().size() << ", "
-                << "Connections=" << SocketServer::GetNumConnections()
+                << "Conn=" << SocketServer::GetNumConnections() << ", "
+                << "Diff=" << (int64_t)fixedUpdateCounter - (int64_t)servoThread.loopCounter
             );
             totalSleepTimeMicros = 0;
             upsCounter = 0;
@@ -286,6 +309,14 @@ bool App::Run(){
     }
     LogInfo("App", "main loop end");
 
+    // wait servo thread to finish
+    servoThread.nextLoopSignal = true;
+    servoThread.nextLoopCv.notify_all();
+    std::unique_lock<std::mutex> finishedLock(servoThread.finishedMutex);
+    LogInfo("App", "waiting for servo thread to finish");
+    servoThread.finishedCv.wait(finishedLock, [&]{return servoThread.finished == true;});
+    finishedLock.unlock();
+
     // shut down robot
     robot->Shutdown();
 
@@ -294,7 +325,11 @@ bool App::Run(){
 }
 
 void App::RequestExit(){
+    if(exitRequested){
+        return;
+    }
     LogInfo("App", "RequestExit()");
+    servoThread.RequestExit();
     exitRequested = true;
 }
 

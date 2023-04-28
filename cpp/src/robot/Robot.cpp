@@ -172,9 +172,9 @@ bool Robot::PingServos(){
         }
     }
     if(result){
-        LogError("Robot", "PingServos() success");
+        LogInfo("Robot", "PingServos() success");
     } else {
-        LogInfo("Robot", "PingServos() failed");
+        LogError("Robot", "PingServos() failed");
     }
     return result;
 }

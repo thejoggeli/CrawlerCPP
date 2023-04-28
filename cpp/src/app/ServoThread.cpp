@@ -36,39 +36,58 @@ void ServoThread::Start(){
 void ServoThread::Run(){
     while(!exitRequested){
         
-        // LogInfo("ServoThread", "waiting for next loop");
+        // wait for next loop signal
+        // LogDebug("ServoThread", "locking next loop");
         std::unique_lock<std::mutex> nextLoopLock(nextLoopMutex);
-        while(!nextLoopSignal){
-            nextLoopCv.wait(nextLoopLock, [&]{return nextLoopSignal == true; });
-        }
+        nextLoopCv.wait(nextLoopLock, [&]{return nextLoopSignal == true;});
         nextLoopSignal = false;
         nextLoopLock.unlock();
 
-        std::unique_lock<std::mutex> serialCommCompleteLock(serialCommMutex);
-        // LogInfo("ServoThread", "starting serial comm");
-        uint64_t startTimeMicros = Time::GetTimeMicros();
+        if(exitRequested){
+            break;
+        }
+
+        // signal that serial comm started
+        serialCommStartedSignal = true;
+        serialCommStartedCv.notify_all();
+
+        // LogDebug("ServoThread", "locking serial comm");
+        uint64_t startTimeMicros = Time::GetSystemTimeMicros();
 
         // send new servo positions
         robot->MoveJointsToTargetSync(Time::fixedDeltaTime);
 
         // read measurements
         for(Joint* joint : robot->jointsList){
-            joint->ReadMeasuredStatus(true);
+            // joint->ReadMeasuredStatus(true);
+            Time::SleepMicros(1000);
         }
 
-        uint64_t endTimeMicros = Time::GetTimeMicros();
-        float commTimeMillis = (float)(endTimeMicros - startTimeMicros) * 1.0e-3f;
+        uint64_t endTimeMicros = Time::GetSystemTimeMicros();
+        serialCommTimeMicros = endTimeMicros - startTimeMicros;
+        float serialCommTimeMillis = (float)(serialCommTimeMicros) * 1.0e-3f;
 
-        LogInfo("ServoThread", iLog << "serial comm took " << commTimeMillis << " ms");
+        // LogDebug("ServoThread", iLog << "serial comm took " << serialCommTimeMillis << " ms");
 
+        // signal that serial comm finished
         serialCommCompleteSignal = true;
         serialCommCompleteCv.notify_all();
-        serialCommCompleteLock.unlock();
+
+        loopCounter += 1;
 
     }
+
+    LogInfo("ServoThread", "finished");
+    finished = true;
+    finishedCv.notify_all();
+
 }
 
 void ServoThread::RequestExit(){
+    if(exitRequested){
+        return;
+    }
+    LogInfo("ServoThread", "RequestExit()");
     exitRequested = true;
 }
 

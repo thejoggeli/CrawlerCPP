@@ -1,12 +1,14 @@
 #pragma once
 
 #include "serialib/Serialib.h"
+#include <mutex>
 
 class SerialStream {
-   private:
+private:
     Serialib serialib;
+    std::mutex mtx;
 
-   public:
+public:
     SerialStream();
 
     int open(const char* device, uint32_t baud);

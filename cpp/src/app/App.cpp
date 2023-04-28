@@ -250,12 +250,11 @@ bool App::Run(){
             }
 
             // signal ServoThread that it can start the next loop
-            // LogInfo("App", "nextLoopSignal = true");
             servoThread.nextLoopSignal = true;
             servoThread.nextLoopCv.notify_all();
 
             // wait until ServoThread signals that it started the next loop
-            std::unique_lock<std::mutex> serialCommStartedLock(servoThread.serialCommCompleteMutex);
+            std::unique_lock<std::mutex> serialCommStartedLock(servoThread.serialCommStartedMutex);
             servoThread.serialCommStartedCv.wait(serialCommStartedLock, [&]{return servoThread.serialCommStartedSignal == true; });
             serialCommStartedLock.unlock();
 

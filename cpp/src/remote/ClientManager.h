@@ -34,7 +34,7 @@ public:
 	static bool OnKeyDown(GamepadKey code);
 	static bool OnKeyUp(GamepadKey code);
 
-	static void SubscribePacket(PacketType type, void* obj, void (*handler)(void*, const Packet&));
+	static void SubscribePacket(PacketType type, void* obj, void (*handler)(void*, Packet&));
 	static void UnsubscribePacket(PacketType type, void* obj);
 	static void SendPacket(std::shared_ptr<Packet> packet, int clientId = -1);
 	static void ReceivePackets();

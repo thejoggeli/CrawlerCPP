@@ -14,10 +14,8 @@ using namespace Crawler;
 
 unsigned int sigIntCounter = 0;
 
-App* app;
-
 void mySigIntHandler(int s){
-    app->RequestExit();
+    App::RequestExit();
     sigIntCounter++;
     if(sigIntCounter >= 3){
         exit(EXIT_FAILURE);
@@ -25,8 +23,6 @@ void mySigIntHandler(int s){
 }
 
 int main(){
-
-    app = new App();
 
     // sigint handler
     struct sigaction sigIntHandler;
@@ -36,7 +32,7 @@ int main(){
     sigaction(SIGINT, &sigIntHandler, NULL);
 
     // main init
-    if(!app->Init()){
+    if(!App::Init()){
         LogError("CrawperCPP", "App::Init() failed");
         return EXIT_FAILURE;
     }
@@ -44,12 +40,12 @@ int main(){
     // main run
 #ifndef RUN_DEBUG
 
-    if(!app->InitServos()){
+    if(!App::InitServos()){
         LogError("CrawperCPP", "App::InitServos() failed");
         // return EXIT_FAILURE;
     }
 
-    if(!app->Run()){
+    if(!App::Run()){
         LogError("CrawperCPP", "App::Run() failed");
         return EXIT_FAILURE;
     }
@@ -58,7 +54,7 @@ int main(){
 #endif
 
     // main cleanup
-    if(!app->Cleanup()){
+    if(!App::Cleanup()){
         LogError("CrawperCPP", "App::Cleanup() failed");
         return EXIT_FAILURE;
     }

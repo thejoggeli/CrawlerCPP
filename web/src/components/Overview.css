@@ -4,6 +4,7 @@
 .overview table {
     border-collapse: collapse;
     margin-top: 10px;
+    font-size:14px;
 }
 .overview table th ,
 .overview table td {

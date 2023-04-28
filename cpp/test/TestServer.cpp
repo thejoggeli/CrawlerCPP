@@ -89,19 +89,19 @@ int main(){
         ClientManager::Update();
 
         // send packet
-        if(false && timer.IsFinished()){
-            timer.Restart(true);
-            std::shared_ptr<Packet> packet = std::make_shared<Packet>(PacketType::SC_ReadRobotPosLegAngles);
-            packet->data.Add<uint8_t>(4); // num legs
-            for(int i = 0; i < 4; i++){
-                packet->data.Add<uint8_t>(i); // leg id
-                for(int j = 0; j < 4; j++){
-                    packet->data.Add<float>(j*0.5f); // joint angles
-                }
-            }
-            packet->data.PrintPretty(true, 16);
-            ClientManager::SendPacket(packet);
-        }
+        // if(false && timer.IsFinished()){
+        //     timer.Restart(true);
+        //     std::shared_ptr<Packet> packet = std::make_shared<Packet>(PacketType::SC_RespondLegData);
+        //     packet->data.Add<uint8_t>(4); // num legs
+        //     for(int i = 0; i < 4; i++){
+        //         packet->data.Add<uint8_t>(i); // leg id
+        //         for(int j = 0; j < 4; j++){
+        //             packet->data.Add<float>(j*0.5f); // joint angles
+        //         }
+        //     }
+        //     packet->data.PrintPretty(true, 16);
+        //     ClientManager::SendPacket(packet);
+        // }
 
         // test client input
         if(false){

@@ -36,27 +36,23 @@ void GaitBrain::Init(){
         frame.footPositions[i] = leg->hipTransform * leg->fkJointsResult.footPosition;
     }
 
-    // float dxy = 0.05f;
+    float dxy = 0.05f;
 
-    // frame.bodyPosition = {dxy, 0.0f, 0.0f};
-    // frame.bodyRotation = {0.0f, 0.0f, 0.0f};
-    // gait->AddFrame(frame);
-    // gait->AddTransition(1.0f);
+    frame.bodyPosition = {dxy, 0.0f, 0.0f};
+    gait->AddFrame(frame);
+    gait->AddTransition(1.0f);
 
-    // frame.bodyPosition = {0.0f, dxy, 0.0f};
-    // frame.bodyRotation = {20.0f * DEG_2_RADf, 0.0f, 0.0f};
-    // gait->AddFrame(frame);
-    // gait->AddTransition(1.0f);
+    frame.bodyPosition = {0.0f, dxy, 0.0f};
+    gait->AddFrame(frame);
+    gait->AddTransition(1.0f);
 
-    // frame.bodyPosition = {-dxy, 0.0f, 0.0f};
-    // frame.bodyRotation = {0.0f, 0.0f, 0.0f};
-    // gait->AddFrame(frame);
-    // gait->AddTransition(1.0f);
+    frame.bodyPosition = {-dxy, 0.0f, 0.0f};
+    gait->AddFrame(frame);
+    gait->AddTransition(1.0f);
 
-    // frame.bodyPosition = {0.0f, dxy, 0.0f};
-    // frame.bodyRotation = {-20.0f * DEG_2_RADf, 0.0f, 0.0f};
-    // gait->AddFrame(frame);
-    // gait->AddTransition(1.0);
+    frame.bodyPosition = {0.0f, dxy, 0.0f};
+    gait->AddFrame(frame);
+    gait->AddTransition(1.0);
 
 
     // float dxy = 0.05f;
@@ -81,30 +77,30 @@ void GaitBrain::Init(){
     // gait->AddFrame(frame);
     // gait->AddTransition(1.0f);
 
-    for(int i = 0; i < 4; i++){
+    // for(int i = 0; i < 4; i++){
 
-        float angle = (float)i*PI2f*0.25f + PI2f*0.125f;
-        Leg* leg = robot->legs[i];
+    //     float angle = (float)i*PI2f*0.25f + PI2f*0.125f;
+    //     Leg* leg = robot->legs[i];
         
-        float body_xy = -0.06f;
-        float body_z = 0.0f;
-        float foot_xy = 0.0f;
-        float foot_z = 0.1f;
-        Eigen::Vector3f footDown = frame.footPositions[i];
-        Eigen::Vector3f footUp = footDown + Eigen::Vector3f(cos(angle)*foot_xy, sin(angle)*foot_xy, foot_z);
-        // Eigen::Vector3f footUp = leg->hipTransform * (leg->hipTransformInverse * footDown + Eigen::Vector3f(foot_xy, 0.0f, foot_z));
+    //     float body_xy = -0.06f;
+    //     float body_z = 0.0f;
+    //     float foot_xy = 0.0f;
+    //     float foot_z = 0.1f;
+    //     Eigen::Vector3f footDown = frame.footPositions[i];
+    //     Eigen::Vector3f footUp = footDown + Eigen::Vector3f(cos(angle)*foot_xy, sin(angle)*foot_xy, foot_z);
+    //     // Eigen::Vector3f footUp = leg->hipTransform * (leg->hipTransformInverse * footDown + Eigen::Vector3f(foot_xy, 0.0f, foot_z));
 
-        frame.bodyPosition = Eigen::Vector3f(cos(angle)*body_xy, sin(angle)*body_xy, body_z);
-        gait->AddFrame(frame); 
-        gait->AddTransition(1.0);
+    //     frame.bodyPosition = Eigen::Vector3f(cos(angle)*body_xy, sin(angle)*body_xy, body_z);
+    //     gait->AddFrame(frame); 
+    //     gait->AddTransition(1.0);
 
-        frame.footPositions[i] = footUp;
-        gait->AddFrame(frame);
-        gait->AddTransition(1.0f);
+    //     frame.footPositions[i] = footUp;
+    //     gait->AddFrame(frame);
+    //     gait->AddTransition(1.0f);
 
-        frame.footPositions[i] = footDown;
-        gait->AddFrame(frame); 
-        gait->AddTransition(1.0);
+    //     frame.footPositions[i] = footDown;
+    //     gait->AddFrame(frame); 
+    //     gait->AddTransition(1.0);
 
         // frame.bodyPosition = Eigen::Vector3f(0, 0, 0.06f);
         // gait->AddFrame(frame);
@@ -120,11 +116,11 @@ void GaitBrain::Init(){
         // gait->AddFrame(frame);
         // gait->AddTransition(1.0);
 
-        frame.bodyRotation = Eigen::Vector3f(0, 0, 0);
-        gait->AddFrame(frame);
-        gait->AddTransition(1.0);
+    //     frame.bodyRotation = Eigen::Vector3f(0, 0, 0);
+    //     gait->AddFrame(frame);
+    //     gait->AddTransition(1.0);
 
-    }
+    // }
 
 }
 

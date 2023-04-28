@@ -13,8 +13,8 @@ ByteBufferReader::ByteBufferReader(const uint8_t* bytes, unsigned int size) : by
 template<typename T>
 T ByteBufferReader::Read(){
     if(readPtr + sizeof(T) > size){
+        errors += 1;
         LogError("ByteBufferReader", iLog << "readPtr overflow " << "readPtr=" << readPtr << ", size=" << size);
-        error = 1;
         return 0;
     }
     T val = ((T*)(bytes+readPtr))[0];
@@ -28,6 +28,10 @@ T ByteBufferReader::Read(){
 const char* ByteBufferReader::ReadString(){
     const char* str = (char*)(bytes+readPtr);
     readPtr += std::strlen(str)+1;
+    if(readPtr > size){
+        errors += 1;
+        return nullptr;
+    }
     return str;
 }
 

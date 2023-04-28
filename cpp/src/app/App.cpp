@@ -17,9 +17,9 @@
 #include "brain/GaitBrain.h"
 #include "brain/EmptyBrain.h"
 #include "ServoThread.h"
+#include "InfoPackets.h"
 
 using namespace std;
-using namespace Crawler;
 
 namespace Crawler {
 
@@ -29,17 +29,17 @@ static bool initialized = false;
 static bool exitRequested = false;
 static ServoThread servoThread;
 
-App::App(){
-    mainButton = new HardwareButton(24, 200*1000);
-    mainButtonLED = new MonoLED(22); 
-}
+Robot* App::robot = nullptr;
+HardwareButton* App::mainButton = nullptr;
+MonoLED* App::mainButtonLED = nullptr;
 
-App::~App(){
-    delete mainButton;
-    delete mainButtonLED;
-}
+App::App(){}
+App::~App(){}
 
 bool App::Init(){
+
+    mainButton = new HardwareButton(24, 200*1000);
+    mainButtonLED = new MonoLED(22); 
 
     if(initialized){
         return false;
@@ -94,6 +94,9 @@ bool App::Init(){
     // init servo thread
     servoThread.Init(robot);
 
+    // init info packets
+    InfoPackets::Init(robot);
+
     // init success
     return true;
 }
@@ -126,6 +129,7 @@ bool App::InitServos(){
 bool App::Cleanup(){
 
     LogInfo("App", "Cleanup()");
+    InfoPackets::Cleanup();
 
     // close servo serial stream
     LogInfo("App", "serial stream close");
@@ -135,6 +139,8 @@ bool App::Cleanup(){
     mainButton->Cleanup();
     mainButtonLED->SetState(false);
     mainButtonLED->Cleanup();
+    delete mainButton;
+    delete mainButtonLED;
 
     return true;
 

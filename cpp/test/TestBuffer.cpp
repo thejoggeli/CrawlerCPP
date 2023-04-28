@@ -21,7 +21,7 @@ void testPacket(){
     LogInfo("TestPacket", iLog << packet->data.Get<float>("x"));
     LogInfo("TestPacket", iLog << packet->data.Get<float>("y"));
     
-    std::shared_ptr<Packet> packet2 = std::make_shared<Packet>(PacketType::CS_GamepadKey);
+    std::shared_ptr<Packet> packet2 = Packet::Create(PacketType::CS_GamepadKey);
     packet2->data.Add<uint8_t>(13);
     packet2->data.Add<uint8_t>(37);
 

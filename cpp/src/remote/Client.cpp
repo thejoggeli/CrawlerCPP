@@ -18,6 +18,7 @@ Client::Client(int id){
 }
 
 void Client::QueuePacket(std::shared_ptr<Packet> packet){ 
+	// LogDebug("Client", iLog << "Queue packet type=" << PacketTypeToString(packet->type));
 	newPackets.push_back(packet);
 }
 

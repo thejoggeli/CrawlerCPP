@@ -40,37 +40,48 @@ class Main {
 
     static update(){
 
-        // process received packets
-        Main.packetReceiver.processPackets()
-    
-        // process messages
-        Main.messenger.processMessages()
+        if(Main.isConnected()){
 
-        // notify update
-        Main.events.notifySubscribers("update")
+            // process received packets
+            Main.packetReceiver.processPackets()
+        
+            // process messages
+            Main.messenger.processMessages()
 
-        // send packets
-        var packets = Main.packetSender.getPackets()
-        for (var p in packets) {
-            var packet = packets[p]
-            Main.connection.send(packet.buffer.getDataView())
-            Main.bytesSent += packet.buffer.getDataSize()
-            Main.packetsSent += 1
-            // add packet to recycler
-            var type = packet.type.name
-            if(Main.packetRecycler.hasGroup(type)){
-                packet.reset()
-                Main.packetRecycler.pushPacket(type, packet)
-            } else {
-                Log.warning("Main", "packet of type=" + type + " was not recycled")
+            // notify update
+            Main.events.notifySubscribers("update")
+
+            // send packets
+            var packets = Main.packetSender.getPackets()
+            for (var p in packets) {
+                var packet = packets[p]
+                Main.connection.send(packet.buffer.getDataView())
+                Main.bytesSent += packet.buffer.getDataSize()
+                Main.packetsSent += 1
+                // add packet to recycler
+                var type = packet.type.name
+                if(Main.packetRecycler.hasGroup(type)){
+                    packet.reset()
+                    Main.packetRecycler.pushPacket(type, packet)
+                } else {
+                    Log.warning("Main", "packet of type=" + type + " was not recycled")
+                }
             }
+            Main.packetSender.clearPackets()
+
         }
-        Main.packetSender.clearPackets()
 
     }
 
     static createPacket(type){
         return Main.packetRecycler.popPacket(type);
+    }
+
+    static addPacket(type, data){
+        var packet = Main.packetRecycler.popPacket(type);
+        packet.pack(type, data)
+        Main.packetSender.addPacket(packet)
+        return packet
     }
 
     static onConnectionOpen(event){

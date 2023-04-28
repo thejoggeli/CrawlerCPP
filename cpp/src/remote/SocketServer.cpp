@@ -88,10 +88,10 @@ void SocketServer::OnData(WebSocket* connection, const uint8_t* data, size_t siz
 	}
 	shared_ptr<Client> client = GetClientByConnection(connection);
 	if(!client){
-		LogDebug("SeasocksHandler", iLog << "GetClientByConnection() failed in onData()");
+		LogWarning("SeasocksHandler", iLog << "GetClientByConnection() failed in onData()");
 		return;
 	}
-	shared_ptr<Packet> packet = Packet::Unpack(data, size);
+	shared_ptr<Packet> packet = Packet::Unpack(data, size, client->id);
 	if(packet){
 		client->QueuePacket(packet);
 	}
@@ -141,7 +141,9 @@ void SocketServer::Shutdown(){
 }
 
 void SocketServer::SendPacket(std::shared_ptr<Packet> packet, int clientId){
-	LogDebug("SocketServer", iLog << "Send (id=" << clientId << ") " << *PacketTypeToString(packet->type));
+	if(logOutput){
+		LogDebug("SocketServer", iLog << "sending " << *PacketTypeToString(packet->type) << " client=" << clientId);
+	}
 	if(clientId == -1){
 		for(auto const& connection: connections){
 			connection->send(packet->data.GetBytes(), packet->data.GetSize());

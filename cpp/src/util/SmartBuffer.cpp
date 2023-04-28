@@ -90,6 +90,7 @@ void SmartBuffer::Add(ValType value){
 
 const char* SmartBuffer::GetString(const std::string& key){
     if(!map_str.contains(key)){
+        errors += 1;
         LogError("SmartBuffer", iLog << "key is not in map_str: " << key);
         return nullptr;
     }
@@ -99,6 +100,7 @@ const char* SmartBuffer::GetString(const std::string& key){
 
 const char* SmartBuffer::GetString(unsigned int key){
     if(!map_int.contains(key)){
+        errors += 1;
         LogError("SmartBuffer", iLog << "key is not in map_int: " << key);
         return nullptr;
     }
@@ -109,6 +111,7 @@ const char* SmartBuffer::GetString(unsigned int key){
 template<typename ValType>
 ValType SmartBuffer::Get(const std::string& key, unsigned int offset){
     if(!map_str.contains(key)){
+        errors += 1;
         LogError("SmartBuffer", iLog << "key is not in map_str: " << key);
         return 0;
     }
@@ -124,6 +127,7 @@ ValType SmartBuffer::Get(const std::string& key, unsigned int offset){
 template<typename ValType>
 ValType SmartBuffer::Get(unsigned int key, unsigned int offset){
     if(!map_int.contains(key)){
+        errors += 1;
         LogError("SmartBuffer", iLog << "key is not in map_int: " << key);
         return 0;
     }

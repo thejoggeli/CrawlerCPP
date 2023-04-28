@@ -8,10 +8,11 @@ find_package(Seasocks)
 
 set(
     CRAWLER_SOURCE_FILES
-    src/app/App.cpp
-    src/app/ServoThread.cpp
     src/CrawlerCPP.cpp
     libs/serialib/Serialib.cpp
+    src/app/App.cpp
+    src/app/ServoThread.cpp
+    src/app/InfoPackets.cpp
     src/comm/SerialStream.cpp
     src/parts/XYZServo.cpp
     src/brain/Brain.cpp

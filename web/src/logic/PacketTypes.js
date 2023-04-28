@@ -1,5 +1,4 @@
 import Packet from "msl/remote/Packet.js"
-import JointDataType from "./JointDataType"
 
 export default function PacketTypes(){
     Packet.AddType({
@@ -27,9 +26,9 @@ export default function PacketTypes(){
         },
     })
     Packet.AddType({
-        id: 0x0030, name: "CS_RequestJointData",
+        id: 0x0030, name: "CS_RequestLegData",
         pack: function(buffer, data){
-            buffer.writeUint8(data.jointDataType)
+            buffer.writeUint8(data.dataType)
             buffer.writeUint8(data.legIds.length)
             for(var legId of data.legIds){
                 buffer.writeUint8(legId)
@@ -37,30 +36,71 @@ export default function PacketTypes(){
         },
     })
     Packet.AddType({
-        id: 0x0031, name: "CS_RequestIMUData",
+        id: 0x0031, name: "SC_RespondLegData",
+        unpack: function(buffer, data){
+            data.dataType = buffer.readUint8()
+            data.numLegs = buffer.readUint8()
+            data.legs = []
+            // loop through legs
+            for(var i = 0; i < data.numLegs; i++){
+                // create leg container
+                var leg = {
+                    id: buffer.readUint8(),
+                    joints: [],
+                    distance: 0,
+                    weight: 0,
+                }
+                data.legs.push(leg)
+                // read joint data
+                for(var j = 0; j < 4; j++){
+                    switch(data.dataType){
+                        case 0:
+                            leg.joints.push({
+                                "angle": buffer.readFloat32(),
+                            })
+                            break
+                        case 1:
+                            leg.joints.push({
+                                "targetAngle": buffer.readFloat32(),
+                                "measuredAngle": buffer.readFloat32(),
+                                "current": buffer.readFloat32(),
+                                "pwm": buffer.readFloat32(),
+                                "temperature": buffer.readFloat32(),
+                                "voltage": buffer.readFloat32(),
+                                "statusDetail": buffer.readUint8(),
+                                "statusError": buffer.readUint8(),
+                            })
+                            break
+                    }
+                }
+                // read leg data
+                switch(data.dataType){
+                    case 1:
+                        leg.distance = buffer.readFloat32()
+                        leg.weight = buffer.readFloat32()
+                        break;
+                }
+            }
+        },
+    })
+    Packet.AddType({
+        id: 0x0040, name: "CS_RequestIMUData",
         pack: function(buffer, data){
             // nothing
         },
     })
     Packet.AddType({
-        id: 0x0020, name: "SC_ReceiveJointData",
+        id: 0x0041, name: "SC_RespondIMUData",
         unpack: function(buffer, data){
-            data.jointDataType = buffer.readUint8()
-            data.numLegs = buffer.readUint8()
-            data.legIds = []
-            data.legData = []
-            var entry = JointDataType.getEntryById(data.jointDataType)
-            for(var i = 0; i < data.numLegs; i++){
-                data.legIds.push(buffer.readUint8())
-                if(entry.id == JointDataType.TargetAngle.id){
-                    console.log("target angle")
-                    data.legAngles.push([
-                        buffer.readFloat32(), // H0   
-                        buffer.readFloat32(), // K1
-                        buffer.readFloat32(), // K2
-                        buffer.readFloat32(), // K3
-                    ])
-                }
+            data.acceleration = {
+                x: buffer.readFloat32(),
+                y: buffer.readFloat32(),
+                z: buffer.readFloat32(),
+            }
+            data.gyro = {
+                x: buffer.readFloat32(),
+                y: buffer.readFloat32(),
+                z: buffer.readFloat32(),
             }
         },
     })

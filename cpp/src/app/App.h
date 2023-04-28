@@ -7,20 +7,22 @@ class HardwareButton;
 class MonoLED;
 
 class App {
-public:
-
-    Robot* robot;
-    HardwareButton* mainButton;
-    MonoLED* mainButtonLED;
+private:
 
     App();
     ~App();
 
-    bool Init();
-    bool InitServos();
-    bool Run();
-    bool Cleanup();
-    void RequestExit(); 
+public:
+
+    static Robot* robot;
+    static HardwareButton* mainButton;
+    static MonoLED* mainButtonLED;
+
+    static bool Init();
+    static bool InitServos();
+    static bool Run();
+    static bool Cleanup();
+    static void RequestExit(); 
 
 };
 

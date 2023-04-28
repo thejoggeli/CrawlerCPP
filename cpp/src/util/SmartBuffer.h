@@ -17,6 +17,7 @@ private:
 
 public:
 
+	unsigned int errors = 0;
 	bool swapEndian = false;
 
     SmartBuffer(unsigned int reserveBytes=64);

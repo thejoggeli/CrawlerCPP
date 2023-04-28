@@ -59,6 +59,7 @@ export default class Overview extends React.Component {
                     "temperature": 0,
                     "statusError": 0,
                     "statusDetail": 0,
+                    "pwm": 0,
                 }
                 leg.joints.push(joint)
             }
@@ -67,6 +68,10 @@ export default class Overview extends React.Component {
         this.computeJointAngleErrors(this.state.legs)
         this.computeCurrents(this.state)
         this.computeTemperatures(this.state)
+
+        this.imuDataPacketSent = false
+        this.legDataPacketSent = false
+
     }
 
     computeJointAngleErrors(legs){
@@ -132,36 +137,94 @@ export default class Overview extends React.Component {
 
     componentDidMount(){
         Main.events.subscribe("update", this, this.handleUpdate)
+        Main.packetReceiver.subscribe("SC_RespondLegData", this, this.handleRespondLegData)
+        Main.packetReceiver.subscribe("SC_RespondIMUData", this, this.handleRespondIMUData)
     }
 
     componentWillUnmount(){
         Main.events.unsubscribe("update", this)
+        Main.packetReceiver.unsubscribe("SC_RespondLegData", this)
+        Main.packetReceiver.unsubscribe("SC_RespondIMUData", this)
+    }
+
+    handleRespondLegData(packet){
+        this.legDataPacketSent = false
+        var data = packet.data
+        var state = this.state
+        for(var leg of data.legs){
+            for(var j in leg.joints){
+                var joint = leg.joints[j]
+                state.legs[leg.id].joints[j].targetAngle = joint.targetAngle
+                state.legs[leg.id].joints[j].measuredAngle = joint.measuredAngle
+                state.legs[leg.id].joints[j].temperature = joint.temperature
+                state.legs[leg.id].joints[j].current = joint.current
+                state.legs[leg.id].joints[j].voltage = joint.voltage
+                state.legs[leg.id].joints[j].statusError = joint.statusError
+                state.legs[leg.id].joints[j].statusDetail = joint.statusDetail
+                state.legs[leg.id].joints[j].pwm = joint.pwm
+            }
+            state.legs[leg.id].weight = leg.weight
+            state.legs[leg.id].distance = leg.distance
+        }
+        this.computeJointAngleErrors(state.legs)
+        this.computeCurrents(state)
+        this.computeTemperatures(state)
+        this.setState(state)
+    }
+
+    handleRespondIMUData(packet){
+        this.imuDataPacketSent = false
+        var data = packet.data
+        var state = this.state
+        state.imu.acceleration.x = data.acceleration.x
+        state.imu.acceleration.y = data.acceleration.y
+        state.imu.acceleration.z = data.acceleration.z
+        state.imu.gyro.x = data.gyro.x
+        state.imu.gyro.y = data.gyro.y
+        state.imu.gyro.z = data.gyro.z
+        this.setState(state)
     }
 
     handleUpdate = () => {
         this.setState({
             webTime: Numbers.roundToFixed(Time.currentTime, 1),
         })
-        if(Time.currentTime - this.lastUpdate > 0.2){
-            var state = this.state
-            for(var leg of state.legs){
-                for(var joint of leg.joints){
-                    joint.targetAngle = Numbers.randomFloat(-Math.PI*0.5, Math.PI*0.5)
-                    joint.measuredAngle = Numbers.randomFloat(-Math.PI*0.5, Math.PI*0.5)
-                    joint.temperature = Numbers.randomFloat(1.0, 99.0)
-                    joint.current = Numbers.randomFloat(1.0, 99.0)
-                    joint.voltage = Numbers.randomFloat(1.0, 99.0)
-                    joint.statusError = Numbers.randomInt(0, 256)
-                    joint.statusDetail = Numbers.randomInt(0, 256)
-                }
-                leg.weight = Numbers.randomFloat(0.0, 5.0)
-                leg.distance = Numbers.randomFloat(10.0, 100.0)
+        if(Time.currentTime - this.lastUpdate > 0.1){
+            // var state = this.state
+            // for(var leg of state.legs){
+            //     for(var joint of leg.joints){
+            //         joint.targetAngle = Numbers.randomFloat(-Math.PI*0.5, Math.PI*0.5)
+            //         joint.measuredAngle = Numbers.randomFloat(-Math.PI*0.5, Math.PI*0.5)
+            //         joint.temperature = Numbers.randomFloat(1.0, 99.0)
+            //         joint.current = Numbers.randomFloat(1.0, 99.0)
+            //         joint.voltage = Numbers.randomFloat(1.0, 99.0)
+            //         joint.statusError = Numbers.randomInt(0, 256)
+            //         joint.statusDetail = Numbers.randomInt(0, 256)
+            //     }
+            //     leg.weight = Numbers.randomFloat(0.0, 5.0)
+            //     leg.distance = Numbers.randomFloat(10.0, 100.0)
+            // }
+            // this.computeJointAngleErrors(state.legs)
+            // this.computeCurrents(state)
+            // this.computeTemperatures(state)
+            // this.setState(state)
+            // this.lastUpdate = Time.currentTime
+            
+            if(!this.legDataPacketSent){
+                Main.addPacket("CS_RequestLegData", {
+                    "dataType": 1,
+                    "legIds": [0, 1, 2, 3],
+                })
+                this.legDataPacketSent = true
             }
-            this.computeJointAngleErrors(state.legs)
-            this.computeCurrents(state)
-            this.computeTemperatures(state)
-            this.setState(state)
+            
+            if(!this.imuDataPacketSent){
+                Main.addPacket("CS_RequestIMUData", {})
+                this.imuDataPacketSent = true
+            }
+
             this.lastUpdate = Time.currentTime
+
         }
     }
 
@@ -300,6 +363,7 @@ export default class Overview extends React.Component {
                             <th key={"state.h1.leg"} colSpan={2}>Leg</th>
                             <th key={"state.h1.statusError"} colSpan={4}>StatusError (hex)</th>
                             <th key={"state.h1.statusDetail"} colSpan={4}>StatusDetail (hex)</th>
+                            <th key={"state.h1.pwm"} colSpan={4}>PWM</th>
                             <th key={"sensors.h1.long"} colSpan={2}>Sensors</th>
                         </tr>
                         <tr key={"state.h2"}>
@@ -310,6 +374,9 @@ export default class Overview extends React.Component {
                             })}
                             {this.jointNamesShort.map((x, i) => {
                                 return <th className="statusDetail" key={"state.h2.statusDetail"+i}>{x}</th>
+                            })}
+                            {this.jointNamesShort.map((x, i) => {
+                                return <th className="statusDetail" key={"state.h2.pwm"+i}>{x}</th>
                             })}
                             <th key={"sensors.h2.distance"}>Distance (mm)</th>
                             <th key={"sensors.h2.weight"}>Weight (kg)</th>
@@ -329,6 +396,11 @@ export default class Overview extends React.Component {
                                     {leg.joints.map((joint, j) => {
                                         return <td key={"state.leg."+i + ".statusDetail"+j}>{
                                             Strings.toHexString(joint.statusDetail, 2, true)
+                                        }</td>
+                                    })}
+                                    {leg.joints.map((joint, j) => {
+                                        return <td key={"state.leg."+i + ".pwm"+j}>{
+                                            Numbers.roundToFixed(joint.pwm, 1)
                                         }</td>
                                     })}
                                     <td key={"sensors.leg.id"+i+".distance"}>{

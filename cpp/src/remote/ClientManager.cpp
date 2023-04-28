@@ -16,7 +16,7 @@ int ClientManager::initCounter = 0;
 static int currentClientId = 0;
 static vector<shared_ptr<Client>> clientsVector;
 static unordered_map<int, shared_ptr<Client>> clientsMap;
-static std::unordered_map<PacketType, std::vector<std::pair<void*, void (*)(void*, const Packet&)>>> packetSubscriptions;
+static std::unordered_map<PacketType, std::vector<std::pair<void*, void (*)(void*, Packet&)>>> packetSubscriptions;
 
 bool ClientManager::Init(){
 	if(++initCounter > 1) return false;
@@ -107,8 +107,8 @@ int ClientManager::GenerateId(){
 	return currentClientId++;
 }
 
-void ClientManager::SubscribePacket(PacketType type, void* obj, void (*handler)(void*, const Packet&)){
-	std::pair<void*, void (*)(void*, const Packet&)> pair;
+void ClientManager::SubscribePacket(PacketType type, void* obj, void (*handler)(void*, Packet&)){
+	std::pair<void*, void (*)(void*, Packet&)> pair;
 	pair = std::make_pair(obj, handler);
 	packetSubscriptions[type].push_back(pair);
 }
@@ -132,11 +132,13 @@ void ClientManager::SendPacket(std::shared_ptr<Packet> packet, int clientId){
 }
 
 void ClientManager::ReceivePackets(){
+	// LogDebug("ClientManager", iLog << "receiving packets");
 	for(auto const &client: GetAllCients()){
 		client->ReceivePackets();
 	}
 	for(auto const &client: GetAllCients()){
 		for(std::shared_ptr<Packet> packet: client->packets){
+			// LogDebug("ClientManager", iLog << "receiving packet: " << PacketTypeToString(packet->type));
 			auto search = packetSubscriptions.find(packet->type);
 			if (search != packetSubscriptions.end()){
 				auto& vector = search->second;

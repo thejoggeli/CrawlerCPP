@@ -6,7 +6,7 @@ class PacketReceiver extends Subscribable {
     constructor(){
         super()
         this.packets = []
-        this.logDebug = true
+        this.logDebug = false
     }
     addPacket(packet){
         // Log.debug("PacketReceiver", "Received " + packet.type.name)

@@ -3,7 +3,7 @@ import Log from "msl/log/Log.js"
 class PacketSender {
     constructor(){
         this.packets = []
-        this.logDebug = true
+        this.logDebug = false
     }
     addPacket(packet){
         this.packets.push(packet)

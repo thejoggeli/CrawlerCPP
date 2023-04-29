@@ -11,7 +11,7 @@ import PacketMessage from "./PacketMessage";
 
 class Main {
 
-    static messenger = new Messenger();
+    static messenger = new Messenger(); 
     static connection = new Connection({"port": 9090});
     static packetReceiver = new PacketReceiver();
     static packetSender = new PacketSender();
@@ -96,8 +96,7 @@ class Main {
 
     static onConnectionOpen(event){
         Log.debug("Main", "onConnectionOpen");
-        Main.messenger.sendMessage("Connect");
-        Main.events.notifySubscribers("Connect");        
+        Main.events.notifySubscribers("Connect");
     }
 
     static onConnectionOpenFailed(event){
@@ -109,8 +108,6 @@ class Main {
 
     static onConnectionClose(event){
         Log.debug("Main", "onConnectionClose");
-        Main.events.notifySubscribers("Disconnect");
-        Main.messenger.sendMessage("Disconnect");
         setTimeout(() => {
             Main.connection.connect();
         }, 250);

@@ -288,13 +288,9 @@ bool App::Run(){
                 << "Conn=" << SocketServer::GetNumConnections() << ", "
                 << "Diff=" << (int64_t)fixedUpdateCounter - (int64_t)servoThread.loopCounter
             );
-            totalSleepTimeMicros = 0;
-            upsCounter = 0;
-            fixedUpsCounter = 0;
-            longestDeltaTimeMicros = 0;
 
             // message to clients
-            auto packet = std::make_shared<PacketMessage>("Status");
+            auto packet = std::make_shared<PacketMessage>("status");
             packet->AddFloat("time", Time::currentTime);
             packet->AddFloat("ups", ups);
             packet->AddFloat("fixedUps", fixedUps);
@@ -303,6 +299,12 @@ bool App::Run(){
             packet->AddFloat("cap", capacity);
             packet->AddInt("clients", ClientManager::GetAllCients().size());
             ClientManager::SendPacket(packet);
+
+            // reset status variables
+            totalSleepTimeMicros = 0;
+            upsCounter = 0;
+            fixedUpsCounter = 0;
+            longestDeltaTimeMicros = 0;
 
         }
 

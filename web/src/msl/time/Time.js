@@ -43,23 +43,35 @@ class Time {
         var str = ""
         if(d){
             var hours = Math.floor(time / (3600*24))
-            str += Strings.pad("00", hours.toString(),   true) + d        
+            str += Strings.pad("00", hours.toString(), true)
+            if(h){
+                str += ":"
+            }
         }    
         if(h){
             var hours = d ? Math.floor(time % (3600*24) / 3600) : Math.floor(time / 3600)
-            str += Strings.pad("00", hours.toString(),   true) + h        
+            str += Strings.pad("00", hours.toString(), true)
+            if(m){
+                str += ":"
+            }
         }
         if(m){
             var minutes = h ? Math.floor((time % 3600) / 60) : Math.floor(time / 60)
-            str += Strings.pad("00", minutes.toString(), true) + m
+            str += Strings.pad("00", minutes.toString(), true)
+            if(s){
+                str += ":"
+            }
         }
         if(s){
             var seconds = m ? Math.floor(time % 60) : Math.floor(time)
-            str += Strings.pad("00", seconds.toString(), true) + s
+            str += Strings.pad("00", seconds.toString(), true)
+            if(ms){
+                str += "."
+            }
         }
         if(ms){
             var millis = s ? Math.floor((time % 1.0) * 1000.0) : Math.floor(time * 1000.0)
-            str += Strings.pad("000", millis.toString(), true) + ms
+            str += Strings.pad("000", millis.toString(), true)
         }
         return str
     }

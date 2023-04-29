@@ -2,7 +2,41 @@ import Packet from "msl/remote/Packet.js"
 
 export default function PacketTypes(){
     Packet.AddType({
-        id: 0x0010, name: "CS_GamepadKey",
+        id: 0x0002, name: "RequestStatus",
+        pack: function(buffer, data){},
+    })
+    Packet.AddType({
+        id: 0x0003, name: "RespondStatus",
+        unpack: function(buffer, data){
+            data.fps = buffer.readFloat32()
+            data.fixedFps = buffer.readFloat32()
+            data.time = buffer.readFloat32()
+            data.clients = buffer.readUint16()
+        },
+    })
+    Packet.AddType({
+        id: 0x0008, name: "Message",
+        pack: function(buffer, data){
+            buffer.writeUint16(Object.keys(data.params).length)
+            buffer.writeString(data.message)
+            for(var key in data.params){
+                buffer.writeString(key)
+                buffer.writeString(data.params[key])
+            }
+        },
+        unpack: function(buffer, data){
+            var numParams = buffer.readUint16()
+            data.message = buffer.readString()
+            data.params = {}
+            for(var i = 0; i < numParams; i++){
+                var key = buffer.readString()
+                var value = buffer.readString()
+                data.params[key] = value
+            }
+        },
+    })
+    Packet.AddType({
+        id: 0x0010, name: "GamepadKey",
         pack: function(buffer, data){
             buffer.writeUint8(data.key)
             buffer.writeUint8(data.state)
@@ -13,7 +47,7 @@ export default function PacketTypes(){
         },
     })
     Packet.AddType({
-        id: 0x0011, name: "CS_GamepadJoystick",
+        id: 0x0011, name: "GamepadJoystick",
         pack: function(buffer, data){
             buffer.writeUint8(data.key)
             buffer.writeFloat32(data.x)
@@ -26,9 +60,27 @@ export default function PacketTypes(){
         },
     })
     Packet.AddType({
-        id: 0x0030, name: "CS_RequestLegData",
+        id: 0x0020, name: "RequestSetJointPosition",
         pack: function(buffer, data){
-            buffer.writeUint8(data.dataType)
+            buffer.writeUint8(data.leg)
+            buffer.writeUint8(data.joint)
+            buffer.writeFloat32(data.x)
+            buffer.writeFloat32(data.y)
+            buffer.writeFloat32(data.z)
+        },
+    })
+    Packet.AddType({
+        id: 0x0021, name: "RequestSetLegAngles",
+        pack: function(buffer, data){
+            buffer.writeUint8(data.leg)
+            for(var i = 0; i < data.angles; i++){
+                buffer.writeFloat32(data.angles[i])
+            }
+        },
+    })
+    Packet.AddType({
+        id: 0x0030, name: "RequestLegData",
+        pack: function(buffer, data){
             buffer.writeUint8(data.legIds.length)
             for(var legId of data.legIds){
                 buffer.writeUint8(legId)
@@ -36,9 +88,8 @@ export default function PacketTypes(){
         },
     })
     Packet.AddType({
-        id: 0x0031, name: "SC_RespondLegData",
+        id: 0x0031, name: "RespondLegData",
         unpack: function(buffer, data){
-            data.dataType = buffer.readUint8()
             data.numLegs = buffer.readUint8()
             data.legs = []
             // loop through legs
@@ -53,44 +104,63 @@ export default function PacketTypes(){
                 data.legs.push(leg)
                 // read joint data
                 for(var j = 0; j < 4; j++){
-                    switch(data.dataType){
-                        case 0:
-                            leg.joints.push({
-                                "angle": buffer.readFloat32(),
-                            })
-                            break
-                        case 1:
-                            leg.joints.push({
-                                "targetAngle": buffer.readFloat32(),
-                                "measuredAngle": buffer.readFloat32(),
-                                "current": buffer.readFloat32(),
-                                "pwm": buffer.readFloat32(),
-                                "temperature": buffer.readFloat32(),
-                                "voltage": buffer.readFloat32(),
-                                "statusDetail": buffer.readUint8(),
-                                "statusError": buffer.readUint8(),
-                            })
-                            break
-                    }
+                    leg.joints.push({
+                        "targetAngle": buffer.readFloat32(),
+                        "measuredAngle": buffer.readFloat32(),
+                        "current": buffer.readFloat32(),
+                        "pwm": buffer.readFloat32(),
+                        "temperature": buffer.readFloat32(),
+                        "voltage": buffer.readFloat32(),
+                        "statusDetail": buffer.readUint8(),
+                        "statusError": buffer.readUint8(),
+                    })
                 }
                 // read leg data
-                switch(data.dataType){
-                    case 1:
-                        leg.distance = buffer.readFloat32()
-                        leg.weight = buffer.readFloat32()
-                        break;
+                leg.distance = buffer.readFloat32()
+                leg.weight = buffer.readFloat32()
+            }
+        },
+    })
+    Packet.AddType({
+        id: 0x0032, name: "RequestLegAngles",
+        pack: function(buffer, data){
+            buffer.writeUint8(data.legIds.length)
+            for(var legId of data.legIds){
+                buffer.writeUint8(legId)
+            }
+        },
+    })
+    Packet.AddType({
+        id: 0x0033, name: "RespondLegAngles",
+        unpack: function(buffer, data){
+            data.numLegs = buffer.readUint8()
+            data.legs = []
+            // loop through legs
+            for(var i = 0; i < data.numLegs; i++){
+                // create leg container
+                var leg = {
+                    id: buffer.readUint8(),
+                    joints: [],
+                }
+                data.legs.push(leg)
+                // read joint data
+                for(var j = 0; j < 4; j++){
+                    leg.joints.push({
+                        "targetAngle": buffer.readFloat32(),
+                        "measuredAngle": buffer.readFloat32(),
+                    })
                 }
             }
         },
     })
     Packet.AddType({
-        id: 0x0040, name: "CS_RequestIMUData",
+        id: 0x0040, name: "RequestIMUData",
         pack: function(buffer, data){
             // nothing
         },
     })
     Packet.AddType({
-        id: 0x0041, name: "SC_RespondIMUData",
+        id: 0x0041, name: "RespondIMUData",
         unpack: function(buffer, data){
             data.acceleration = {
                 x: buffer.readFloat32(),

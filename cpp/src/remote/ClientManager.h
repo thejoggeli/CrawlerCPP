@@ -4,11 +4,13 @@
 #include <memory>
 #include "GamepadKeys.h"
 #include "PacketType.h"
+#include "core/Log.h"
 
 namespace Crawler {
 
 class Client;
 class Packet;
+class PacketMessage;
 
 class ClientManager {
 private:
@@ -36,9 +38,24 @@ public:
 
 	static void SubscribePacket(PacketType type, void* obj, void (*handler)(void*, Packet&));
 	static void UnsubscribePacket(PacketType type, void* obj);
-	static void SendPacket(std::shared_ptr<Packet> packet, int clientId = -1);
-	static void ReceivePackets();
 
+	static void SubscribePacketMessage(const char* type, void* obj, void (*handler)(void*, PacketMessage&));
+	static void UnsubscribePacketMessage(const char* type, void* obj);
+
+	static void SendPacket(std::shared_ptr<Packet> packet, int clientId = -1);
+	static void SendMessage(const char* message, int clientId = -1);
+	
+	static void SendLogInfo(const char* from, const char* str, int clientId = -1);
+	static void SendLogError(const char* from, const char* str, int clientId = -1);
+	static void SendLogWarning(const char* from, const char* str, int clientId = -1);
+	static void SendLogDebug(const char* from, const char* str, int clientId = -1);
+	
+	static void SendLogInfo(const char* from, LogConcator& log, int clientId = -1);
+	static void SendLogError(const char* from, LogConcator& log, int clientId = -1);
+	static void SendLogWarning(const char* from, LogConcator& log, int clientId = -1);
+	static void SendLogDebug(const char* from, LogConcator& log, int clientId = -1);
+
+	static void ReceivePackets();
 };
 
 

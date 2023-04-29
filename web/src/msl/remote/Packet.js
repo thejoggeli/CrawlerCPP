@@ -4,32 +4,30 @@ import DataType         from "../buffer/DataType.js"
 import Log              from "../log/Log.js"
 
 export default class Packet {
-    constructor(){
-        this.type = null
-        this.data = null
+    constructor(type, data){
+        if(typeof type == "string"){
+            type = Packet.Type.getEntryByName(type)
+        }
+        this.type = type
+        this.data = data = data !== undefined ? data : {}
         this.initial_buffer_size = 32
         this.buffer = new DynamicBuffer(this.initial_buffer_size)
     }
     reset(){
         this.type = null
-        this.data = null
+        this.data = {}
         this.buffer.reset()
     }
-    pack(type, data){
-        if(typeof type == "string"){
-            type = Packet.Type.getEntryByName(type)
-        }
+    pack(){
         // data to bytes
-        this.data = data
-        this.type = type
         this.buffer.beginWrite(0)
         this.buffer.writeUint16(this.type.id)
-        if(type.pack){
-            type.pack(this.buffer, data)
+        if(this.type.pack){
+            this.type.pack(this.buffer, this.data)
         } else {
             for(var x in type.attributes){
                 var attribute = type.attributes[x]
-                var value = data[attribute.name]
+                var value = this.data[attribute.name]
                 if(value === undefined){
                     Log.error("BinaryPacket", "attribute missing: " + attribute.name)
                     value = attribute.default

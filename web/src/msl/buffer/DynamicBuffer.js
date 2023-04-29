@@ -107,10 +107,13 @@ export default class DynamicBuffer {
     }
     readString(){
         var decoder = DynamicBuffer.TextDecoder
-        var length = this.readUint16()
-        var view = new DataView(this.buffer, this.read_ptr, length)
-        var str = decoder.decode(view)
-        this.read_ptr += length
+        var read_ptr_start = this.read_ptr
+        while(this.view.getUint8(this.read_ptr) != 0){
+            this.read_ptr++
+        }
+        var view = new DataView(this.buffer, read_ptr_start, this.read_ptr - read_ptr_start) 
+        var str = decoder.decode(view) // decode without \0
+        this.read_ptr++ // move ptr past \0
         return str
     }
     readSkip(n){
@@ -162,9 +165,8 @@ export default class DynamicBuffer {
     }
     writeString(str){
         var encoder = DynamicBuffer.TextEncoder
-        var arr = encoder.encode(str)
+        var arr = encoder.encode(str+'\0')
         var length = arr.byteLength
-        this.writeUint16(length)
         this.ensureSize(this.write_ptr + length)
         new Uint8Array(this.buffer).set(new Uint8Array(arr), this.write_ptr)
         this.write_ptr += length

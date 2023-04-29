@@ -3,11 +3,11 @@ import Log from "msl/log/Log";
 import Connection from "msl/remote/Connection"
 import Packet from "msl/remote/Packet";
 import PacketReceiver from "msl/remote/PacketReceiver";
-import PacketRecycler from "msl/remote/PacketRecycler";
 import PacketSender from "msl/remote/PacketSender";
 import Time from "msl/time/Time";
 import Messenger from "msl/util/Messenger";
 import Subscribable from "msl/util/Subscribable";
+import PacketMessage from "./PacketMessage";
 
 class Main {
 
@@ -15,14 +15,16 @@ class Main {
     static connection = new Connection({"port": 9090});
     static packetReceiver = new PacketReceiver();
     static packetSender = new PacketSender();
-    static packetRecycler = new PacketRecycler();
     static events = new Subscribable();
+    static packetMessages = new Subscribable();
 
     static init(){
         Gfw.install();
         Gfw.events.subscribe("beforeUpdate", Main, Main.update)
         Gfw.events.subscribe("resize", Main, Main.resize)
-        Main.connection.subscribe("open", Main, Main.onConnectionOpen);
+        Main.packetReceiver.subscribe("Message", Main, Main.onPacketMessage)
+        Main.packetMessages.subscribe("log", Main, Main.onPacketMessageLog)
+        Main.connection.subscribe("open", Main, Main.onConnectionOpen)
         Main.connection.subscribe("openFailed", Main, Main.onConnectionOpenFailed);
         Main.connection.subscribe("close", Main, Main.onConnectionClose);
         Main.connection.subscribe("error", Main, Main.onConnectionError);
@@ -58,14 +60,6 @@ class Main {
                 Main.connection.send(packet.buffer.getDataView())
                 Main.bytesSent += packet.buffer.getDataSize()
                 Main.packetsSent += 1
-                // add packet to recycler
-                var type = packet.type.name
-                if(Main.packetRecycler.hasGroup(type)){
-                    packet.reset()
-                    Main.packetRecycler.pushPacket(type, packet)
-                } else {
-                    Log.warning("Main", "packet of type=" + type + " was not recycled")
-                }
             }
             Main.packetSender.clearPackets()
 
@@ -73,13 +67,29 @@ class Main {
 
     }
 
-    static createPacket(type){
-        return Main.packetRecycler.popPacket(type);
+    static onPacketMessageLog(message){
+        Log.info("Main", message.message, message.params.type, message.params.msg)
+    }
+
+    static onPacketMessage(packet){
+        var packetMessage = new PacketMessage(packet)
+        Log.debug("Main", packetMessage.message, packetMessage)
+        Main.packetMessages.notifySubscribers(packetMessage.message, packetMessage)
     }
 
     static addPacket(type, data){
-        var packet = Main.packetRecycler.popPacket(type);
-        packet.pack(type, data)
+        var packet = new Packet(type, data)
+        packet.pack()
+        Main.packetSender.addPacket(packet)
+        return packet
+    }
+
+    static addPacketMessage(packetMessage){
+        var packet = new Packet("Message", {
+            "message": packetMessage.message,
+            "params": packetMessage.params,
+        })
+        packet.pack()
         Main.packetSender.addPacket(packet)
         return packet
     }

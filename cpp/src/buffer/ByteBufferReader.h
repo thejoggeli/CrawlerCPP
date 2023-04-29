@@ -6,11 +6,14 @@ namespace Crawler {
 
 class ByteBufferReader {
 
-public:
+private:
 
     const uint8_t* bytes = nullptr;
     const unsigned int size;
     int readPtr = 0;
+
+public:
+
     int errors = 0;
     bool swapEndian = false;
 
@@ -19,6 +22,9 @@ public:
     template<typename T>
     T Read();
     const char* ReadString();
+
+	const uint8_t* GetBytes();
+	unsigned int GetSize();
 
 };
 

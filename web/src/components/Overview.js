@@ -7,6 +7,7 @@ import { vec3 } from "gl-matrix";
 import Numbers from "msl/util/Numbers";
 import Strings from "msl/util/Strings";
 import Time from "msl/time/Time";
+import PacketMessage from "logic/PacketMessage";
 
 export default class Overview extends React.Component {
 
@@ -137,14 +138,14 @@ export default class Overview extends React.Component {
 
     componentDidMount(){
         Main.events.subscribe("update", this, this.handleUpdate)
-        Main.packetReceiver.subscribe("SC_RespondLegData", this, this.handleRespondLegData)
-        Main.packetReceiver.subscribe("SC_RespondIMUData", this, this.handleRespondIMUData)
+        Main.packetReceiver.subscribe("RespondLegData", this, this.handleRespondLegData)
+        Main.packetReceiver.subscribe("RespondIMUData", this, this.handleRespondIMUData)
     }
 
     componentWillUnmount(){
         Main.events.unsubscribe("update", this)
-        Main.packetReceiver.unsubscribe("SC_RespondLegData", this)
-        Main.packetReceiver.unsubscribe("SC_RespondIMUData", this)
+        Main.packetReceiver.unsubscribe("RespondLegData", this)
+        Main.packetReceiver.unsubscribe("RespondIMUData", this)
     }
 
     handleRespondLegData(packet){
@@ -211,15 +212,15 @@ export default class Overview extends React.Component {
             // this.lastUpdate = Time.currentTime
             
             if(!this.legDataPacketSent){
-                Main.addPacket("CS_RequestLegData", {
-                    "dataType": 1,
+                Main.addPacket("RequestLegData", {
+                    "flags": 0xFFFFFFFF,
                     "legIds": [0, 1, 2, 3],
                 })
                 this.legDataPacketSent = true
             }
             
             if(!this.imuDataPacketSent){
-                Main.addPacket("CS_RequestIMUData", {})
+                Main.addPacket("RequestIMUData", {})
                 this.imuDataPacketSent = true
             }
 
@@ -231,8 +232,6 @@ export default class Overview extends React.Component {
     render() {
         return (
             <div className="overview">    
-                <div>WebTime: {this.state.webTime}</div>
-                <div>RobotTime: {this.state.robotTime}</div>
                 <table>
                     <thead>
                         <tr key={"angles.h1"}>

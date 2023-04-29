@@ -3,3 +3,18 @@ html, body {
     background: #101010;
     color: #cdcdcd;
 }
+
+button {
+    background:#eee;
+    color: #101010;
+    border:0;
+    border-radius: 5px;
+    padding:4px 8px;
+}
+
+button:hover{
+    background:#d0d0d0;
+    color: #101010;
+    border:0;
+    cursor:pointer;
+}

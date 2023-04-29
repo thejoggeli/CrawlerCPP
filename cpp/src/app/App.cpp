@@ -13,6 +13,7 @@
 #include "remote/SocketServer.h"
 #include "remote/ClientManager.h"
 #include "remote/Client.h"
+#include "remote/Packet.h"
 #include "brain/SurferBrain.h"
 #include "brain/GaitBrain.h"
 #include "brain/EmptyBrain.h"
@@ -161,7 +162,7 @@ bool App::Run(){
 
     // status timer 
     Timer statusTimer;
-    const float statusTimerInterval = 10.0f;
+    const float statusTimerInterval = 1.0f;
 
     // set fixed update rate
     Time::SetFixedDeltaTimeMicros(1000*40);
@@ -233,10 +234,10 @@ bool App::Run(){
             // wait until ServoThread signals that it finished the last loop
             // LogInfo("App", "waiting for serial comm complete");
             if(!servoThread.serialCommFinishSignal.IsSet()){
-                LogWarning("App", iLog 
+                ClientManager::SendLogWarning("App", iLog
                     << "serial comm in ServoThread was not complete at next FixedUpdate "
                     << "(time was " << (float)servoThread.serialCommTimeMicros*1.0e-3f << " ms)"
-                );             
+                );
                 servoThread.serialCommFinishSignal.WaitAndClear();   
             }
             
@@ -262,7 +263,7 @@ bool App::Run(){
 
             // prevent frame debt buildup if actual UPS drops below target UPS
             if(Time::currentTimeMicros - lastUpdateTimeMicros >= Time::fixedDeltaTimeMicros){
-                LogWarning("App", "FixedUpdate frame drift prevention");
+                ClientManager::SendLogWarning("App", "FixedUpdate frame drift prevention");
                 lastUpdateTimeMicros = Time::currentTimeMicros;
             }
 
@@ -291,6 +292,18 @@ bool App::Run(){
             upsCounter = 0;
             fixedUpsCounter = 0;
             longestDeltaTimeMicros = 0;
+
+            // message to clients
+            auto packet = std::make_shared<PacketMessage>("Status");
+            packet->AddFloat("time", Time::currentTime);
+            packet->AddFloat("ups", ups);
+            packet->AddFloat("fixedUps", fixedUps);
+            packet->AddFloat("maxDt", (longestDeltaTimeMicros*1.0e-3f));
+            packet->AddFloat("sleep", totalSleepTime/statusTimerInterval);
+            packet->AddFloat("cap", capacity);
+            packet->AddInt("clients", ClientManager::GetAllCients().size());
+            ClientManager::SendPacket(packet);
+
         }
 
         // compute how long the current frame took

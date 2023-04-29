@@ -18,7 +18,7 @@ Client::Client(int id){
 }
 
 void Client::QueuePacket(std::shared_ptr<Packet> packet){ 
-	// LogDebug("Client", iLog << "Queue packet type=" << PacketTypeToString(packet->type));
+	// LogDebug("Client", iLog << "Queue packet type=" << *PacketTypeToString(packet->type));
 	newPackets.push_back(packet);
 }
 
@@ -48,33 +48,30 @@ void Client::Update(){
 	// process packets
 	for(auto& packet: packets){
 		switch(packet->type){
-		case PacketType::CS_GamepadKey: {
-			GamepadKey key = (GamepadKey) packet->data.Get<uint8_t>("key");
-			GamepadKeyState state = (GamepadKeyState) packet->data.Get<uint8_t>("state");
-			switch(state){
+		case PacketType::GamepadKey: {
+			auto p = std::static_pointer_cast<PacketGamepadKey>(packet);
+			switch(p->state){
 				case GamepadKeyState::Pressed: {
-					isDownMap[(unsigned int)key] = true;
-					onDownMap[(unsigned int)key] = true;
-					downKeys.push_back(key);
+					isDownMap[(unsigned int)p->key] = true;
+					onDownMap[(unsigned int)p->key] = true;
+					downKeys.push_back(p->key);
 					break;
 				}
 				case GamepadKeyState::Released: {
-					isDownMap[(unsigned int)key] = false;
-					onUpMap[(unsigned int)key] = true;
-					upKeys.push_back(key);
+					isDownMap[(unsigned int)p->key] = false;
+					onUpMap[(unsigned int)p->key] = true;
+					upKeys.push_back(p->key);
 					break;
 				}
 				default: break;
 			}
 			break;
 		}
-		case PacketType::CS_GamepadJoystick: {
-			GamepadKey key = (GamepadKey) packet->data.Get<uint8_t>("key");
-			unsigned int id = (unsigned int)(key) & GAMEPAD_JOYSTICK_MASK;
-			float x = packet->data.Get<float>("x");
-			float y = packet->data.Get<float>("y");
+		case PacketType::GamepadJoystick: {
+			auto p = std::static_pointer_cast<PacketGamepadJoystick>(packet);
+			unsigned int id = (unsigned int)(p->key) & GAMEPAD_JOYSTICK_MASK;
 			// LogDebug("Client", iLog << "x: " << x << ", y: " << y);
-			joystickPositions[id] = Eigen::Vector2f(x, y);
+			joystickPositions[id] = Eigen::Vector2f(p->x, p->y);
 			break;
 		}
 		}

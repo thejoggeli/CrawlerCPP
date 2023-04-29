@@ -6,17 +6,22 @@
 #include <vector>
 #include "Packet.h"
 #include "SocketServer.h"
+#include <mutex>
 
 using namespace std;
 
 namespace Crawler {
 
+
+
 int ClientManager::initCounter = 0;
 
+static std::mutex mutex;
 static int currentClientId = 0;
 static vector<shared_ptr<Client>> clientsVector;
 static unordered_map<int, shared_ptr<Client>> clientsMap;
 static std::unordered_map<PacketType, std::vector<std::pair<void*, void (*)(void*, Packet&)>>> packetSubscriptions;
+static std::unordered_map<std::string, std::vector<std::pair<void*, void (*)(void*, PacketMessage&)>>> packetMessageSubscriptions;
 
 bool ClientManager::Init(){
 	if(++initCounter > 1) return false;
@@ -127,8 +132,95 @@ void ClientManager::UnsubscribePacket(PacketType type, void* obj){
 	}
 }
 
+void ClientManager::SubscribePacketMessage(const char* type, void* obj, void (*handler)(void*, PacketMessage&)){
+	std::pair<void*, void (*)(void*, PacketMessage&)> pair;
+	pair = std::make_pair(obj, handler);
+	packetMessageSubscriptions[type].push_back(pair);
+}
+
+void ClientManager::UnsubscribePacketMessage(const char* type, void* obj){
+	auto search = packetMessageSubscriptions.find(type);
+	if(search != packetMessageSubscriptions.end()){
+		auto& vector = search->second;
+		for (auto it = vector.begin(); it != vector.end(); ) {
+			if(it->first == obj){
+				it = vector.erase(it);
+			} else {
+				++it;
+			}
+		}
+	}
+}
+
 void ClientManager::SendPacket(std::shared_ptr<Packet> packet, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
 	SocketServer::SendPacket(packet, clientId);
+}
+
+void ClientManager::SendMessage(const char* message, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+    std::shared_ptr<PacketMessage> packet = std::make_shared<PacketMessage>(message);
+	SocketServer::SendPacket(packet, clientId);
+}
+
+static void SendLogInner(const char* from, const char* str, int clientId, const char* type){
+    std::shared_ptr<PacketMessage> packet = std::make_shared<PacketMessage>("log");
+	packet->AddString("type", type);
+	packet->AddString("from", from);
+	packet->AddString("msg", str);
+	SocketServer::SendPacket(packet, clientId);
+}
+
+void ClientManager::SendLogInfo(const char* from, const char* str, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+	SendLogInner(from, str, clientId, "info");
+	LogInfo(from, str);
+}
+
+void ClientManager::SendLogWarning(const char* from, const char* str, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+	SendLogInner(from, str, clientId, "warning");
+	LogWarning(from, str);
+}
+
+void ClientManager::SendLogError(const char* from, const char* str, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+	SendLogInner(from, str, clientId, "error");
+	LogError(from, str);
+}
+
+void ClientManager::SendLogDebug(const char* from, const char* str, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+	SendLogInner(from, str, clientId, "debug");
+	LogDebug(from, str);
+}
+
+void ClientManager::SendLogInfo(const char* from, LogConcator& log, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+	std::string str = log.stringStream.str();
+	SendLogInner(from, str.c_str(), clientId, "info");
+	LogInfo(from, str);
+}
+
+void ClientManager::SendLogWarning(const char* from, LogConcator& log, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+	std::string str = log.stringStream.str();
+	SendLogInner(from, str.c_str(), clientId, "warning");
+	LogWarning(from, str);
+}
+
+void ClientManager::SendLogError(const char* from, LogConcator& log, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+	std::string str = log.stringStream.str();
+	SendLogInner(from, str.c_str(), clientId, "error");
+	LogError(from, str);
+}
+
+void ClientManager::SendLogDebug(const char* from, LogConcator& log, int clientId){
+	std::lock_guard<std::mutex> lock(mutex);
+	std::string str = log.stringStream.str();
+	SendLogInner(from, str.c_str(), clientId, "debug");
+	LogDebug(from, str);
 }
 
 void ClientManager::ReceivePackets(){
@@ -138,12 +230,25 @@ void ClientManager::ReceivePackets(){
 	}
 	for(auto const &client: GetAllCients()){
 		for(std::shared_ptr<Packet> packet: client->packets){
-			// LogDebug("ClientManager", iLog << "receiving packet: " << PacketTypeToString(packet->type));
+			// LogDebug("ClientManager", iLog << "receiving packet: " << *PacketTypeToString(packet->type));
+			// fire Packet subscriptions
 			auto search = packetSubscriptions.find(packet->type);
 			if (search != packetSubscriptions.end()){
 				auto& vector = search->second;
 				for(auto& handler: vector){
 					handler.second(handler.first, *packet);
+				}
+			}
+			// check if packet is of type Message
+			if(packet->type == PacketType::Message){
+				// fire PacketMessage subscritions
+				PacketMessage* pm = (PacketMessage*)(packet.get());
+				auto search = packetMessageSubscriptions.find(pm->message);
+				if (search != packetMessageSubscriptions.end()){
+					auto& vector = search->second;
+					for(auto& handler: vector){
+						handler.second(handler.first, *pm);
+					}
 				}
 			}
 		}

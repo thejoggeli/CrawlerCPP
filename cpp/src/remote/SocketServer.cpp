@@ -144,39 +144,19 @@ void SocketServer::SendPacket(std::shared_ptr<Packet> packet, int clientId){
 	if(logOutput){
 		LogDebug("SocketServer", iLog << "sending " << *PacketTypeToString(packet->type) << " client=" << clientId);
 	}
+	std::vector<uint8_t> bytes;
+	packet->Pack(bytes);
 	if(clientId == -1){
 		for(auto const& connection: connections){
-			connection->send(packet->data.GetBytes(), packet->data.GetSize());
+			connection->send(bytes.data(), bytes.size());
 		}
 	} else {
 		auto const& connection = GetConnectionByClientId(clientId);
 		if(connection){
-			connection->send(packet->data.GetBytes(), packet->data.GetSize());
+			connection->send(bytes.data(), bytes.size());
 		}
 	}
 }
-
-// void SocketServer::Send(std::string& string){
-// 	for(auto const& it: handler->connections){
-// 		it->send(string);
-// 	}
-// }
-// void SocketServer::SendMessage(SocketMessage& message, int clientId){
-// 	string& str = message.GetJsonString();
-// 	Log(LOG_DEBUG, "Server", iLog << "Send (id=" << clientId << ") " << str);
-// 	if(clientId == 0){
-// 		for(auto const& it: handler->connections){
-// 			it->send(str);
-// 		}
-// 	} else {
-// 		for(auto const& it: handler->connections){
-// 			shared_ptr<Client> c = handler->GetClientByConnection(it);
-// 			if(c && c->id == clientId){
-// 				it->send(str);
-// 			}
-// 		}
-// 	}
-// }
 
 shared_ptr<Client> SocketServer::GetClientByConnection(WebSocket* connection){
 	auto search = clientByConnection.find(connection);

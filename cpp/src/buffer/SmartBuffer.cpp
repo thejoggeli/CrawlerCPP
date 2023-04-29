@@ -37,9 +37,18 @@ void SmartBuffer::PrintPretty(bool hex, int lineSize){
     }
 }
 
+std::vector<std::string>* SmartBuffer::GetStringKeys(){
+    return &keys_str;
+}
+
+std::vector<unsigned int>* SmartBuffer::GetIntKeys(){
+    return &keys_int;
+}
+
 void SmartBuffer::AddString(const std::string& key, const char* value){
     if(!map_str.contains(key)){
         map_str[key] = this->bytes.size();
+        keys_str.push_back(key);
     }
     AddString(value);
 }
@@ -47,6 +56,7 @@ void SmartBuffer::AddString(const std::string& key, const char* value){
 void SmartBuffer::AddString(unsigned int key, const char* value){
     if(!map_int.contains(key)){
         map_int[key] = this->bytes.size();
+        keys_int.push_back(key);
     }
     AddString(value);
 }
@@ -64,6 +74,7 @@ template<typename ValType>
 void SmartBuffer::Add(const std::string& key, ValType value){
     if(!map_str.contains(key)){
         map_str[key] = this->bytes.size();
+        keys_str.push_back(key);
         // LogDebug("SmartBuffer", iLog << "adding key " << key);
     }
     Add<ValType>(value);
@@ -73,6 +84,7 @@ template<typename ValType>
 void SmartBuffer::Add(unsigned int key, ValType value){
     if(!map_int.contains(key)){
         map_int[key] = this->bytes.size();
+        keys_int.push_back(key);
         // LogDebug("SmartBuffer", iLog << "adding key " << key);
     }
     Add<ValType>(value);

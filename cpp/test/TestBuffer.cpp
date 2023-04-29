@@ -9,7 +9,7 @@ void testPacket(){
 
     SmartBuffer buffer = SmartBuffer();
 
-    buffer.Add<uint16_t>("type", (uint16_t)PacketType::CS_GamepadJoystick);
+    buffer.Add<uint16_t>("type", (uint16_t)PacketType::GamepadJoystick);
     buffer.Add<uint8_t>("key", (uint8_t)GamepadKey::LeftJoystick);
     buffer.Add<float>("x", 0.1337f);
     buffer.Add<float>("y", 4.2f);
@@ -21,7 +21,7 @@ void testPacket(){
     LogInfo("TestPacket", iLog << packet->data.Get<float>("x"));
     LogInfo("TestPacket", iLog << packet->data.Get<float>("y"));
     
-    std::shared_ptr<Packet> packet2 = Packet::Create(PacketType::CS_GamepadKey);
+    std::shared_ptr<Packet> packet2 = Packet::CreateFromType(PacketType::GamepadKey);
     packet2->data.Add<uint8_t>(13);
     packet2->data.Add<uint8_t>(37);
 

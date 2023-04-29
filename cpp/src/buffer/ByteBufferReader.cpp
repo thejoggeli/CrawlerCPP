@@ -35,6 +35,14 @@ const char* ByteBufferReader::ReadString(){
     return str;
 }
 
+const uint8_t* ByteBufferReader::GetBytes(){
+    return bytes;
+}
+
+unsigned int ByteBufferReader::GetSize(){
+    return size;
+}
+
 template float ByteBufferReader::Read<float>();
 template double ByteBufferReader::Read<double>();
 template int8_t ByteBufferReader::Read<int8_t>();

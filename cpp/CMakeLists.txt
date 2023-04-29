@@ -31,9 +31,10 @@ set(
     src/util/MonoLED.cpp
     src/util/Strings.cpp
     src/util/Timer.cpp
-    src/util/SmartBuffer.cpp
-    src/util/ByteBufferReader.cpp
     src/util/Endian.cpp
+    src/buffer/SmartBuffer.cpp
+    src/buffer/ByteBufferReader.cpp
+    src/buffer/ByteBufferWriter.cpp 
     src/threading/BufferedValue.cpp
     src/threading/Semaphore.cpp
     src/threading/Barrier.cpp

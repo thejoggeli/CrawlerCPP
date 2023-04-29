@@ -29,31 +29,25 @@ export default class GamepadCanvas extends React.Component {
     }
     
     onButtonPress(event){
-        var packet = Main.packetRecycler.popPacket("CS_GamepadKey")
-        packet.pack("CS_GamepadKey", {
+        Main.addPacket("GamepadKey", {
             key: event.id,
             state: 0,
         })
-        Main.packetSender.addPacket(packet)
     }
     
     onButtonRelease(event){
-        var packet = Main.packetRecycler.popPacket("CS_GamepadKey")
-        packet.pack("CS_GamepadKey", {
+        Main.addPacket("GamepadKey", {
             key: event.id,
             state: 1,
         })
-        Main.packetSender.addPacket(packet)        
     }
     
     onJoystickMove(event){
-        var packet = Main.packetRecycler.popPacket("CS_GamepadJoystick")
-        packet.pack("CS_GamepadJoystick", {
+        Main.addPacket("GamepadJoystick", {
             key: event.id,
             x: event.x,
             y: event.y,
         })
-        Main.packetSender.addPacket(packet)
     }
 
     render(){

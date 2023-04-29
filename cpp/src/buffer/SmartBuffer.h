@@ -14,6 +14,8 @@ private:
 	std::vector<uint8_t> bytes;
     std::unordered_map<std::string, unsigned int> map_str;
     std::unordered_map<unsigned int, unsigned int> map_int;
+	std::vector<std::string> keys_str;
+	std::vector<unsigned int> keys_int;
 
 public:
 
@@ -28,6 +30,8 @@ public:
 	const uint8_t* GetBytes();
 	unsigned int GetSize();
 	void PrintPretty(bool hex = true, int lineSize = 16);
+	std::vector<std::string>* GetStringKeys();
+	std::vector<unsigned int>* GetIntKeys();
 
 	// add string
 	void AddString(unsigned int key, const char* value);

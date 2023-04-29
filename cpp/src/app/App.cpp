@@ -181,9 +181,10 @@ bool App::Run(){
     statusTimer.Start(statusTimerInterval);
 
     // start servo thread
-    servoThread.nextLoopSignal = true;
-    servoThread.serialCommStartedSignal = false;
-    servoThread.serialCommCompleteSignal = false;
+    servoThread.nextLoopSignal.Set();
+    servoThread.serialCommStartSignal.Clear();
+    servoThread.serialCommFinishSignal.Clear();
+    servoThread.threadFinishSignal.Clear();
     servoThread.Start();
 
     // main loop
@@ -231,32 +232,23 @@ bool App::Run(){
             
             // wait until ServoThread signals that it finished the last loop
             // LogInfo("App", "waiting for serial comm complete");
-            if(servoThread.serialCommCompleteSignal == false){
+            if(!servoThread.serialCommFinishSignal.IsSet()){
                 LogWarning("App", iLog 
                     << "serial comm in ServoThread was not complete at next FixedUpdate "
                     << "(time was " << (float)servoThread.serialCommTimeMicros*1.0e-3f << " ms)"
-                );
-                std::unique_lock<std::mutex> serialCommCompleteLock(servoThread.serialCommCompleteMutex);
-                servoThread.serialCommCompleteCv.wait(serialCommCompleteLock, [&]{return servoThread.serialCommCompleteSignal == true; });
-                // LogInfo("App", "ApplyBuffers");
-                servoThread.ApplyBuffers(); // swap servo buffers
-                servoThread.serialCommCompleteSignal = false;
-                servoThread.serialCommStartedSignal = false;
-            } else {
-                std::unique_lock<std::mutex> serialCommLock(servoThread.serialCommCompleteMutex);
-                servoThread.ApplyBuffers(); // swap servo buffers
-                servoThread.serialCommCompleteSignal = false;
-                servoThread.serialCommStartedSignal = false;
+                );             
+                servoThread.serialCommFinishSignal.WaitAndClear();   
             }
+            
+            // ServoThread is waiting for next loop, meaning it is not modyfing the buffers
+            // thus it is safe to apply the buffers here
+            servoThread.ApplyBuffers(); 
 
             // signal ServoThread that it can start the next loop
-            servoThread.nextLoopSignal = true;
-            servoThread.nextLoopCv.notify_all();
+            servoThread.nextLoopSignal.Set();
 
             // wait until ServoThread signals that it started the next loop
-            std::unique_lock<std::mutex> serialCommStartedLock(servoThread.serialCommStartedMutex);
-            servoThread.serialCommStartedCv.wait(serialCommStartedLock, [&]{return servoThread.serialCommStartedSignal == true; });
-            serialCommStartedLock.unlock();
+            servoThread.serialCommStartSignal.WaitAndClear();
 
             // call fixed update
             robot->FixedUpdate();
@@ -314,13 +306,11 @@ bool App::Run(){
     }
     LogInfo("App", "main loop end");
 
-    // wait servo thread to finish
-    servoThread.nextLoopSignal = true;
-    servoThread.nextLoopCv.notify_all();
-    std::unique_lock<std::mutex> finishedLock(servoThread.finishedMutex);
+    // let ServoThread finish the final loop
+    // and then wait servo thread to finish
     LogInfo("App", "waiting for servo thread to finish");
-    servoThread.finishedCv.wait(finishedLock, [&]{return servoThread.finished == true;});
-    finishedLock.unlock();
+    servoThread.nextLoopSignal.Set();
+    servoThread.threadFinishSignal.Wait();
 
     // shut down robot
     robot->Shutdown();

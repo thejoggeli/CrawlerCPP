@@ -4,6 +4,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
+#include "threading/Signal.h"
 
 namespace Crawler {
 
@@ -25,21 +26,10 @@ public:
     std::atomic<uint64_t> loopCounter = 0;
     std::atomic<uint64_t> serialCommTimeMicros = 0;
 
-    std::atomic<bool> finished = false;
-    std::mutex finishedMutex;
-    std::condition_variable finishedCv;
-
-    std::atomic<bool> nextLoopSignal = false;
-    std::mutex nextLoopMutex;
-    std::condition_variable nextLoopCv;
-
-    std::atomic<bool> serialCommStartedSignal = false;
-    std::mutex serialCommStartedMutex;
-    std::condition_variable serialCommStartedCv;
-
-    std::atomic<bool> serialCommCompleteSignal = false;
-    std::mutex serialCommCompleteMutex;
-    std::condition_variable serialCommCompleteCv;
+    Signal nextLoopSignal;
+    Signal serialCommStartSignal;
+    Signal serialCommFinishSignal;
+    Signal threadFinishSignal;
 
     ServoThread();
 

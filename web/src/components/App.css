@@ -1,3 +1,5 @@
-body {
-    font-family: "Arial"
+html, body {
+    font-family: "Arial";
+    background: #101010;
+    color: #cdcdcd;
 }

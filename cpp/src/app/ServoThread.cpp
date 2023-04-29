@@ -38,18 +38,14 @@ void ServoThread::Run(){
         
         // wait for next loop signal
         // LogDebug("ServoThread", "locking next loop");
-        std::unique_lock<std::mutex> nextLoopLock(nextLoopMutex);
-        nextLoopCv.wait(nextLoopLock, [&]{return nextLoopSignal == true;});
-        nextLoopSignal = false;
-        nextLoopLock.unlock();
+        nextLoopSignal.WaitAndClear();
 
         if(exitRequested){
             break;
         }
 
         // signal that serial comm started
-        serialCommStartedSignal = true;
-        serialCommStartedCv.notify_all();
+        serialCommStartSignal.Set();
 
         // LogDebug("ServoThread", "locking serial comm");
         uint64_t startTimeMicros = Time::GetSystemTimeMicros();
@@ -70,16 +66,14 @@ void ServoThread::Run(){
         // LogDebug("ServoThread", iLog << "serial comm took " << serialCommTimeMillis << " ms");
 
         // signal that serial comm finished
-        serialCommCompleteSignal = true;
-        serialCommCompleteCv.notify_all();
+        serialCommFinishSignal.Set();
 
         loopCounter += 1;
 
     }
 
     LogInfo("ServoThread", "finished");
-    finished = true;
-    finishedCv.notify_all();
+    threadFinishSignal.Set();
 
 }
 

@@ -5,21 +5,25 @@
     border-collapse: collapse;
     margin-top: 10px;
     font-size:14px;
+    border-radius:10px;
+    overflow:hidden;
 }
 .overview table th ,
 .overview table td {
-    background: #EEEEEE;
-    border:1px solid black;
+    background: #303030;
+    border:1px solid #181818;
     padding:4px 8px;
     text-align: center;
     min-width: 50px;
     
 }
 .overview tr:nth-child(1) th{
-    background: #AAAAAA;
+    background: #202020;
+    color: #ddd;
 }
 .overview tr:nth-child(2) th{
-    background: #AAAAAA;
+    background: #202020;
+    color: #ddd;
 }
 .overview .tr-sum td {
     font-weight: bold;

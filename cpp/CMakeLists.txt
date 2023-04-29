@@ -26,6 +26,7 @@ set(
     src/robot/Leg.cpp
     src/robot/Joint.cpp
     src/math/Mathf.cpp
+    src/math/Numbers.cpp
     src/util/HardwareButton.cpp
     src/util/MonoLED.cpp
     src/util/Strings.cpp
@@ -35,6 +36,8 @@ set(
     src/util/Endian.cpp
     src/threading/BufferedValue.cpp
     src/threading/Semaphore.cpp
+    src/threading/Barrier.cpp
+    src/threading/Signal.cpp
     src/remote/SocketServer.cpp
     src/remote/SocketMessage.cpp
     src/remote/SeasocksHandler.cpp
@@ -77,12 +80,14 @@ function(CreateCrawlerExecutable ExecutableName ExecutableMain)
     target_link_libraries(${ExecutableName} libCrawler)
 endfunction()
 
-CreateCrawlerExecutable(TestBuffer "test/TestBuffer.cpp")
-CreateCrawlerExecutable(TestServer "test/TestServer.cpp")
-CreateCrawlerExecutable(TestTime "test/TestTime.cpp")
-CreateCrawlerExecutable(TestEigen "test/TestEigen.cpp")
-CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")
-CreateCrawlerExecutable(TestGait "test/TestGait.cpp")
+CreateCrawlerExecutable(TestThreading "test/TestThreading.cpp")
+# CreateCrawlerExecutable(TestBuffer "test/TestBuffer.cpp")
+# CreateCrawlerExecutable(TestServer "test/TestServer.cpp")
+# CreateCrawlerExecutable(TestTime "test/TestTime.cpp")
+# CreateCrawlerExecutable(TestEigen "test/TestEigen.cpp")
+# CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")
+# CreateCrawlerExecutable(TestGait "test/TestGait.cpp")
+
 CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
 
 

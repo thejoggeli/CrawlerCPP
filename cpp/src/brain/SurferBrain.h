@@ -55,7 +55,7 @@ public:
     void SetPivot(const Eigen::Vector3f& pivot);
 
     void SetBodyTranslationTarget(float x, float y, float z);
-    void SetbodyTranslationTarget(const Eigen::Vector3f& translation);
+    void SetBodyTranslationTarget(const Eigen::Vector3f& translation);
 
     void SetBodyRotationTarget(float x, float y, float z);
     void SetbodyRotationTarget(const Eigen::Vector3f& rotation);

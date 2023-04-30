@@ -33,6 +33,15 @@ button:hover{
     animation: pulse 2s infinite;
 }
 
-.toprow {background:#202020;padding:8px;box-shadow: 0px 2px 6px black;}
-
-.view-container {padding:8px;}
+.main-container {display:flex;flex-direction:column;height:100vh}
+.main-container .toprow {
+    background:#202020;padding:8px;box-shadow: 0px 2px 6px black;
+    align-self: stretch; flex-grow: 0;
+    position: relative;z-index:100;
+}
+.main-container .view-container {
+    align-self: stretch; flex-grow: 1; 
+    /* background:red; */
+    position: relative;z-index:90;
+    overflow:hidden;
+}

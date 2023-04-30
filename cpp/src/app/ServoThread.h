@@ -18,6 +18,9 @@ private:
     Robot* robot;
     std::thread thread; 
     std::atomic<bool> exitRequested = false;
+    int nextJoint = 0;
+    int measureState = 0;
+    int nextLeg = 0;
 
     void Run();
 

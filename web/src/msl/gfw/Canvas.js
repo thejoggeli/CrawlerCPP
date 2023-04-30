@@ -35,6 +35,7 @@ class Canvas extends Subscribable {
         Canvas.extendCtx(this.ctx)
         
         // components
+        this.boundingClientRect = this.element.getBoundingClientRect()
         this.input = new Input(this, this.$innerContainer)
         this.camera = new Camera(this)
 
@@ -120,6 +121,7 @@ class Canvas extends Subscribable {
         }
     }
     updateInput(){
+        this.boundingClientRect = this.element.getBoundingClientRect()
         this.input.update()
     }
     update(){
@@ -173,10 +175,10 @@ class Canvas extends Subscribable {
         Vec2.add(out, out, this.camera.position)
     }
     getOffsetLeft(){
-        return this.$outerContainer[0].offsetLeft
+        return this.boundingClientRect.left
     }
     getOffsetTop(){
-        return this.$outerContainer[0].offsetTop
+        return this.boundingClientRect.top
     }
 }
 Canvas.extendCtx = function(ctx){

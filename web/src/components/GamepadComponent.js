@@ -1,10 +1,10 @@
 
 import React from "react";
-import "./GamepadCanvas.css";
+import "./GamepadComponent.css";
 import Main from "logic/Main";
 import Gamepad from "logic/gamepad/Gamepad";
 
-export default class GamepadCanvas extends React.Component {
+export default class GamepadComponent extends React.Component {
 
 
     componentDidMount(){
@@ -13,9 +13,6 @@ export default class GamepadCanvas extends React.Component {
 
         this.gamepad = new Gamepad();
         this.gamepad.install(container);
-
-        this.gamepad.canvas.$element.width(900)
-        this.gamepad.canvas.$element.height(450)
 
         this.gamepad.subscribe("onButtonPress", this, this.onButtonPress)
         this.gamepad.subscribe("onButtonRelease", this, this.onButtonRelease)

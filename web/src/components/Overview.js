@@ -2,7 +2,7 @@ import React from "react";
 import "./Overview.css";
 import Robo3DComponent from "./Robo3DComponent"
 import Main from "logic/Main"
-import GamepadCanvas from "./GamepadCanvas";
+import GamepadCanvas from "./GamepadComponent";
 import { vec3 } from "gl-matrix";
 import Numbers from "msl/util/Numbers";
 import Strings from "msl/util/Strings";

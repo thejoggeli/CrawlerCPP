@@ -122,7 +122,7 @@ bool App::InitServos(){
     }
 
     // print servo status
-    robot->PrintServoStatus();
+    // robot->PrintServoStatus();
 
     return true;
 }
@@ -152,12 +152,13 @@ bool App::Run(){
     LogInfo("App", "Run()");
 
     // frame & sleep stuff
-    const uint64_t frameDurationTargetMicros = 4000;
+    const uint64_t frameDurationTargetMicros = 1000000/200;
     unsigned int upsCounter = 0;
     unsigned int fixedUpsCounter = 0;
     float ups = 0.0f;
     float fixedUps = 0.0f;
     uint64_t longestDeltaTimeMicros = 0;
+    uint64_t longestServoThreadTimeMicros = 0;
     uint64_t totalSleepTimeMicros = 0;
 
     // status timer 
@@ -165,15 +166,22 @@ bool App::Run(){
     const float statusTimerInterval = 1.0f;
 
     // set fixed update rate
-    Time::SetFixedDeltaTimeMicros(1000*40);
+    Time::SetFixedDeltaTimeMicros(1000000/40);
     uint64_t lastUpdateTimeMicros = 0;
 
     // start up robot
     robot->Startup();
-    robot->PrintServoStatus();
+    // robot->PrintServoStatus();
     // robot->SetBrain(new SurferBrain());
-    robot->SetBrain(new GaitBrain());
-    // robot->SetBrain(new EmptyBrain());
+    // robot->SetBrain(new GaitBrain());
+    robot->SetBrain(new EmptyBrain());
+    robot->TorqueOff();
+    // for(Leg* leg : robot->legs){
+    //     leg->joints[0]->SetTargetAngle(0.0f * DEG_2_RADf);
+    //     leg->joints[1]->SetTargetAngle(90.0f * DEG_2_RADf);
+    //     leg->joints[2]->SetTargetAngle(90.0f * DEG_2_RADf);
+    //     leg->joints[3]->SetTargetAngle(0.0f * DEG_2_RADf);
+    // }
 
     // the beginning of time
     Time::Start();
@@ -216,14 +224,13 @@ bool App::Run(){
         }
 
         // print debug info
-        auto& clients = ClientManager::GetAllCients();
-
-        if(clients.size() > 0){
-            Client* client = clients[0].get();
-            if(client->OnKeyDown(GamepadKey::Select)){
-                robot->PrintServoStatus();
-            }
-        }
+        // auto& clients = ClientManager::GetAllCients();
+        // if(clients.size() > 0){
+        //     Client* client = clients[0].get();
+        //     if(client->OnKeyDown(GamepadKey::Select)){
+        //         robot->PrintServoStatus();
+        //     }
+        // }
 
         // update robot
         robot->Update();
@@ -240,10 +247,16 @@ bool App::Run(){
                 );
                 servoThread.serialCommFinishSignal.WaitAndClear();   
             }
-            
+
+            // remember longest servo thread time
+            if(servoThread.serialCommTimeMicros > longestServoThreadTimeMicros){
+                longestServoThreadTimeMicros = servoThread.serialCommTimeMicros;
+            }
+
             // ServoThread is waiting for next loop, meaning it is not modyfing the buffers
             // thus it is safe to apply the buffers here
             servoThread.ApplyBuffers(); 
+            
 
             // signal ServoThread that it can start the next loop
             servoThread.nextLoopSignal.Set();
@@ -276,17 +289,16 @@ bool App::Run(){
             statusTimer.Restart(true);
             ups = (float) upsCounter / statusTimerInterval;
             fixedUps = (float) fixedUpsCounter / statusTimerInterval;
-            float capacity = (float)longestDeltaTimeMicros/(float)Time::fixedDeltaTimeMicros;
+            float capacityFX = (float)longestDeltaTimeMicros/(float)Time::fixedDeltaTimeMicros;
+            float capacityST = (float)longestServoThreadTimeMicros/(float)Time::fixedDeltaTimeMicros;
             float totalSleepTime = (float) totalSleepTimeMicros * 1.0e-6;
             LogInfo("App", iLog 
                 << "UPS=" << ups << ", "
                 << "FixedUPS=" << fixedUps << ", "
-                << "MaxDT=" << (longestDeltaTimeMicros*1.0e-3f) << "ms, "
-                << "Cap=" << (capacity*100.0f) << "%, " // capacity = LongestDeltaTime / FixedDeltaTime
+                << "CapFX=" << (capacityFX*100.0f) << "%, "
+                << "CapST=" << (capacityST*100.0f) << "%, "
                 << "Sleep=" << (totalSleepTime/statusTimerInterval*100.0f) << "%, "
                 << "Clients=" << ClientManager::GetAllCients().size() << ", "
-                << "Conn=" << SocketServer::GetNumConnections() << ", "
-                << "Diff=" << (int64_t)fixedUpdateCounter - (int64_t)servoThread.loopCounter
             );
 
             // message to clients
@@ -294,9 +306,9 @@ bool App::Run(){
             packet->AddFloat("time", Time::currentTime);
             packet->AddFloat("ups", ups);
             packet->AddFloat("fixedUps", fixedUps);
-            packet->AddFloat("maxDt", (longestDeltaTimeMicros*1.0e-3f));
             packet->AddFloat("sleep", totalSleepTime/statusTimerInterval);
-            packet->AddFloat("cap", capacity);
+            packet->AddFloat("capFX", capacityFX);
+            packet->AddFloat("capST", capacityST);
             packet->AddInt("clients", ClientManager::GetAllCients().size());
             ClientManager::SendPacket(packet);
 
@@ -305,6 +317,7 @@ bool App::Run(){
             upsCounter = 0;
             fixedUpsCounter = 0;
             longestDeltaTimeMicros = 0;
+            longestServoThreadTimeMicros = 0;
 
         }
 

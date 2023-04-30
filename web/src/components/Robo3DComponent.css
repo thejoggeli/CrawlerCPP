@@ -1,0 +1,22 @@
+.robo3d-wrap {
+    display:flex; flex-direction: row;
+    width:100%; height:100%;overflow:hidden;
+}
+
+.robo3d-toolbar {
+    align-self: stretch; flex-grow: 0; 
+    width:75px;
+    background-color: #202020;
+    position:relative;
+}
+
+.robo3d-container {
+    align-self: stretch; flex-grow: 1; 
+    position:relative;
+    background:#202020;
+    box-shadow: 0px 0px 6px black;
+}
+
+.robo3d-container .gfw-canvas-container {
+    height:100%;width:100%;
+}

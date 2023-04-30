@@ -4,14 +4,15 @@ import * as THREE from "three";
 
 export default class Robot {
 
-    constructor(){
+    constructor(robo3d){
         
+        this.robo3 = robo3d
         this.root = new THREE.Group()
         this.legs = []
 
         // create legs
         for(var i = 0; i < 4; i++){
-            var leg = new Leg(this, this.root)
+            var leg = new Leg(robo3d, this, this.root)
             this.legs.push(leg)
         }
 
@@ -87,7 +88,6 @@ export default class Robot {
         this.eyeMesh2.position.z = -this.bodySize.z*0.5 + this.eyeMesh2.scale.x*0.25
         this.root.add(this.eyeMesh2)
 
-
         // set initial angles
         this.legs[0].joints[0].setAngle(+45.0 * Numbers.deg2rad)
         this.legs[1].joints[0].setAngle(-45.0 * Numbers.deg2rad)
@@ -99,6 +99,37 @@ export default class Robot {
             this.legs[i].joints[3].setAngle(30.0 * Numbers.deg2rad)
         }
 
-    }
+        // body hover
+        this.bodyMesh.onHoverStart = (mesh) => {
+            mesh.material.oldColor = mesh.material.color.getHex()
+            mesh.material.color.setRGB(1.0, 1.0, 0.0)
+        }
+        this.bodyMesh.onHoverEnd = (mesh) => {
+            mesh.material.color.setHex(mesh.material.oldColor)
+        }
 
+    }
+    update(canvas){
+        for(var leg of this.legs){
+            leg.update(canvas)
+        }
+    }
+    enableLayer(layer){
+        for(var leg of this.legs){
+            leg.enableLayer(layer)
+        }
+        this.bodyMesh.layers.enable(layer)
+    }
+    setBodyVisible(visible){
+        this.bodyMesh.visible = false
+        this.eyeMesh1.visible = false
+        this.eyeMesh2.visible = false
+    }
+    setBodyColor(color){
+        this.bodyMesh.material.color = color
+    }
+    setEyesColor(color){
+        this.eyeMesh1.material.color = color
+        this.eyeMesh2.material.color = color
+    }
 }

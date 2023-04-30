@@ -64,6 +64,8 @@ public:
     void GetJointsMeasuredAngles(float angles[4]);
     void GetJointsLastTargetAngles(float angles[4]);
 
+    void TorqueOff();
+
 };
 
 }

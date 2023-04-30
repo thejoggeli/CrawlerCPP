@@ -49,7 +49,7 @@ class Input {
         })
         this.$overlay.on("click ", (e) => {
             e.preventDefault()
-            e.stopPropagation()            
+            e.stopPropagation()
         })
         this.$overlay.on("mousedown ", (e) => {
             if(e.which == 1){
@@ -325,8 +325,8 @@ Input.MouseHandle = class {
         }
     }
     updateRelativePosition(){
-        this.relativePosition.x = this.absolutePosition.x - this.input.canvas.getOffsetLeft() 
-        this.relativePosition.y = this.absolutePosition.y - this.input.canvas.getOffsetTop()
+        this.relativePosition.x = this.absolutePosition.x - this.input.canvas.boundingClientRect.left 
+        this.relativePosition.y = this.absolutePosition.y - this.input.canvas.boundingClientRect.top
     }
     updateWorldPosition(){
         this.input.canvas.screenToWorld(this.worldPosition, this.relativePosition)
@@ -358,8 +358,8 @@ Input.TouchHandle = class {
         this.updateWorldPosition()
     }
     updateRelativePosition(){
-        this.relativePosition.x = this.absolutePosition.x - this.input.canvas.getOffsetLeft() 
-        this.relativePosition.y = this.absolutePosition.y - this.input.canvas.getOffsetTop()
+        this.relativePosition.x = this.absolutePosition.x - this.input.canvas.boundingClientRect.left
+        this.relativePosition.y = this.absolutePosition.y - this.input.canvas.boundingClientRect.top
     }
     updateWorldPosition(){
         this.input.canvas.screenToWorld(this.worldPosition, this.relativePosition)

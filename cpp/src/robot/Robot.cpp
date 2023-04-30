@@ -27,11 +27,12 @@ Robot::Robot(){
     };
 
     // servo angle scale
+    float factor = 1.07f;
     float servoAngleScale[] = {
-        -1.091f, -1.091f, -1.091f, -1.091f, // front+left  
-        -1.091f, -1.091f, -1.091f, -1.091f, // back+left   
-        -1.091f, +1.091f, +1.091f, +1.091f, // back+right  
-        -1.091f, +1.091f, +1.091f, +1.091f, // front right 
+        -factor, -factor, -factor, -factor, // front+left  
+        -factor, -factor, -factor, -factor, // back+left   
+        -factor, +factor, +factor, +factor, // back+right  
+        -factor, +factor, +factor, +factor, // front right 
     };
 
     // leg names
@@ -109,11 +110,6 @@ Robot::Robot(){
     legs[1]->joints[2]->limitMin = -150.0f * DEG_2_RADf;
     legs[1]->joints[2]->limitMax = +150.0f * DEG_2_RADf;
 
-    // create position buffer
-    for(int i = 0; i < servoIds.size(); i++){
-        servoGoalBuffer.push_back(0);
-    }
-
 }
 
 Robot::~Robot(){ 
@@ -147,13 +143,20 @@ void Robot::CloseSerialStream(){
     servoSerialStream->close();
 }
 
-void Robot::MoveJointsToTargetSync(float time){
+void Robot::MoveJointsToTargetSync(float time, bool forceTorqueOn){
+    static uint8_t ids[16];
+    static uint16_t positions[16];
+    int size = 0;
     for(int i = 0; i < jointsList.size(); i++){
         Joint* joint = jointsList[i];
-        servoGoalBuffer[i] = joint->AngleToXYZ(joint->currentTargetAngle);
+        if(joint->servoState == ServoState::OK || (joint->servoState == ServoState::TorqueOff && forceTorqueOn)){
+            ids[size] = joint->servo->id;
+            positions[size] = joint->AngleToXYZ(joint->currentTargetAngle);
+            size++;
+        }
     }
     uint8_t playtime = (uint8_t)(time*100.0f);
-    masterServo->setPositionsSync(servoGoalBuffer.data(), servoIds.data(), playtime, servoIds.size());
+    masterServo->setPositionsSync(positions, ids, playtime, size);
 }
 
 void Robot::Update(){
@@ -166,8 +169,8 @@ void Robot::FixedUpdate(){
 
 void Robot::RebootServos(float sleepTime){
     LogInfo("Robot", iLog << "RebootServos(sleepTime=" << sleepTime << ")");
-    for(XYZServo* servo : jointServos){
-        servo->reboot();
+    for(Joint* joint : jointsList){
+        joint->RebootServo();
     }
     Time::Sleep(sleepTime);
 }
@@ -347,6 +350,12 @@ void Robot::PrintServoStatus(){
         LogInfo("Robot", buffer);
     }
     LogInfo("Robot", iLog << "Total Current (mA): " << currentSumRobot);
+}
+
+void Robot::TorqueOff(){
+    for(Leg* leg : legs){
+        leg->TorqueOff();
+    }
 }
 
 }

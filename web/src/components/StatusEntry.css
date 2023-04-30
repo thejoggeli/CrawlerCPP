@@ -1,0 +1,26 @@
+.status-entry {
+    display:inline-block;
+    /* padding:2px 4px; */
+    /* background:#eee; */
+    border-radius: 5px;
+    /* color:#101010; */
+    font-size:14px;
+    margin-right:4px;
+    position: relative;
+    height:100%;
+}
+.status-entry .name {
+    font-weight:bold;
+}
+.status-entry .value {
+    font-weight:normal;   
+    padding-right:4px;
+}
+.status-entry:not(.last)::after{
+    content: "|";
+}
+.status-entry .inner {
+    display:inline-block;
+    position: relative;
+    box-sizing: border-box;
+}

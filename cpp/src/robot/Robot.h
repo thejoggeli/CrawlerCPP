@@ -15,7 +15,6 @@ class Brain;
 class Robot {
 private:
 
-    std::vector<uint16_t> servoGoalBuffer;
     std::vector<uint8_t> servoIds;
 
 public:
@@ -37,7 +36,7 @@ public:
     // void Update();
     // void FixedUpdate();
 
-    void MoveJointsToTargetSync(float time);
+    void MoveJointsToTargetSync(float time, bool forceTorqueOn = false);
 
     void SetBrain(Brain* brain);
 
@@ -54,6 +53,8 @@ public:
     void SetServosLedPolicySystem();
 
     void PrintServoStatus();
+
+    void TorqueOff();
 
 };
 

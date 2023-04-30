@@ -17,6 +17,14 @@ enum class JointType {
     K3 = 3,
 };
 
+enum class ServoState {
+    Error, 
+    Ready, // default state on startup
+    OK, // state will be set after successful pinging
+    Rebooting, 
+    TorqueOff,
+};
+
 static std::string JointTypeToString(JointType jointType);
 
 class Joint {
@@ -47,6 +55,7 @@ public:
     float lastTargetAngle = 0.0f;
     float currentTargetAngle = 0.0f;
 
+    float servoAngleZero = 511.5f;
     float servoAngleScale = 1.0f;
 
     BufferedValue<float> measuredAngle; // radians
@@ -60,9 +69,14 @@ public:
     XYZServo* servo = nullptr;
     bool lastPingServoResult = false;
 
+    ServoState servoState = ServoState::Ready;
+    bool canCommunicate = false;
+
     Joint(Leg* leg, JointType jointType);
 
+    void SetServoState(ServoState state);
     void SetServo(XYZServo* servo);
+    void RebootServo();
 
     bool PingServo();
 
@@ -71,13 +85,13 @@ public:
     void SetTargetAngle(float angle);
     void MoveServoToTargetAngle(float seconds);
 
-    bool ReadMeasuredStatus(bool buffer = false); // reads: angle, pwm, current, statusError, statusDetail 
-    bool ReadMeasuredAngle(bool buffer = false);
-    bool ReadMeasuredCurrent(bool buffer = false);
-    bool ReadMeasuredTemperature(bool buffer = false);
-    bool ReadMeasuredVoltage(bool buffer = false);
-    bool ReadStatusError(bool buffer = false);
-    bool ReadStatusDetail(bool buffer = false);
+    bool ReadMeasuredStatus(bool buffer = false, int retries = 2); // reads: angle, pwm, current, statusError, statusDetail 
+    bool ReadMeasuredAngle(bool buffer = false, int retries = 2);
+    bool ReadMeasuredCurrent(bool buffer = false, int retries = 2);
+    bool ReadMeasuredTemperature(bool buffer = false, int retries = 2);
+    bool ReadMeasuredVoltage(bool buffer = false, int retries = 2);
+    bool ReadStatusError(bool buffer = false, int retries = 2);
+    bool ReadStatusDetail(bool buffer = false, int retries = 2);
 
     void SetServoLedPolicyUser();
     void SetServoLedPolicySystem();

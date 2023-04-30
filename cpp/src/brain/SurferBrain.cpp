@@ -209,10 +209,10 @@ void SurferBrain::SetbodyRotationSpeed(float speed){
 }
 
 void SurferBrain::SetBodyTranslationTarget(float x, float y, float z){
-    SetbodyTranslationTarget(Eigen::Vector3f(x, y, z));
+    SetBodyTranslationTarget(Eigen::Vector3f(x, y, z));
 }
 
-void SurferBrain::SetbodyTranslationTarget(const Eigen::Vector3f& translation){
+void SurferBrain::SetBodyTranslationTarget(const Eigen::Vector3f& translation){
     bodyTranslationStart = bodyTranslation;
     bodyTranslationTarget = translation;
     bodyTranslationDelta = bodyTranslationTarget - bodyTranslationStart;

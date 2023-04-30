@@ -3,11 +3,12 @@ import "./App.css";
 import Robo3DComponent from "./Robo3DComponent"
 import Main from "logic/Main"
 import Time from "msl/time/Time"
-import GamepadCanvas from "./GamepadCanvas";
+import GamepadComponent from "./GamepadComponent";
 import Overview from "./Overview";
 import PacketMessage from "logic/PacketMessage";
 import $ from "jquery"
 import Numbers from "msl/util/Numbers";
+import StatusEntry from "./StatusEntry";
 
 export default class App extends React.Component {
 
@@ -20,10 +21,10 @@ export default class App extends React.Component {
                 time: 0,
                 ups: 0   ,
                 fixedUps: 0,
-                cap: 0,
+                capFX: 0,
+                capST: 0,
                 sleep: 0,
                 clients: 0,
-                maxDt: 0,
             }
         }
     }
@@ -46,10 +47,10 @@ export default class App extends React.Component {
                 time: pm.getFloat("time"),
                 ups: pm.getFloat("ups")   ,
                 fixedUps: pm.getFloat("fixedUps"),
-                cap: pm.getFloat("cap"),
+                capFX: pm.getFloat("capFX"),
+                capST: pm.getFloat("capST"),
                 sleep: pm.getFloat("sleep"),
                 clients: pm.getInt("clients"),
-                maxDt: pm.getFloat("maxDt"),
             }
         })
     }
@@ -89,28 +90,30 @@ export default class App extends React.Component {
         } else if(this.state.view == 1){
             view = <Robo3DComponent />
         } else {
-            view = <GamepadCanvas />
+            view = <GamepadComponent />
         }
         return (
-            <div>    
+            <div className="wrapper">
                 <div className="blocker">
                     <img src="img/disconnected.svg" />
                 </div>
-                <div className="toprow">
-                    <button onClick={this.handleClick}>State view: {this.state.view}</button>
-                    &nbsp;
-                    <button onClick={this.handleClick2}>send test message</button>  
-                    &nbsp;&nbsp; 
-                    web={Time.toBeautifulString(Time.currentTime, false, true, true, true, false)} | 
-                    robot={Time.toBeautifulString(this.state.status.time, false, true, true, true, false)} | 
-                    ups={Numbers.roundToFixed(this.state.status.ups, 1)} |
-                    fixedUps={Numbers.roundToFixed(this.state.status.fixedUps, 1)} |
-                    maxDt={Numbers.roundToFixed(this.state.status.maxDt, 2) + "ms"} |
-                    cap={Numbers.roundToFixed(this.state.status.cap*100.0, 0) + "%"} |
-                    sleep={Numbers.roundToFixed(this.state.status.sleep*100.0, 0) + "%"} |
-                    clients={this.state.status.clients}
+                <div className="main-container">
+                    <div className="toprow">
+                        <button onClick={this.handleClick}>State view: {this.state.view}</button>
+                        &nbsp;
+                        <button onClick={this.handleClick2}>send test message</button>  
+                        &nbsp;&nbsp; 
+                        <StatusEntry name="Web" value={Time.toBeautifulString(Time.currentTime, false, true, true, true, false)} /> 
+                        <StatusEntry name="Robot" value={Time.toBeautifulString(this.state.status.time, false, true, true, true, false)} />
+                        <StatusEntry name="UPS" value={Numbers.roundToFixed(this.state.status.ups, 1)} />
+                        <StatusEntry name="FixedUPS" value={Numbers.roundToFixed(this.state.status.fixedUps, 1)} />
+                        <StatusEntry name="CapFX" value={Numbers.roundToFixed(this.state.status.capFX*100.0, 0) + "%"} />
+                        <StatusEntry name="CapST" value={Numbers.roundToFixed(this.state.status.capST*100.0, 0) + "%"} />
+                        <StatusEntry name="Sleep" value={Numbers.roundToFixed(this.state.status.sleep*100.0, 0) + "%"} />
+                        <StatusEntry name="Clients" value={this.state.status.clients} last={true} />
+                    </div>
+                    <div className="view-container">{view}</div>
                 </div>
-                <div className="view-container">{view}</div>
             </div>
         );
     }

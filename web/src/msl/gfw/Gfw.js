@@ -7,6 +7,8 @@ import Timer            from "msl/time/Timer.js"
 import Canvas           from "./Canvas.js"
 import $                from "jquery"
 import Subscribable     from "msl/util/Subscribable.js"
+import Objects from "msl/util/Objects.js"
+import CanvasThree from "./CanvasThree.js"
 
 function Gfw(){}
 Gfw.events = new Subscribable()
@@ -105,7 +107,15 @@ Gfw.createCanvas = function(id, _params){
         return null
     }
     var params = _params === undefined ? {} : _params
-    var canvas = new Canvas(id, params)
+    Objects.set(params, "type", "2d")
+    var canvas = null
+    if(params.type == "2d"){
+        canvas = new Canvas(id, params)
+    } else if (params.type == "three"){
+        canvas = new CanvasThree(id, params)
+    } else {
+        Log.error("Gfw", "invalid canvas type: " + params.type)
+    }
     Gfw.canvases.push(canvas)
     Gfw.canvases_by_id[id] = canvas
     canvas.install()

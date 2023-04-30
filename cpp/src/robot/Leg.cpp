@@ -248,5 +248,11 @@ void Leg::GetJointsLastTargetAngles(float angles[4]){
     }
 }
 
+void Leg::TorqueOff(){
+    for(Joint* joint : joints){
+        joint->TorqueOff();
+    }
+}
+
 
 }

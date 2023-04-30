@@ -53,12 +53,32 @@ void ServoThread::Run(){
         // send new servo positions
         robot->MoveJointsToTargetSync(Time::fixedDeltaTime);
 
-        // read measurements
-        for(Joint* joint : robot->jointsList){
-            // joint->ReadMeasuredStatus(true);
-            Time::SleepMicros(1000);
+        // read status measurements
+        Leg* leg = robot->legs[nextLeg];
+        for(Joint* joint : leg->joints){
+            joint->ReadMeasuredStatus(true);
+        }
+        nextLeg += 1;
+        if(nextLeg >= robot->legs.size()){
+            nextLeg = 0;
         }
 
+        // read temperature and voltage measurements
+        Joint* joint = robot->jointsList[nextJoint];
+        if(measureState == 0){
+            joint->ReadMeasuredVoltage(true);
+            measureState = 1;
+        } else {
+            joint->ReadMeasuredTemperature(true);
+            measureState = 0;
+            // measure another joint in next loop 
+            nextJoint++;
+            if(nextJoint >= robot->jointsList.size()){
+                nextJoint = 0;
+            }
+        }
+
+        // remember time
         uint64_t endTimeMicros = Time::GetSystemTimeMicros();
         serialCommTimeMicros = endTimeMicros - startTimeMicros;
         float serialCommTimeMillis = (float)(serialCommTimeMicros) * 1.0e-3f;

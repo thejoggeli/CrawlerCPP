@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import Robot3D from "./Robot3D"
+import Robo3DComponent from "./Robo3DComponent"
 import Main from "logic/Main"
 import Time from "msl/time/Time"
 import GamepadCanvas from "./GamepadCanvas";
@@ -14,7 +14,7 @@ export default class App extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            view: 0,
+            view: 1,
             connected: false,
             status: {
                 time: 0,
@@ -87,7 +87,7 @@ export default class App extends React.Component {
         if(this.state.view == 0){
             view = <Overview />
         } else if(this.state.view == 1){
-            view = <Robot3D />
+            view = <Robo3DComponent />
         } else {
             view = <GamepadCanvas />
         }
@@ -96,12 +96,13 @@ export default class App extends React.Component {
                 <div className="blocker">
                     <img src="img/disconnected.svg" />
                 </div>
-                <div>
+                <div className="toprow">
                     <button onClick={this.handleClick}>State view: {this.state.view}</button>
                     &nbsp;
                     <button onClick={this.handleClick2}>send test message</button>  
                     &nbsp;&nbsp; 
-                    {Time.toBeautifulString(this.state.status.time, false, true, true, true, false)} | 
+                    web={Time.toBeautifulString(Time.currentTime, false, true, true, true, false)} | 
+                    robot={Time.toBeautifulString(this.state.status.time, false, true, true, true, false)} | 
                     ups={Numbers.roundToFixed(this.state.status.ups, 1)} |
                     fixedUps={Numbers.roundToFixed(this.state.status.fixedUps, 1)} |
                     maxDt={Numbers.roundToFixed(this.state.status.maxDt, 2) + "ms"} |
@@ -109,7 +110,7 @@ export default class App extends React.Component {
                     sleep={Numbers.roundToFixed(this.state.status.sleep*100.0, 0) + "%"} |
                     clients={this.state.status.clients}
                 </div>
-                <div>{view}</div>
+                <div className="view-container">{view}</div>
             </div>
         );
     }

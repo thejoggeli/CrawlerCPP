@@ -46,11 +46,11 @@ void GaitBrain::Init(){
     gait->AddFrame(frame);
     gait->AddTransition(1.0f);
 
-    frame.bodyPosition = {-dxy, 0.0f, 0.0f};
+    frame.bodyPosition = {dxy, 0.0f, 0.0f};
     gait->AddFrame(frame);
     gait->AddTransition(1.0f);
 
-    frame.bodyPosition = {0.0f, dxy, 0.0f};
+    frame.bodyPosition = {0.0f, -dxy, 0.0f};
     gait->AddFrame(frame);
     gait->AddTransition(1.0);
 

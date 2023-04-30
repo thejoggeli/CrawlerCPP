@@ -74,7 +74,7 @@ Robot::Robot(){
     // set legs hip transform
     float hip_dx = 0.06f;
     float hip_dy = 0.06f;
-    float hip_dz = 0.0f;
+    float hip_dz = 0.0f;   
     legs[0]->SetHipTransform(Eigen::Vector3f(+hip_dx, +hip_dy, hip_dz), 0.0f * DEG_2_RADf);
     legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 180.0f * DEG_2_RADf);
     legs[2]->SetHipTransform(Eigen::Vector3f(-hip_dx, -hip_dy, hip_dz), 180.0f * DEG_2_RADf);
@@ -88,6 +88,16 @@ Robot::Robot(){
     legs[2]->joints[0]->limitMax = 90.0f * DEG_2_RADf;
     legs[3]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
     legs[3]->joints[0]->limitMax = 0.0f * DEG_2_RADf;
+
+    // set angle limits
+    for(int i = 0; i < 4; i++){
+        legs[i]->joints[1]->limitMin = -90.0f * DEG_2_RADf;
+        legs[i]->joints[1]->limitMax = +90.0f * DEG_2_RADf;
+        legs[i]->joints[2]->limitMin = -90.0f * DEG_2_RADf;
+        legs[i]->joints[2]->limitMax = +90.0f * DEG_2_RADf;
+        legs[i]->joints[3]->limitMin = -90.0f * DEG_2_RADf;
+        legs[i]->joints[3]->limitMax = +90.0f * DEG_2_RADf;
+    }
 
     // set new leg hip transform and lengths
     legs[1]->joints[0]->length = 0.068f;

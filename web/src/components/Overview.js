@@ -1,6 +1,6 @@
 import React from "react";
 import "./Overview.css";
-import Robot3D from "./Robot3D"
+import Robo3DComponent from "./Robo3DComponent"
 import Main from "logic/Main"
 import GamepadCanvas from "./GamepadCanvas";
 import { vec3 } from "gl-matrix";

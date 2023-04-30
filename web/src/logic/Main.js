@@ -73,7 +73,7 @@ class Main {
 
     static onPacketMessage(packet){
         var packetMessage = new PacketMessage(packet)
-        Log.debug("Main", packetMessage.message, packetMessage)
+        // Log.debug("Main", packetMessage.message, packetMessage)
         Main.packetMessages.notifySubscribers(packetMessage.message, packetMessage)
     }
 

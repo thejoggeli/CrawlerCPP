@@ -1,0 +1,104 @@
+import Numbers from "msl/util/Numbers";
+import Leg from "./Leg";
+import * as THREE from "three";
+
+export default class Robot {
+
+    constructor(){
+        
+        this.root = new THREE.Group()
+        this.legs = []
+
+        // create legs
+        for(var i = 0; i < 4; i++){
+            var leg = new Leg(this, this.root)
+            this.legs.push(leg)
+        }
+
+        // body size
+        this.bodySize = new THREE.Vector3(0.5, 0.25, 0.5)
+
+        // set hip transform
+        this.legs[0].setHipTranslation(new THREE.Vector3(-this.bodySize.x*0.5, 0, -this.bodySize.z*0.5))
+        this.legs[1].setHipTranslation(new THREE.Vector3(-this.bodySize.x*0.5, 0, +this.bodySize.z*0.5))
+        this.legs[2].setHipTranslation(new THREE.Vector3(+this.bodySize.x*0.5, 0, +this.bodySize.z*0.5))
+        this.legs[3].setHipTranslation(new THREE.Vector3(+this.bodySize.x*0.5, 0, -this.bodySize.z*0.5))
+
+        // set hip translation
+        this.legs[0].setHipRotation(0.0 * Numbers.deg2rad)
+        this.legs[1].setHipRotation(180.0 * Numbers.deg2rad)
+        this.legs[2].setHipRotation(180.0 * Numbers.deg2rad)
+        this.legs[3].setHipRotation(0.0 * Numbers.deg2rad)
+
+        var jointSize = 0.08
+        for(var i = 0; i < 4; i++){
+
+            // set limb lengths
+            this.legs[i].joints[0].setLimbLength(0.2)
+            this.legs[i].joints[1].setLimbLength(0.2)
+            this.legs[i].joints[2].setLimbLength(0.2)
+            this.legs[i].joints[3].setLimbLength(0.2)
+
+            // set limb sizes
+            this.legs[i].joints[0].setLimbSize(0.04)
+            this.legs[i].joints[1].setLimbSize(0.04)
+            this.legs[i].joints[2].setLimbSize(0.04)
+            this.legs[i].joints[3].setLimbSize(0.04)
+            
+            // set joints sizes
+            this.legs[i].joints[0].setJointSize(jointSize)
+            this.legs[i].joints[1].setJointSize(jointSize)
+            this.legs[i].joints[2].setJointSize(jointSize)
+            this.legs[i].joints[3].setJointSize(jointSize)
+            this.legs[i].foot.setJointSize(jointSize)
+
+            // set rotation axes
+            this.legs[i].joints[0].rotationAxis = new THREE.Vector3(0,1,0)
+            this.legs[i].joints[1].rotationAxis = new THREE.Vector3(-1,0,0)
+            this.legs[i].joints[2].rotationAxis = new THREE.Vector3(-1,0,0)
+            this.legs[i].joints[3].rotationAxis = new THREE.Vector3(-1,0,0)
+
+        }
+
+        // body mesh
+        var bodyGeometry = new THREE.BoxGeometry(this.bodySize.x, this.bodySize.y, this.bodySize.z)
+        var bodyMaterial = new THREE.MeshStandardMaterial({
+            color: 0xC0C0C0,
+        });
+        this.bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
+        this.root.add(this.bodyMesh)
+
+        // eye mesh
+        var eyeGeometry = new THREE.IcosahedronGeometry(1, 3)
+        var eyeMaterial = new THREE.MeshStandardMaterial({
+            color: 0x404040,
+            flatShading: true,
+        });
+
+        this.eyeMesh1 = new THREE.Mesh(eyeGeometry, eyeMaterial)
+        this.eyeMesh1.scale.setScalar(this.bodySize.y*0.2)
+        this.eyeMesh1.position.x = -this.bodySize.x*0.12
+        this.eyeMesh1.position.z = -this.bodySize.z*0.5 + this.eyeMesh1.scale.x*0.25
+        this.root.add(this.eyeMesh1)
+
+        this.eyeMesh2 = new THREE.Mesh(eyeGeometry, eyeMaterial)
+        this.eyeMesh2.scale.setScalar(this.bodySize.y*0.2)
+        this.eyeMesh2.position.x = +this.bodySize.x*0.12
+        this.eyeMesh2.position.z = -this.bodySize.z*0.5 + this.eyeMesh2.scale.x*0.25
+        this.root.add(this.eyeMesh2)
+
+
+        // set initial angles
+        this.legs[0].joints[0].setAngle(+45.0 * Numbers.deg2rad)
+        this.legs[1].joints[0].setAngle(-45.0 * Numbers.deg2rad)
+        this.legs[2].joints[0].setAngle(+45.0 * Numbers.deg2rad)
+        this.legs[3].joints[0].setAngle(-45.0 * Numbers.deg2rad)
+        for(var i = 0; i < 4; i++){
+            this.legs[i].joints[1].setAngle(30.0 * Numbers.deg2rad)
+            this.legs[i].joints[2].setAngle(30.0 * Numbers.deg2rad)
+            this.legs[i].joints[3].setAngle(30.0 * Numbers.deg2rad)
+        }
+
+    }
+
+}

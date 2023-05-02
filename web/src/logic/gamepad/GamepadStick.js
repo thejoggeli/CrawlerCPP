@@ -20,6 +20,7 @@ function GamepadStick(gamepad, params){
 	this.sendMoveTimer = 0;
 	this.sendMoveFrequency = 40;
 	this.sendMoveInterval = 1.0 / this.sendMoveFrequency;
+	this.sendMoveRequired = false
 }
 GamepadStick.prototype.update = function(canvas){
 	var old_x = this.position.x;
@@ -73,30 +74,41 @@ GamepadStick.prototype.update = function(canvas){
 		this.position.x = this.center.x + Math.cos(angle)*this.maxDistance;
 		this.position.y = this.center.y + Math.sin(angle)*this.maxDistance;
 	}
-	if(this.isTouched()){
-		if(this.sendMoveTimer <= 0){
-			this.sendMoveTimer += this.sendMoveInterval;
-			var dead = 0.2;
-			var relative_x = (this.position.x - this.center.x) / this.maxDistance;
-			var relative_y = (this.position.y - this.center.y) / this.maxDistance;
-			relative_x = this.deadzone(relative_x, 0.05);
-			relative_y = this.deadzone(relative_y, 0.05);
-			// send joystick move event
-            var event = {id: this.code, x: relative_x, y: relative_y}
-            this.gamepad.notifySubscribers("onJoystickMove", event)
-			this.gamepad.repaintRequired = true;	
-		}
-		this.sendMoveTimer -= Time.deltaTime;
-	}
 	if(old_x != this.position.x || old_y != this.position.y){		
 		this.gamepad.repaintRequired = true;
+		this.sendMoveRequired = true
+	}
+	if(this.sendMoveTimer > 0.0){
+		this.sendMoveTimer -= Time.deltaTime;
+		if(this.sendMoveTimer < 0.0){
+			this.sendMoveTimer = 0.0
+		}
+	}
+	if(this.sendMoveRequired && this.sendMoveTimer <= 0){
+		this.gamepad.repaintRequired = true
+		this.sendMoveRequired = false
+		// send joystick move event
+		var relative_x = (this.position.x - this.center.x) / this.maxDistance;
+		var relative_y = (this.position.y - this.center.y) / this.maxDistance;
+		relative_x = this.deadzone(relative_x, 0.05);
+		relative_y = this.deadzone(relative_y, 0.05);
+		var event = {id: this.code, x: relative_x, y: relative_y}
+		this.gamepad.notifySubscribers("onJoystickMove", event)
+		// reset send move timer
+		while(this.sendMoveTimer <= this.sendMoveInterval*0.5){
+			this.sendMoveTimer += this.sendMoveInterval
+		}
 	}
 }
 GamepadStick.prototype.deadzone = function(val, dead){
 	if(val > dead){
-		return val*(1+dead)-dead;
+		const a = 1.0/(1.0-dead)
+		const b = 1.0-a
+		return val*a+b
 	} else if(val < -dead){
-		return val*(1+dead)+dead;
+		const a = 1.0/(1.0-dead)
+		const b = a-1.0
+		return val*a+b
 	}	
 	return 0;					 
 }

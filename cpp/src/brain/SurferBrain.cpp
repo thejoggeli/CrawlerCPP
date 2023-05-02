@@ -77,6 +77,7 @@ void SurferBrain::FixedUpdate(){
             float ry = input[1] * 20.0f * DEG_2_RADf;
             // LogDebug("SurferBrain", iLog << "rx=" << rx << ", ry=" << ry);
             SetBodyRotationTarget(rx, ry, 0.0f);
+            // LogDebug("SurferBrain", iLog << rx << ", " << ry);
 
             // move base up and down
             if(client->IsKeyDown(GamepadKey::Down)){

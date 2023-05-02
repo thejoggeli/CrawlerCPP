@@ -57,7 +57,7 @@ class Canvas extends Subscribable {
         this.input.install()
     }
     uninstall(){
-        Log.print(Log.Debug, "Canvas", "install, id=" + this.id)
+        Log.print(Log.Debug, "Canvas", "uninstall, id=" + this.id)
         $(this.element).remove()
         this.input.uninstall()
     }

@@ -24,16 +24,6 @@ Leg::Leg(Robot* robot, const std::string& name){
     joints.push_back(new Joint(this, JointType::K2));
     joints.push_back(new Joint(this, JointType::K3));
 
-    // set joint limits
-    joints[0]->limitMin = -PIf * 0.5f;
-    joints[0]->limitMax = +PIf * 0.5f;
-    joints[1]->limitMin = -PIf * 0.5f;
-    joints[1]->limitMax = +PIf * 0.5f;
-    joints[2]->limitMin = -PIf * 0.5f;
-    joints[2]->limitMax = +PIf * 0.5f;
-    joints[3]->limitMin = -PIf * 0.5f;
-    joints[3]->limitMax = +PIf * 0.5f;
-
     // ik search config
     const int numPhiVals = 251;
     const float phiMin = -45.0f * DEG_2_RADf;

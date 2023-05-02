@@ -172,10 +172,10 @@ bool App::Run(){
     // start up robot
     robot->Startup();
     // robot->PrintServoStatus();
-    // robot->SetBrain(new SurferBrain());
+    robot->SetBrain(new SurferBrain());
     // robot->SetBrain(new GaitBrain());
-    robot->SetBrain(new EmptyBrain());
-    robot->TorqueOff();
+    // robot->SetBrain(new EmptyBrain());
+    // robot->TorqueOff();
     // for(Leg* leg : robot->legs){
     //     leg->joints[0]->SetTargetAngle(0.0f * DEG_2_RADf);
     //     leg->joints[1]->SetTargetAngle(90.0f * DEG_2_RADf);

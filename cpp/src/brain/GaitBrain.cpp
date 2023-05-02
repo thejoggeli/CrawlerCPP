@@ -53,7 +53,14 @@ void GaitBrain::Init(){
     frame.bodyPosition = {0.0f, -dxy, 0.0f};
     gait->AddFrame(frame);
     gait->AddTransition(1.0);
+    
+    // frame.bodyPosition = {0.0f, 0.0f, -0.03f};
+    // gait->AddFrame(frame);
+    // gait->AddTransition(1.0f);
 
+    // frame.bodyPosition = {0.0f, 0.0f, 0.13f};
+    // gait->AddFrame(frame);
+    // gait->AddTransition(1.0f);
 
     // float dxy = 0.05f;
 

@@ -32,13 +32,13 @@ class CanvasThree extends Subscribable {
 
     }
     install(){
-        Log.print(Log.Debug, "Canvas", "install, id=" + this.id)
+        Log.print(Log.Debug, "CanvasThree", "install, id=" + this.id)
         this.$outerContainer.append(this.$innerContainer)
         this.$innerContainer.append(this.$element)
         this.input.install()
     }
     uninstall(){
-        Log.print(Log.Debug, "Canvas", "install, id=" + this.id)
+        Log.print(Log.Debug, "CanvasThree", "uninstall, id=" + this.id)
         $(this.element).remove()
         this.input.uninstall()
     }

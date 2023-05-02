@@ -20,19 +20,10 @@ Robot::Robot(){
 
     // all servo ids in order [hip, knee, knee, knee] 
     servoIds = {
-         7,  5,  9, 10, // front-left  
-         1,  2,  4,  3, // back-left   
-        15, 16, 33, 18, // back-right  
-        11, 12, 13, 44, // front right 
-    };
-
-    // servo angle scale
-    float factor = 1.07f;
-    float servoAngleScale[] = {
-        -factor, -factor, -factor, -factor, // front+left  
-        -factor, -factor, -factor, -factor, // back+left   
-        -factor, +factor, +factor, +factor, // back+right  
-        -factor, +factor, +factor, +factor, // front right 
+        11, 12, 13, 14, // front-left  
+        21, 22, 23, 24, // back-left   
+        31, 32, 33, 34, // back-right  
+        41, 42, 43, 44, // front right 
     };
 
     // leg names
@@ -53,12 +44,6 @@ Robot::Robot(){
         Leg* leg = new Leg(this, legNames[i]);
         legs.push_back(leg);
 
-        // set leg joint lengths
-        leg->joints[0]->length = 0.055;
-        leg->joints[1]->length = 0.068;
-        leg->joints[2]->length = 0.068;
-        leg->joints[3]->length = 0.093;
-
         // add all joints of current leg to jointsList
         for(Joint* joint : leg->joints){
             jointsList.push_back(joint);
@@ -69,46 +54,120 @@ Robot::Robot(){
     // assign servo motors to all joints
     for(int i = 0; i < jointsList.size(); i++){
         jointsList[i]->SetServo(jointServos[i]);
-        jointsList[i]->SetServoAngleScale(servoAngleScale[i]);
+    }
+
+    // calibrate servos
+    float hip_angles_low[] = {
+        -PIf*0.5f, 0.0f, -PIf*0.5f, 0.0f, // H0, H1, H2, H3
+    };
+    float hip_angles_high[] = {
+        0.0f, PIf*0.5f, 0.0f, PIf*0.5f, // H0, H1, H2, H3
+    };
+    uint16_t hip_measured_low[] = {
+        787, 521, 789, 523, // H0, H1, H2, H3
+    };
+    uint16_t hip_measured_high[] = {
+        519, 254, 526, 241, // H0, H1, H2, H3
+    };
+    float knee_angle_low[] = {
+        -PIf*0.5f, -PIf*0.5f, -PIf*0.5f, // K1, K2, K3 @ Leg0
+        -PIf*0.5f, -PIf*0.5f, -PIf*0.5f, // K1, K2, K3 @ Leg1
+        -PIf*0.5f, -PIf*0.5f, -PIf*0.5f, // K1, K2, K3 @ Leg2
+        -PIf*0.5f, -PIf*0.5f, -PIf*0.5f, // K1, K2, K3 @ Leg3
+    };
+    float knee_angle_high[] = {
+        PIf*0.5f, PIf*0.5f, PIf*0.5f, // K1, K2, K3 @ Leg0
+        PIf*0.5f, PIf*0.5f, PIf*0.5f, // K1, K2, K3 @ Leg1
+        PIf*0.5f, PIf*0.5f, PIf*0.5f, // K1, K2, K3 @ Leg2
+        PIf*0.5f, PIf*0.5f, PIf*0.5f, // K1, K2, K3 @ Leg3
+    };
+    uint16_t knee_measured_low[] = {
+        239, 237, 244, // K1, K2, K3 @ Leg0
+        244, 247, 231, // K1, K2, K3 @ Leg1
+        238, 248, 241, // K1, K2, K3 @ Leg2
+        249, 235, 243, // K1, K2, K3 @ Leg3
+    };
+    uint16_t knee_measured_mid[] = {
+        511, 503, 529, // K1, K2, K3 @ Leg0
+        508, 520, 513, // K1, K2, K3 @ Leg1
+        499, 512, 504, // K1, K2, K3 @ Leg2
+        522, 512, 509, // K1, K2, K3 @ Leg3
+    };
+    uint16_t knee_measured_high[] = {
+        803, 779, 793, // K1, K2, K3 @ Leg0
+        781, 791, 780, // K1, K2, K3 @ Leg1
+        784, 787, 782, // K1, K2, K3 @ Leg2
+        795, 783, 784, // K1, K2, K3 @ Leg3
+    };
+    for(unsigned int legIdx = 0; legIdx < 4; legIdx++){
+        // compute factors for hip servos (linear interpolation)
+        {
+            unsigned int idx1 = legIdx;
+            unsigned int idx2 = legIdx*4;
+            const float u = hip_angles_low[idx1];
+            const float v = hip_angles_high[idx1];
+            const float g = (float)hip_measured_low[idx1];
+            const float h = (float)hip_measured_high[idx1];
+            const float c = (h*u-g*v)/(u-v);
+            const float b = (g-h)/(u-v);
+            const float a = 0.0f;
+            jointsList[idx2]->servoFactorC = c;
+            jointsList[idx2]->servoFactorB = b;
+            jointsList[idx2]->servoFactorA = a;
+        }
+        // compute factors for knee servos (quadratic interpolation)
+        for(unsigned int jointIdx = 0; jointIdx < 3; jointIdx++){
+            unsigned int idx1 = legIdx*3+jointIdx;
+            unsigned int idx2 = legIdx*4+jointIdx+1;
+            const float u = knee_angle_low[idx1];
+            const float w = knee_angle_high[idx1];
+            const float g = (float)knee_measured_low[idx1];
+            const float h = (float)knee_measured_mid[idx1];
+            const float i = (float)knee_measured_high[idx1];
+            const float c = h;
+            const float b = (g-i)/(u-w);
+            const float a = (i-w*b-c)/(w*w);
+            jointsList[idx2]->servoFactorC = c;
+            jointsList[idx2]->servoFactorB = b;
+            jointsList[idx2]->servoFactorA = a;
+        }
     }
 
     // set legs hip transform
-    float hip_dx = 0.06f;
-    float hip_dy = 0.06f;
+    float hip_dx = 0.065f;
+    float hip_dy = 0.065f;
     float hip_dz = 0.0f;   
-    legs[0]->SetHipTransform(Eigen::Vector3f(+hip_dx, +hip_dy, hip_dz), 0.0f * DEG_2_RADf);
-    legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 180.0f * DEG_2_RADf);
-    legs[2]->SetHipTransform(Eigen::Vector3f(-hip_dx, -hip_dy, hip_dz), 180.0f * DEG_2_RADf);
-    legs[3]->SetHipTransform(Eigen::Vector3f(+hip_dx, -hip_dy, hip_dz), 0.0f * DEG_2_RADf);
+    legs[0]->SetHipTransform(Eigen::Vector3f(+hip_dx, +hip_dy, hip_dz), 90.0f * DEG_2_RADf);
+    legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 90.0f * DEG_2_RADf);
+    legs[2]->SetHipTransform(Eigen::Vector3f(-hip_dx, -hip_dy, hip_dz), -90.0f * DEG_2_RADf);
+    legs[3]->SetHipTransform(Eigen::Vector3f(+hip_dx, -hip_dy, hip_dz), -90.0f * DEG_2_RADf);
 
-    legs[0]->joints[0]->limitMin = 0.0f * DEG_2_RADf;
-    legs[0]->joints[0]->limitMax = 90.0f * DEG_2_RADf;
-    legs[1]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
-    legs[1]->joints[0]->limitMax = 0.0f * DEG_2_RADf;
-    legs[2]->joints[0]->limitMin = 0.0f * DEG_2_RADf;
-    legs[2]->joints[0]->limitMax = 90.0f * DEG_2_RADf;
-    legs[3]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
-    legs[3]->joints[0]->limitMax = 0.0f * DEG_2_RADf;
+    // set hip joints angle limits
+    legs[0]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
+    legs[0]->joints[0]->limitMax =   0.0f * DEG_2_RADf;
+    legs[1]->joints[0]->limitMin =   0.0f * DEG_2_RADf;
+    legs[1]->joints[0]->limitMax =  90.0f * DEG_2_RADf;
+    legs[2]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
+    legs[2]->joints[0]->limitMax =   0.0f * DEG_2_RADf;
+    legs[3]->joints[0]->limitMin =   0.0f * DEG_2_RADf;
+    legs[3]->joints[0]->limitMax =  90.0f * DEG_2_RADf;
 
-    // set angle limits
     for(int i = 0; i < 4; i++){
-        legs[i]->joints[1]->limitMin = -90.0f * DEG_2_RADf;
-        legs[i]->joints[1]->limitMax = +90.0f * DEG_2_RADf;
-        legs[i]->joints[2]->limitMin = -90.0f * DEG_2_RADf;
-        legs[i]->joints[2]->limitMax = +90.0f * DEG_2_RADf;
+
+        // set knee joints angle limits
+        legs[i]->joints[1]->limitMin = -100.0f * DEG_2_RADf;
+        legs[i]->joints[1]->limitMax = +100.0f * DEG_2_RADf;
+        legs[i]->joints[2]->limitMin = -150.0f * DEG_2_RADf;
+        legs[i]->joints[2]->limitMax = +150.0f * DEG_2_RADf;
         legs[i]->joints[3]->limitMin = -90.0f * DEG_2_RADf;
         legs[i]->joints[3]->limitMax = +90.0f * DEG_2_RADf;
-    }
 
-    // set new leg hip transform and lengths
-    legs[1]->joints[0]->length = 0.068f;
-    legs[1]->joints[1]->length = 0.078f;
-    legs[1]->joints[2]->length = 0.078f;
-    legs[1]->joints[3]->length = 0.065f;
-    legs[1]->joints[1]->limitMin = -100.0f * DEG_2_RADf;
-    legs[1]->joints[1]->limitMax = +100.0f * DEG_2_RADf;
-    legs[1]->joints[2]->limitMin = -150.0f * DEG_2_RADf;
-    legs[1]->joints[2]->limitMax = +150.0f * DEG_2_RADf;
+        // set joints lengths
+        legs[i]->joints[0]->length = 0.058;
+        legs[i]->joints[1]->length = 0.078;
+        legs[i]->joints[2]->length = 0.078;
+        legs[i]->joints[3]->length = 0.078;
+    }
 
 }
 
@@ -208,14 +267,14 @@ void Robot::Startup(){
         // leg->joints[1]->SetTargetAngle(DEG_2_RADf * +30.0f);
         // leg->joints[2]->SetTargetAngle(DEG_2_RADf * +30.0f);
         // leg->joints[3]->SetTargetAngle(DEG_2_RADf * +30.0f);
-        leg->joints[1]->SetTargetAngle(DEG_2_RADf * -45.0f);
-        leg->joints[2]->SetTargetAngle(DEG_2_RADf * +90.0f);
-        leg->joints[3]->SetTargetAngle(DEG_2_RADf * +45.0f);
+        leg->joints[1]->SetTargetAngle(DEG_2_RADf * -60.0f);
+        leg->joints[2]->SetTargetAngle(DEG_2_RADf * +120.0f);
+        leg->joints[3]->SetTargetAngle(DEG_2_RADf * +30.0f);
     }
-    legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * 45.0f);
-    legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
-    legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * 45.0f);
-    legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
+    legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
+    legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
+    legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
+    legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
     MoveJointsToTargetSync(2.0f);
     Time::Sleep(2.5f);
 

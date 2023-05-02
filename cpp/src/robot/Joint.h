@@ -55,8 +55,9 @@ public:
     float lastTargetAngle = 0.0f;
     float currentTargetAngle = 0.0f;
 
-    float servoAngleZero = 511.5f;
-    float servoAngleScale = 1.0f;
+    float servoFactorA = 0.0f;
+    float servoFactorB = 0.0f;
+    float servoFactorC = 0.0f;
 
     BufferedValue<float> measuredAngle; // radians
     BufferedValue<float> measuredCurrent; // mA

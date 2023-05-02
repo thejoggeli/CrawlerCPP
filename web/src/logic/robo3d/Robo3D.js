@@ -69,9 +69,9 @@ export default class Robo3D {
         this.dragCounter = 0
 
         var opacity = 0.5
-        var red = 0.33
-        var green = 0.33
-        var blue = 0.33
+        var red = 1.0
+        var green = 0.5
+        var blue = 0.5
         for(var i = 0; i < 4; i++){
             for(var j = 0; j < 4; j++){
                 var joint = this.shadowRobot.legs[i].joints[j]

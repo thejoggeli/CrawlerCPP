@@ -26,10 +26,10 @@ export default class Robot {
         this.legs[3].setHipTranslation(new THREE.Vector3(+this.bodySize.x*0.5, 0, -this.bodySize.z*0.5))
 
         // set hip translation
-        this.legs[0].setHipRotation(0.0 * Numbers.deg2rad)
-        this.legs[1].setHipRotation(180.0 * Numbers.deg2rad)
-        this.legs[2].setHipRotation(180.0 * Numbers.deg2rad)
-        this.legs[3].setHipRotation(0.0 * Numbers.deg2rad)
+        this.legs[0].setHipRotation(+90.0 * Numbers.deg2rad)
+        this.legs[1].setHipRotation(+90.0 * Numbers.deg2rad)
+        this.legs[2].setHipRotation(-90.0 * Numbers.deg2rad)
+        this.legs[3].setHipRotation(-90.0 * Numbers.deg2rad)
 
         var jointSize = 0.08
         for(var i = 0; i < 4; i++){

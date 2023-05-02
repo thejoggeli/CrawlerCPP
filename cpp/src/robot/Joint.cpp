@@ -77,10 +77,6 @@ bool Joint::PingServo(){
     return true;
 }
 
-void Joint::SetServoAngleScale( float angleScale){
-    this->servoAngleScale = angleScale;
-}
-
 void Joint::SetTargetAngle(float angle){
     lastTargetAngle = currentTargetAngle;
     currentTargetAngle = angle;
@@ -266,11 +262,28 @@ bool Joint::ReadStatusDetail(bool buffer, int retries){
 }
 
 float Joint::XYZToAngle(uint16_t xyz){
-    return (xyz - servoAngleZero) / servoAngleScale * PIf * (1.0f/servoAngleZero);
+    const float x = xyz;
+    const float a = servoFactorA;
+    const float b = servoFactorB;
+    const float c = servoFactorC;
+    if(a == 0.0f){
+        return (x-c)/b;
+    }
+    const float s = 4.0f*a*(x-c)+b*b;
+    if(s > 0.0f){
+        return (sqrt(s)-b)/(2.0f*a);
+    }
+    const float z = -4.0f*a*c + 4.0f*a*x + b*b;
+    return -(sqrt(z)+b)/(2.0f*a);
 }
 
 uint16_t Joint::AngleToXYZ(float angle){
-    return (uint16_t)(servoAngleScale * angle / PIf * servoAngleZero + servoAngleZero);
+    const float x = angle;
+    const float a = servoFactorA;
+    const float b = servoFactorB;
+    const float c = servoFactorC;
+    const float xyz = x*x*a + x*b + c;
+    return std::min(std::max(xyz, 0.0f), 1023.0f);
 }
 
 void Joint::SetServoLedPolicyUser(){

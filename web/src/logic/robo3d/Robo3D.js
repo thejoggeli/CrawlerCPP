@@ -61,10 +61,10 @@ export default class Robo3D {
         this.robot.enableLayer(2)
         this.scene.add(this.robot.root)
 
-        this.shadowRobot = new Robot(this)
-        this.shadowRobot.enableLayer(3)
-        this.shadowRobot.setBodyVisible(false)
-        this.scene.add(this.shadowRobot.root)
+        this.measuredRobot = new Robot(this)
+        this.measuredRobot.enableLayer(3)
+        // this.measuredRobot.setBodyVisible(false)
+        this.scene.add(this.measuredRobot.root)
 
         this.dragCounter = 0
 
@@ -72,27 +72,39 @@ export default class Robo3D {
         var red = 1.0
         var green = 0.5
         var blue = 0.5
+        var downscale = 0.95
+        this.measuredRobot.setBodyColor(new THREE.Color(red, green, blue), opacity)
+        this.measuredRobot.setEyesColor(new THREE.Color(red, green, blue), opacity)
+        this.measuredRobot.setBodyScale(downscale)
         for(var i = 0; i < 4; i++){
             for(var j = 0; j < 4; j++){
-                var joint = this.shadowRobot.legs[i].joints[j]
+                var joint = this.measuredRobot.legs[i].joints[j]
                 joint.setJointColor(new THREE.Color(red, green, blue), opacity)
                 joint.setLimbColor(new THREE.Color(red, green, blue), opacity)
-                joint.setJointSize(joint.getJointSize()*0.9)
-                joint.setLimbSize(joint.getLimbSize()*0.9)
+                joint.setJointSize(joint.getJointSize()*downscale)
+                joint.setLimbSize(joint.getLimbSize()*downscale)
             }
-            var foot = this.shadowRobot.legs[i].foot
+            var foot = this.measuredRobot.legs[i].foot
             foot.setJointColor(new THREE.Color(red, green, blue), opacity)
-            foot.setJointSize(foot.getJointSize()*0.9)
+            foot.setJointSize(foot.getJointSize()*downscale)
         }
 
     }
 
-    setShadowVisible(visible){
-        this.shadowRobot.root.visible = visible
+    setMeasuredVisible(visible){
+        this.measuredRobot.root.visible = visible
     }
 
-    isShadowVisible(){
-        return this.shadowRobot.root.visible
+    isMeasuredVisible(){
+        return this.measuredRobot.root.visible
+    }
+
+    setTargetVisible(visible){
+        this.robot.root.visible = visible
+    }
+
+    isTargetVisible(){
+        return this.robot.root.visible
     }
 
     mount(){
@@ -218,7 +230,7 @@ export default class Robo3D {
         for(var leg of data.legs){
             for(var j in leg.joints){
                 this.robot.legs[leg.id].joints[j].setAngle(leg.joints[j].targetAngle)
-                this.shadowRobot.legs[leg.id].joints[j].setAngle(leg.joints[j].measuredAngle)
+                this.measuredRobot.legs[leg.id].joints[j].setAngle(leg.joints[j].measuredAngle)
             }
         }
     }

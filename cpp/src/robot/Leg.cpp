@@ -174,18 +174,27 @@ float Leg::IKLoss(float phiTarget, float phiOld, float phiNew, float anglesOld[4
     loss += (phiError*phiError)*phiErrorWeight;
 
     // delta phi
-    float phiDelta = phiNew - phiOld;
-    // find max angle error
-    float angleDeltaMax = 0.0f;
-    for(int i = 0; i < 4; i++){
-        float angleDelta = abs(anglesOld[i] - anglesNew[i]);
-        if(angleDelta > angleDeltaMax){
-            angleDeltaMax = angleDelta;
-        }
+    if(phiDeltaWeight != 0.0f){
+        float phiDelta = phiNew - phiOld;
+        loss += phiDelta*phiDelta*phiDeltaWeight;
     }
 
-    // add max angle loss
-    loss += (angleDeltaMax*angleDeltaMax)*angleDeltaWeight;
+    // delta angle
+    if(angleDeltaWeight != 0.0f){
+
+        // find max delta angle
+        float angleDeltaMax = 0.0f;
+        for(int i = 0; i < 4; i++){
+            float angleDelta = abs(anglesOld[i] - anglesNew[i]);
+            if(angleDelta > angleDeltaMax){
+                angleDeltaMax = angleDelta;
+            }
+        }
+
+        // add max angle loss
+        loss += (angleDeltaMax*angleDeltaMax)*angleDeltaWeight;
+
+    }
 
     // return final loss
     return loss;

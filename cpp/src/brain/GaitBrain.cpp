@@ -36,23 +36,37 @@ void GaitBrain::Init(){
         frame.footPositions[i] = leg->hipTransform * leg->fkJointsResult.footPosition;
     }
 
-    float dxy = 0.05f;
 
-    frame.bodyPosition = {dxy, 0.0f, 0.0f};
-    gait->AddFrame(frame);
-    gait->AddTransition(1.0f);
+    unsigned int steps = 100;
+    float step = 1.0/(float)steps;
+    float speed = 3.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float z = (sin(t*PI2f)*0.5f+0.5f)*0.10f;
+        float rotx = cos(t*PI2f*1.0f)*25.0f*DEG_2_RADf;
+        frame.bodyPosition = {0.0f, 0.0f, z};
+        frame.bodyRotation = {rotx, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step*speed);
+    }
 
-    frame.bodyPosition = {0.0f, dxy, 0.0f};
-    gait->AddFrame(frame);
-    gait->AddTransition(1.0f);
+    // float dxy = 0.05f;
 
-    frame.bodyPosition = {dxy, 0.0f, 0.0f};
-    gait->AddFrame(frame);
-    gait->AddTransition(1.0f);
+    // frame.bodyPosition = {dxy, 0.0f, 0.0f};
+    // gait->AddFrame(frame);
+    // gait->AddTransition(1.0f);
 
-    frame.bodyPosition = {0.0f, -dxy, 0.0f};
-    gait->AddFrame(frame);
-    gait->AddTransition(1.0);
+    // frame.bodyPosition = {0.0f, dxy, 0.0f};
+    // gait->AddFrame(frame);
+    // gait->AddTransition(1.0f);
+
+    // frame.bodyPosition = {dxy, 0.0f, 0.0f};
+    // gait->AddFrame(frame);
+    // gait->AddTransition(1.0f);
+
+    // frame.bodyPosition = {0.0f, -dxy, 0.0f};
+    // gait->AddFrame(frame);
+    // gait->AddTransition(1.0);
     
     // frame.bodyPosition = {0.0f, 0.0f, -0.03f};
     // gait->AddFrame(frame);

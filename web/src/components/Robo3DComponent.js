@@ -17,7 +17,8 @@ export default class Robo3DComponent extends React.Component {
         this.robo3d.mount()
         this.robo3d.resize()
         this.setState({
-            shadowVisible: this.robo3d.isShadowVisible()
+            measuredVisible: this.robo3d.isMeasuredVisible(),
+            targetVisible: this.robo3d.isTargetVisible(),
         })
     }
 
@@ -33,10 +34,17 @@ export default class Robo3DComponent extends React.Component {
 
     }
 
-    handleClickShadow = (event) => {
-        this.robo3d.setShadowVisible(!this.robo3d.isShadowVisible())
+    handleClickMeasured = (event) => {
+        this.robo3d.setMeasuredVisible(!this.robo3d.isMeasuredVisible())
         this.setState({
-            shadowVisible: this.robo3d.isShadowVisible()
+            measuredVisible: this.robo3d.isMeasuredVisible()
+        })
+    }
+
+    handleClickTarget = (event) => {
+        this.robo3d.setTargetVisible(!this.robo3d.isTargetVisible())
+        this.setState({
+            targetVisible: this.robo3d.isTargetVisible()
         })
     }
 
@@ -44,8 +52,8 @@ export default class Robo3DComponent extends React.Component {
         return (
             <div className="robo3d-wrap">
                 <div className="robo3d-toolbar">
-                    <Robo3DButton display="S" onClick={this.handleClickShadow} active={this.state.shadowVisible} />
-                    <Robo3DButton display="T" onClick={this.handleClick} />
+                    <Robo3DButton display="T" onClick={this.handleClickTarget} active={this.state.targetVisible} />su
+                    <Robo3DButton display="M" onClick={this.handleClickMeasured} active={this.state.measuredVisible} />
                 </div>
                 <div className="robo3d-container" id="robo3d-container" />
             </div>

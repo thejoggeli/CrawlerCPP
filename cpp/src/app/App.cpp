@@ -157,7 +157,7 @@ bool App::Run(){
     unsigned int fixedUpsCounter = 0;
     float ups = 0.0f;
     float fixedUps = 0.0f;
-    uint64_t longestDeltaTimeMicros = 0;
+    uint64_t longestFrameDurationMicros = 0;
     uint64_t longestServoThreadTimeMicros = 0;
     uint64_t totalSleepTimeMicros = 0;
 
@@ -172,8 +172,8 @@ bool App::Run(){
     // start up robot
     robot->Startup();
     // robot->PrintServoStatus();
-    robot->SetBrain(new SurferBrain());
-    // robot->SetBrain(new GaitBrain());
+    // robot->SetBrain(new SurferBrain());
+    robot->SetBrain(new GaitBrain());
     // robot->SetBrain(new EmptyBrain());
     // robot->TorqueOff();
     // for(Leg* leg : robot->legs){
@@ -202,11 +202,6 @@ bool App::Run(){
         
         // update time
         Time::Update();
-
-        // store longest delta time
-        if(Time::deltaTimeMicros > longestDeltaTimeMicros){
-            longestDeltaTimeMicros = Time::deltaTimeMicros;
-        }
 
         // poll socket server
         SocketServer::Poll();
@@ -241,11 +236,11 @@ bool App::Run(){
             // wait until ServoThread signals that it finished the last loop
             // LogInfo("App", "waiting for serial comm complete");
             if(!servoThread.serialCommFinishSignal.IsSet()){
+                servoThread.serialCommFinishSignal.WaitAndClear();
                 ClientManager::SendLogWarning("App", iLog
                     << "serial comm in ServoThread was not complete at next FixedUpdate "
                     << "(time was " << (float)servoThread.serialCommTimeMicros*1.0e-3f << " ms)"
                 );
-                servoThread.serialCommFinishSignal.WaitAndClear();   
             }
 
             // remember longest servo thread time
@@ -289,16 +284,18 @@ bool App::Run(){
             statusTimer.Restart(true);
             ups = (float) upsCounter / statusTimerInterval;
             fixedUps = (float) fixedUpsCounter / statusTimerInterval;
-            float capacityFX = (float)longestDeltaTimeMicros/(float)Time::fixedDeltaTimeMicros;
+            float capacityFR = (float)longestFrameDurationMicros/(float)Time::fixedDeltaTimeMicros;
             float capacityST = (float)longestServoThreadTimeMicros/(float)Time::fixedDeltaTimeMicros;
             float totalSleepTime = (float) totalSleepTimeMicros * 1.0e-6;
             LogInfo("App", iLog 
                 << "UPS=" << ups << ", "
                 << "FixedUPS=" << fixedUps << ", "
-                << "CapFX=" << (capacityFX*100.0f) << "%, "
+                << "CapFR=" << (capacityFR*100.0f) << "%, "
                 << "CapST=" << (capacityST*100.0f) << "%, "
                 << "Sleep=" << (totalSleepTime/statusTimerInterval*100.0f) << "%, "
-                << "Clients=" << ClientManager::GetAllCients().size() << ", "
+                << "maxFR=" << longestFrameDurationMicros*0.001<< "ms, "
+                << "maxST=" << longestServoThreadTimeMicros*0.001 << "ms, "
+                << "Clients=" << ClientManager::GetAllCients().size()
             );
 
             // message to clients
@@ -307,8 +304,10 @@ bool App::Run(){
             packet->AddFloat("ups", ups);
             packet->AddFloat("fixedUps", fixedUps);
             packet->AddFloat("sleep", totalSleepTime/statusTimerInterval);
-            packet->AddFloat("capFX", capacityFX);
+            packet->AddFloat("capFR", capacityFR);
             packet->AddFloat("capST", capacityST);
+            packet->AddFloat("maxFR", longestFrameDurationMicros*0.001f);
+            packet->AddFloat("maxST", longestServoThreadTimeMicros*0.001f);
             packet->AddInt("clients", ClientManager::GetAllCients().size());
             ClientManager::SendPacket(packet);
 
@@ -316,13 +315,17 @@ bool App::Run(){
             totalSleepTimeMicros = 0;
             upsCounter = 0;
             fixedUpsCounter = 0;
-            longestDeltaTimeMicros = 0;
+            longestFrameDurationMicros = 0;
             longestServoThreadTimeMicros = 0;
 
         }
 
         // compute how long the current frame took
         uint64_t frameDurationMicros = Time::GetTimeMicros() - Time::currentTimeMicros;
+        // store longest delta time
+        if(frameDurationMicros > longestFrameDurationMicros){
+            longestFrameDurationMicros = frameDurationMicros;
+        }
 
         // wait for a short time before next loop
         if(frameDurationMicros < frameDurationTargetMicros){

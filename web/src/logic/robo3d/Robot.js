@@ -80,13 +80,13 @@ export default class Robot {
         this.eyeMesh1.scale.setScalar(this.bodySize.y*0.2)
         this.eyeMesh1.position.x = -this.bodySize.x*0.12
         this.eyeMesh1.position.z = -this.bodySize.z*0.5 + this.eyeMesh1.scale.x*0.25
-        this.root.add(this.eyeMesh1)
+        this.bodyMesh.add(this.eyeMesh1)
 
         this.eyeMesh2 = new THREE.Mesh(eyeGeometry, eyeMaterial)
         this.eyeMesh2.scale.setScalar(this.bodySize.y*0.2)
         this.eyeMesh2.position.x = +this.bodySize.x*0.12
         this.eyeMesh2.position.z = -this.bodySize.z*0.5 + this.eyeMesh2.scale.x*0.25
-        this.root.add(this.eyeMesh2)
+        this.bodyMesh.add(this.eyeMesh2)
 
         // set initial angles
         this.legs[0].joints[0].setAngle(+45.0 * Numbers.deg2rad)
@@ -120,10 +120,37 @@ export default class Robot {
         }
         this.bodyMesh.layers.enable(layer)
     }
+    setBodyScale(scale){
+        this.bodyMesh.scale.setScalar(scale)
+    }
     setBodyVisible(visible){
-        this.bodyMesh.visible = false
-        this.eyeMesh1.visible = false
-        this.eyeMesh2.visible = false
+        this.bodyMesh.visible = visible
+    }
+    setEyesVisible(visible){
+        this.eyeMesh1.visible = visible
+        this.eyeMesh2.visible = visible
+    }
+    setBodyColor(color, opacity){
+        if(opacity === undefined){
+            opacity = 1.0
+        }
+        this.bodyMesh.material.transparent = opacity < 1.0
+        this.bodyMesh.material.color = color
+        this.bodyMesh.material.opacity = opacity
+        this.bodyMesh.material.needsUpdate = true
+    }
+    setEyesColor(color, opacity){
+        if(opacity === undefined){
+            opacity = 1.0
+        }
+        this.eyeMesh1.material.transparent = opacity < 1.0
+        this.eyeMesh1.material.color = color
+        this.eyeMesh1.material.opacity = opacity
+        this.eyeMesh1.material.needsUpdate = true
+        this.eyeMesh2.material.transparent = opacity < 1.0
+        this.eyeMesh2.material.color = color
+        this.eyeMesh2.material.opacity = opacity
+        this.eyeMesh2.material.needsUpdate = true
     }
     setBodyColor(color){
         this.bodyMesh.material.color = color

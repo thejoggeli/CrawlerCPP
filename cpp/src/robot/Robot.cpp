@@ -271,10 +271,14 @@ void Robot::Startup(){
         leg->joints[2]->SetTargetAngle(DEG_2_RADf * +120.0f);
         leg->joints[3]->SetTargetAngle(DEG_2_RADf * +30.0f);
     }
-    legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
-    legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
-    legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
-    legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
+    // legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
+    // legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
+    // legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
+    // legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
+    legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * -25.0f);
+    legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +25.0f);
+    legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -25.0f);
+    legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +25.0f);
     MoveJointsToTargetSync(2.0f);
     Time::Sleep(2.5f);
 

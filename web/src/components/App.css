@@ -13,7 +13,11 @@ button {
     padding:4px 8px;
 }
 
-button:hover{
+input[type=text] {
+    outline: 0;
+}
+
+button:not(:disabled):hover{
     background:#d0d0d0;
     color: #101010;
     border:0;

@@ -9,20 +9,23 @@ import PacketMessage from "logic/PacketMessage";
 import $ from "jquery"
 import Numbers from "msl/util/Numbers";
 import StatusEntry from "./StatusEntry";
+import CalibComponent from "./CalibComponent";
 
 export default class App extends React.Component {
 
     constructor(props){
         super(props);
         this.state = {
-            view: 1,
+            view: 3,
             connected: false,
             status: {
                 time: 0,
                 ups: 0   ,
                 fixedUps: 0,
-                capFX: 0,
+                capFR: 0,
                 capST: 0,
+                maxFR: 0,
+                maxST: 0,
                 sleep: 0,
                 clients: 0,
             }
@@ -47,8 +50,10 @@ export default class App extends React.Component {
                 time: pm.getFloat("time"),
                 ups: pm.getFloat("ups")   ,
                 fixedUps: pm.getFloat("fixedUps"),
-                capFX: pm.getFloat("capFX"),
+                capFR: pm.getFloat("capFR"),
                 capST: pm.getFloat("capST"),
+                maxFR: pm.getFloat("maxFR"),
+                maxST: pm.getFloat("maxST"),
                 sleep: pm.getFloat("sleep"),
                 clients: pm.getInt("clients"),
             }
@@ -71,7 +76,7 @@ export default class App extends React.Component {
 
     handleClick = e => {
         this.setState({
-            view: (this.state.view+1)%3
+            view: (this.state.view+1)%4
         });
         // this.setState(calculate(this.state, buttonName));
     };
@@ -89,8 +94,10 @@ export default class App extends React.Component {
             view = <Overview />
         } else if(this.state.view == 1){
             view = <Robo3DComponent />
-        } else {
+        } else if(this.state.view == 2){
             view = <GamepadComponent />
+        } else {
+            view = <CalibComponent />
         }
         return (
             <div className="wrapper">
@@ -107,8 +114,10 @@ export default class App extends React.Component {
                         <StatusEntry name="Robot" value={Time.toBeautifulString(this.state.status.time, false, true, true, true, false)} />
                         <StatusEntry name="UPS" value={Numbers.roundToFixed(this.state.status.ups, 1)} />
                         <StatusEntry name="FixedUPS" value={Numbers.roundToFixed(this.state.status.fixedUps, 1)} />
-                        <StatusEntry name="CapFX" value={Numbers.roundToFixed(this.state.status.capFX*100.0, 0) + "%"} />
+                        <StatusEntry name="CapFR" value={Numbers.roundToFixed(this.state.status.capFR*100.0, 0) + "%"} />
                         <StatusEntry name="CapST" value={Numbers.roundToFixed(this.state.status.capST*100.0, 0) + "%"} />
+                        <StatusEntry name="MaxFR" value={Numbers.roundToFixed(this.state.status.maxFR, 2) + "ms"}/>
+                        <StatusEntry name="MaxST" value={Numbers.roundToFixed(this.state.status.maxST, 2) + "ms"}/>
                         <StatusEntry name="Sleep" value={Numbers.roundToFixed(this.state.status.sleep*100.0, 0) + "%"} />
                         <StatusEntry name="Clients" value={this.state.status.clients} last={true} />
                     </div>

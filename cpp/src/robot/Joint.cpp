@@ -58,6 +58,83 @@ void Joint::SetServo(XYZServo* servo){
 
 }
 
+void Joint::SetCalibrationAnglesLinear(float low, float high){
+    servoCalibLinear = true;
+    servoCalibAngles[0] = low;
+    servoCalibAngles[1] = (low+high)*0.5f;
+    servoCalibAngles[2] = high;
+}
+
+void Joint::SetCalibrationAnglesQuadratic(float low, float mid, float high){
+    if(mid != 0.0f){
+        LogError("Joint", "SetCalibAnglesQuadratic() mid != 0.0");
+    }
+    if(low != -high){
+        LogError("Joint", "SetCalibAnglesQuadratic() low != -high");
+    }
+    servoCalibLinear = false;
+    servoCalibAngles[0] = low;
+    servoCalibAngles[1] = mid;
+    servoCalibAngles[2] = high;
+}
+
+void Joint::SetCalibrationValues(unsigned int values[3]){
+    servoCalibValues[0] = values[0];
+    servoCalibValues[1] = values[1];
+    servoCalibValues[2] = values[2];
+}
+
+void Joint::GetCalibrationValues(unsigned int values[3]){
+    values[0] = servoCalibValues[0];
+    values[1] = servoCalibValues[1];
+    values[2] = servoCalibValues[2];
+}
+
+void Joint::SetCalibrationValue(unsigned int value, unsigned int number){
+    servoCalibValues[number] = value;
+}
+
+unsigned int Joint::GetCalibrationValue(unsigned int number){
+    return servoCalibValues[number];
+}
+
+void Joint::GetCalibrationAngles(float values[3]){
+    values[0] = servoCalibAngles[0];
+    values[1] = servoCalibAngles[1];
+    values[2] = servoCalibAngles[2];
+}
+
+float Joint::GetCalibrationAngle(unsigned int number){
+    return servoCalibAngles[number];
+}
+
+void Joint::UpdateCalibrationFactors(){
+    if(servoCalibLinear){
+        const float u = servoCalibAngles[0];
+        const float v = servoCalibAngles[2];
+        const float g = (float)servoCalibValues[0];
+        const float h = (float)servoCalibValues[2];
+        const float c = (h*u-g*v)/(u-v);
+        const float b = (g-h)/(u-v);
+        const float a = 0.0f;
+        servoCalibFactorC = c;
+        servoCalibFactorB = b;
+        servoCalibFactorA = a;
+    } else {
+        const float u = servoCalibAngles[0];
+        const float w = servoCalibAngles[2];
+        const float g = (float)servoCalibValues[0];
+        const float h = (float)servoCalibValues[1];
+        const float i = (float)servoCalibValues[2];
+        const float c = h;
+        const float b = (g-i)/(u-w);
+        const float a = (i-w*b-c)/(w*w);
+        servoCalibFactorC = c;
+        servoCalibFactorB = b;
+        servoCalibFactorA = a;
+    }
+}
+
 void Joint::RebootServo(){
     SetServoState(ServoState::Rebooting);
     servo->reboot();
@@ -79,7 +156,9 @@ bool Joint::PingServo(){
 
 void Joint::SetTargetAngle(float angle){
     lastTargetAngle = currentTargetAngle;
+    lastTargetXYZ = currentTargetXYZ;
     currentTargetAngle = angle;
+    currentTargetXYZ = AngleToXYZ(currentTargetAngle);
 }
 
 void Joint::MoveServoToTargetAngle(float seconds){
@@ -87,7 +166,7 @@ void Joint::MoveServoToTargetAngle(float seconds){
         LogWarning("Joint", iLog << debugName << " MoveServoToTargetAngle seconds=" << seconds << " is too large");
         seconds = 2.5f;
     }
-    uint16_t angle = AngleToXYZ(currentTargetAngle);
+    uint16_t angle = currentTargetXYZ;
     uint8_t playtime = (uint8_t)(seconds*100.0f);
     servo->setPosition(angle, playtime);
 }
@@ -108,12 +187,14 @@ bool Joint::ReadMeasuredStatus(bool buffer, int retries){
         }
     }
     if(buffer){
+        measuredXYZ.BufferValue(status.position);
         measuredAngle.BufferValue(XYZToAngle(status.position));
         measuredCurrent.BufferValue((float)(status.iBus) * (1000.0f / 200.0f));
         measuredPwm.BufferValue((float)(status.pwm));
         statusDetail.BufferValue(status.statusDetail);
         statusError.BufferValue(status.statusError);
     } else {
+        measuredXYZ.SetValue(status.position);
         measuredAngle.SetValue(XYZToAngle(status.position));
         measuredCurrent.SetValue((float)(status.iBus) * (1000.0f / 200.0f));
         measuredPwm.SetValue((float)(status.pwm));
@@ -139,8 +220,10 @@ bool Joint::ReadMeasuredAngle(bool buffer, int retries){
         }
     }
     if(buffer){
+        measuredXYZ.BufferValue(xyz);
         measuredAngle.BufferValue(XYZToAngle(xyz));
     } else {
+        measuredXYZ.SetValue(xyz);
         measuredAngle.SetValue(XYZToAngle(xyz));
     }
     return true;
@@ -263,9 +346,9 @@ bool Joint::ReadStatusDetail(bool buffer, int retries){
 
 float Joint::XYZToAngle(uint16_t xyz){
     const float x = xyz;
-    const float a = servoFactorA;
-    const float b = servoFactorB;
-    const float c = servoFactorC;
+    const float a = servoCalibFactorA;
+    const float b = servoCalibFactorB;
+    const float c = servoCalibFactorC;
     if(a == 0.0f){
         return (x-c)/b;
     }
@@ -279,9 +362,9 @@ float Joint::XYZToAngle(uint16_t xyz){
 
 uint16_t Joint::AngleToXYZ(float angle){
     const float x = angle;
-    const float a = servoFactorA;
-    const float b = servoFactorB;
-    const float c = servoFactorC;
+    const float a = servoCalibFactorA;
+    const float b = servoCalibFactorB;
+    const float c = servoCalibFactorC;
     const float xyz = x*x*a + x*b + c;
     return std::min(std::max(xyz, 0.0f), 1023.0f);
 }

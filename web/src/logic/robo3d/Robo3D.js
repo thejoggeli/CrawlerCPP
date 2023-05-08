@@ -164,8 +164,9 @@ export default class Robo3D {
         if(Time.currentTime - this.lastAngleUpdateTime > 0.02 && !this.anglePacketUnderway){
             this.lastAngleUpdateTime = Time.currentTime
             Main.addPacket("RequestLegAngles", {
-                "flags": 0xFFFFFFFF,
                 "legIds": [0, 1, 2, 3],
+                "targetAngle": true,
+                "measuredAngle": true,
             })
             this.anglePacketUnderway = true
         }
@@ -227,10 +228,19 @@ export default class Robo3D {
     handleRespondLegAngles(packet){
         this.anglePacketUnderway = false
         var data = packet.data
-        for(var leg of data.legs){
-            for(var j in leg.joints){
-                this.robot.legs[leg.id].joints[j].setAngle(leg.joints[j].targetAngle)
-                this.measuredRobot.legs[leg.id].joints[j].setAngle(leg.joints[j].measuredAngle)
+        console.log(packet)
+        if(data.targetAngle){
+            for(var leg of data.legs){
+                for(var j in leg.joints){
+                    this.robot.legs[leg.id].joints[j].setAngle(leg.joints[j].targetAngle)
+                }
+            }
+        }
+        if(data.measuredAngle){
+            for(var leg of data.legs){
+                for(var j in leg.joints){
+                    this.measuredRobot.legs[leg.id].joints[j].setAngle(leg.joints[j].measuredAngle)
+                }
             }
         }
     }

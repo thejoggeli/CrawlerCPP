@@ -1,4 +1,5 @@
 import Packet from "msl/remote/Packet.js"
+import Bitwise from "msl/util/Bitwise"
 
 export default function PacketTypes(){
     Packet.AddType({
@@ -125,6 +126,12 @@ export default function PacketTypes(){
         id: 0x0032, name: "RequestLegAngles",
         pack: function(buffer, data){
             buffer.writeUint8(data.legIds.length)
+            var flags = 0
+            flags = Bitwise.setBitTo(flags, 0, data.targetAngle)
+            flags = Bitwise.setBitTo(flags, 1, data.measuredAngle)
+            flags = Bitwise.setBitTo(flags, 2, data.targetXYZ)
+            flags = Bitwise.setBitTo(flags, 3, data.measuredXYZ)
+            buffer.writeUint8(flags)
             for(var legId of data.legIds){
                 buffer.writeUint8(legId)
             }
@@ -135,6 +142,12 @@ export default function PacketTypes(){
         unpack: function(buffer, data){
             data.numLegs = buffer.readUint8()
             data.legs = []
+            var flags = buffer.readUint8()
+            data.targetAngle = Bitwise.isBitSet(flags, 0)
+            data.measuredAngle = Bitwise.isBitSet(flags, 1)
+            data.targetXYZ = Bitwise.isBitSet(flags, 2)
+            data.measuredXYZ = Bitwise.isBitSet(flags, 3)
+            data.flags = flags
             // loop through legs
             for(var i = 0; i < data.numLegs; i++){
                 // create leg container
@@ -143,12 +156,41 @@ export default function PacketTypes(){
                     joints: [],
                 }
                 data.legs.push(leg)
-                // read joint data
                 for(var j = 0; j < 4; j++){
                     leg.joints.push({
-                        "targetAngle": buffer.readFloat32(),
-                        "measuredAngle": buffer.readFloat32(),
+                        "targetAngle": null,
+                        "measuredAngle": null,
+                        "targetXYZ": null,
+                        "measuredXYZ": null,
                     })
+                }
+            }
+            if(data.targetAngle){
+                for(var i = 0; i < data.numLegs; i++){
+                    for(var j = 0; j < 4; j++){
+                        data.legs[i].joints[j].targetAngle = buffer.readFloat32()
+                    }
+                }
+            }
+            if(data.measuredAngle){
+                for(var i = 0; i < data.numLegs; i++){
+                    for(var j = 0; j < 4; j++){
+                        data.legs[i].joints[j].measuredAngle = buffer.readFloat32()
+                    }
+                }
+            }
+            if(data.targetXYZ){
+                for(var i = 0; i < data.numLegs; i++){
+                    for(var j = 0; j < 4; j++){
+                        data.legs[i].joints[j].targetXYZ = buffer.readUint16()
+                    }
+                }
+            }
+            if(data.measuredXYZ){
+                for(var i = 0; i < data.numLegs; i++){
+                    for(var j = 0; j < 4; j++){
+                        data.legs[i].joints[j].measuredXYZ = buffer.readUint16()
+                    }
                 }
             }
         },

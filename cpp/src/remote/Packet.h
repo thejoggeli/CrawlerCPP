@@ -106,14 +106,18 @@ struct PacketRespondLegData : public Packet {
 
 struct PacketRequestLegAngles : public Packet {
     std::vector<uint8_t> legIds;
+    uint8_t flags;
     PacketRequestLegAngles();
     void UnpackInner(ByteBufferReader& reader) override;
 };
 
 struct PacketRespondLegAngles : public Packet {
     std::vector<uint8_t> legIds;
+    uint8_t flags;
     std::vector<float> targetAngle;
     std::vector<float> measuredAngle;
+    std::vector<uint16_t> targetXYZ;
+    std::vector<uint16_t> measuredXYZ;
     PacketRespondLegAngles();
     void PackInner(ByteBufferWriter& writer) override;
 };

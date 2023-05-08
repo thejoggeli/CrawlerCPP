@@ -37,10 +37,11 @@ bool LogLevels::info = true;
 bool LogLevels::Init(){
     // mtx.lock();
     if(++initCounter > 1) return false;
-    info = Config::GetBool("log_info", true);
-    debug = Config::GetBool("log_debug", true);
-    warning = Config::GetBool("log_warning", true);
-    error = Config::GetBool("log_error", true);
+    Config::ReadFile("log");
+    info = Config::GetBool("log", "log_info", true);
+    debug = Config::GetBool("log", "log_debug", true);
+    warning = Config::GetBool("log", "log_warning", true);
+    error = Config::GetBool("log", "log_error", true);
     // mtx.unlock();
     return true;
 }

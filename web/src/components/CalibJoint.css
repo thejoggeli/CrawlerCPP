@@ -1,8 +1,10 @@
 .calib .leg {
-    display:inline-block;
+    float:left;
+    clear:both;
+    display:block;
     border-radius:5px;
     overflow:hidden;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
     width:auto;
     user-select: none;
 }
@@ -16,11 +18,14 @@
     border-spacing: 4px;
 }
 .calib .joints th {
-    text-align: left;
+    text-align: center;
     font-weight: bold;
     background:#303030;
     padding:4px;
     border-radius:5px;
+}
+.calib .joints td {
+    text-align: center;
 }
 .calib .joint {
     margin-bottom:4px;
@@ -29,12 +34,17 @@
     margin-bottom:0;
 }
 .calib .joint-name {
-    margin-right:4px;
-    width:75px;
+    margin-right:4px;   
 }
-.calib .calib-point {
-    width:200px;    
-    text-align: left
+.calib .calib-angle {
+    font-size:14px;
+    display:inline-block;
+    width:50px;text-align: center;
+    color:#c0c0c0;  
+}
+.calib td.calib-point {
+    text-align: left;
+    width: 200px;
 }
 .calib .calib-point input[type=text] {
     width:50px;
@@ -51,4 +61,8 @@
 .calib .calib-done {
     display:inline-block;
     margin-left: 4px;
+}
+.calib .joint-angle {
+    width:100px;
+    font-size:16px;
 }

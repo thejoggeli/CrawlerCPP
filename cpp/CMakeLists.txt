@@ -19,6 +19,7 @@ set(
     src/brain/SurferBrain.cpp
     src/brain/GaitBrain.cpp
     src/brain/EmptyBrain.cpp
+    src/brain/CalibrationBrain.cpp
     src/core/Time.cpp
     src/core/Log.cpp
     src/core/Config.cpp

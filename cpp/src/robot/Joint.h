@@ -38,6 +38,15 @@ private:
     // bit 0 = red 
     unsigned int servoLedColor; 
 
+    uint16_t servoCalibValues[3] = {256, 512, 768}; 
+    float servoCalibAngles[3] = {0.0f, 0.0f, 0.0f};
+
+    float servoCalibFactorA = 0.0f;
+    float servoCalibFactorB = 0.0f;
+    float servoCalibFactorC = 0.0f;
+
+    bool servoCalibLinear = false;
+
 public:
 
     Leg* leg;
@@ -55,10 +64,10 @@ public:
     float lastTargetAngle = 0.0f;
     float currentTargetAngle = 0.0f;
 
-    float servoFactorA = 0.0f;
-    float servoFactorB = 0.0f;
-    float servoFactorC = 0.0f;
+    uint16_t lastTargetXYZ = 0;
+    uint16_t currentTargetXYZ = 0;
 
+    BufferedValue<float> measuredXYZ; // radians
     BufferedValue<float> measuredAngle; // radians
     BufferedValue<float> measuredCurrent; // mA
     BufferedValue<float> measuredTemperature; // degC
@@ -75,13 +84,21 @@ public:
 
     Joint(Leg* leg, JointType jointType);
 
+    void SetCalibrationAnglesLinear(float low, float high);
+    void SetCalibrationAnglesQuadratic(float low, float mid, float high);
+    void GetCalibrationAngles(float values[3]);
+    float GetCalibrationAngle(unsigned int number);
+    void SetCalibrationValues(unsigned int values[3]);
+    void GetCalibrationValues(unsigned int values[3]);
+    void SetCalibrationValue(unsigned int value, unsigned int number);
+    unsigned int GetCalibrationValue(unsigned int number);
+    void UpdateCalibrationFactors();
+
     void SetServoState(ServoState state);
     void SetServo(XYZServo* servo);
+
     void RebootServo();
-
     bool PingServo();
-
-    void SetServoAngleScale(float angle);
 
     void SetTargetAngle(float angle);
     void MoveServoToTargetAngle(float seconds);

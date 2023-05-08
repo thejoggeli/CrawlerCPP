@@ -19,17 +19,48 @@ static void OnRequestLegAngles(void* caller, Packet& packet){
     auto request = (PacketRespondLegAngles*)(&packet);
     auto response = std::make_shared<PacketRespondLegAngles>();
 
+    response->flags = request->flags;
     for(uint8_t legId : request->legIds){
         if(legId >= robot->legs.size()){
             LogError("InfoPackets", iLog << "invalid leg id=" << legId << " in RequestLegAnglesHandler");
             return;
         }
         response->legIds.push_back(legId);
-        Leg* leg = robot->legs[legId];
-        for(int i = 0; i < 4; i++){
-            Joint* joint = leg->joints[i];
-            response->targetAngle.push_back(joint->currentTargetAngle);
-            response->measuredAngle.push_back(joint->measuredAngle);
+    }
+    if((request->flags>>0)&1){
+        for(uint8_t legId : request->legIds){
+            Leg* leg = robot->legs[legId];
+            for(int i = 0; i < 4; i++){
+                Joint* joint = leg->joints[i];
+                response->targetAngle.push_back(joint->currentTargetAngle);
+            }
+        }
+    }
+    if((request->flags>>1)&1){
+        for(uint8_t legId : request->legIds){
+            Leg* leg = robot->legs[legId];
+            for(int i = 0; i < 4; i++){
+                Joint* joint = leg->joints[i];
+                response->measuredAngle.push_back(joint->measuredAngle);
+            }
+        }
+    }
+    if((request->flags>>2)&1){
+        for(uint8_t legId : request->legIds){
+            Leg* leg = robot->legs[legId];
+            for(int i = 0; i < 4; i++){
+                Joint* joint = leg->joints[i];
+                response->targetXYZ.push_back(joint->currentTargetXYZ);
+            }
+        }
+    }
+    if((request->flags>>3)&1){
+        for(uint8_t legId : request->legIds){
+            Leg* leg = robot->legs[legId];
+            for(int i = 0; i < 4; i++){
+                Joint* joint = leg->joints[i];
+                response->measuredXYZ.push_back(joint->measuredXYZ);
+            }
         }
     }
     ClientManager::SendPacket(response, packet.clientId);
@@ -104,13 +135,17 @@ static void OnMessageGetCalib(void* caller, PacketMessage& packet){
             ClientManager::SendLogError("InfoPackets", iLog << "OnMessageGetCalib() jointId " << jointId << " is invalid");
             continue;
         }
-        unsigned int v_low = 256;
-        unsigned int v_mid = 256*2;
-        unsigned int v_high = 256*3; 
+        unsigned int values[3];
+        float angles[3];
+        robot->jointsList[jointId]->GetCalibrationValues(values);
+        robot->jointsList[jointId]->GetCalibrationAngles(angles);
         response->AddInt("j-"+to_string(i), jointId); // joint id
-        response->AddInt("l-"+to_string(jointId), v_low); // low 
-        response->AddInt("m-"+to_string(jointId), v_mid); // mid
-        response->AddInt("h-"+to_string(jointId), v_high); // high
+        response->AddInt("l-"+to_string(jointId), values[0]); // low 
+        response->AddInt("m-"+to_string(jointId), values[1]); // mid
+        response->AddInt("h-"+to_string(jointId), values[2]); // high
+        response->AddFloat("cl-"+to_string(jointId), angles[0]); // low 
+        response->AddFloat("cm-"+to_string(jointId), angles[1]); // mid
+        response->AddFloat("ch-"+to_string(jointId), angles[2]); // high
     }
     ClientManager::SendPacket(response, packet.clientId);
 }

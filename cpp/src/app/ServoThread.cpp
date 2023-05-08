@@ -18,6 +18,7 @@ void ServoThread::Init(Robot* robot){
 
 void ServoThread::ApplyBuffers(){
     for(Joint* joint : robot->jointsList){
+        joint->measuredXYZ.ApplyBuffer();
         joint->measuredAngle.ApplyBuffer();
         joint->measuredCurrent.ApplyBuffer();
         joint->measuredPwm.ApplyBuffer();

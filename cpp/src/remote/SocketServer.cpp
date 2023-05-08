@@ -39,11 +39,13 @@ SocketServer::SocketServer(){}
 
 bool SocketServer::Init(){
 
-	logInput = Config::GetBool("log_info_server_input", true);
-	logOutput = Config::GetBool("log_info_server_output", true);
+    Config::ReadFile("server");
 
-	Logger::Level loggerLevel = static_cast<Logger::Level>(Config::GetInt("server_logger_level"));
-	port = Config::GetInt("server_port");
+	logInput = Config::GetBool("server", "log_input", true);
+	logOutput = Config::GetBool("server", "log_output", true);
+
+	Logger::Level loggerLevel = static_cast<Logger::Level>(Config::GetInt("server", "logger_level"));
+	port = Config::GetInt("server", "port", 8080);
 	websocketPath = "/ws";
 	localUrl = "ws://localhost:" + to_string(port) + websocketPath;
 	globalUrl = "undefined";

@@ -7,6 +7,7 @@
 #include "math/Mathf.h"
 #include "core/Log.h"
 #include "core/Time.h"
+#include "core/Config.h"
 #include <string>
 
 using namespace std;
@@ -27,7 +28,7 @@ Robot::Robot(){
     };
 
     // leg names
-    string legNames[4] = {"FL0", "BL1", "BR2", "FR3"};
+    string legNames[4] = {"FL", "BL", "BR", "FR"};
 
     // create master servo
     masterServo = new XYZServo(servoSerialStream, 254);
@@ -57,80 +58,23 @@ Robot::Robot(){
     }
 
     // calibrate servos
-    float hip_angles_low[] = {
-        -PIf*0.5f, 0.0f, -PIf*0.5f, 0.0f, // H0, H1, H2, H3
-    };
-    float hip_angles_high[] = {
-        0.0f, PIf*0.5f, 0.0f, PIf*0.5f, // H0, H1, H2, H3
-    };
-    uint16_t hip_measured_low[] = {
-        787, 521, 789, 523, // H0, H1, H2, H3
-    };
-    uint16_t hip_measured_high[] = {
-        519, 254, 526, 241, // H0, H1, H2, H3
-    };
-    float knee_angle_low[] = {
-        -PIf*0.5f, -PIf*0.5f, -PIf*0.5f, // K1, K2, K3 @ Leg0
-        -PIf*0.5f, -PIf*0.5f, -PIf*0.5f, // K1, K2, K3 @ Leg1
-        -PIf*0.5f, -PIf*0.5f, -PIf*0.5f, // K1, K2, K3 @ Leg2
-        -PIf*0.5f, -PIf*0.5f, -PIf*0.5f, // K1, K2, K3 @ Leg3
-    };
-    float knee_angle_high[] = {
-        PIf*0.5f, PIf*0.5f, PIf*0.5f, // K1, K2, K3 @ Leg0
-        PIf*0.5f, PIf*0.5f, PIf*0.5f, // K1, K2, K3 @ Leg1
-        PIf*0.5f, PIf*0.5f, PIf*0.5f, // K1, K2, K3 @ Leg2
-        PIf*0.5f, PIf*0.5f, PIf*0.5f, // K1, K2, K3 @ Leg3
-    };
-    uint16_t knee_measured_low[] = {
-        239, 237, 244, // K1, K2, K3 @ Leg0
-        244, 247, 231, // K1, K2, K3 @ Leg1
-        238, 248, 241, // K1, K2, K3 @ Leg2
-        249, 235, 243, // K1, K2, K3 @ Leg3
-    };
-    uint16_t knee_measured_mid[] = {
-        511, 503, 529, // K1, K2, K3 @ Leg0
-        508, 520, 513, // K1, K2, K3 @ Leg1
-        499, 512, 504, // K1, K2, K3 @ Leg2
-        522, 512, 509, // K1, K2, K3 @ Leg3
-    };
-    uint16_t knee_measured_high[] = {
-        803, 779, 793, // K1, K2, K3 @ Leg0
-        781, 791, 780, // K1, K2, K3 @ Leg1
-        784, 787, 782, // K1, K2, K3 @ Leg2
-        795, 783, 784, // K1, K2, K3 @ Leg3
-    };
-    for(unsigned int legIdx = 0; legIdx < 4; legIdx++){
-        // compute factors for hip servos (linear interpolation)
-        {
-            unsigned int idx1 = legIdx;
-            unsigned int idx2 = legIdx*4;
-            const float u = hip_angles_low[idx1];
-            const float v = hip_angles_high[idx1];
-            const float g = (float)hip_measured_low[idx1];
-            const float h = (float)hip_measured_high[idx1];
-            const float c = (h*u-g*v)/(u-v);
-            const float b = (g-h)/(u-v);
-            const float a = 0.0f;
-            jointsList[idx2]->servoFactorC = c;
-            jointsList[idx2]->servoFactorB = b;
-            jointsList[idx2]->servoFactorA = a;
-        }
-        // compute factors for knee servos (quadratic interpolation)
-        for(unsigned int jointIdx = 0; jointIdx < 3; jointIdx++){
-            unsigned int idx1 = legIdx*3+jointIdx;
-            unsigned int idx2 = legIdx*4+jointIdx+1;
-            const float u = knee_angle_low[idx1];
-            const float w = knee_angle_high[idx1];
-            const float g = (float)knee_measured_low[idx1];
-            const float h = (float)knee_measured_mid[idx1];
-            const float i = (float)knee_measured_high[idx1];
-            const float c = h;
-            const float b = (g-i)/(u-w);
-            const float a = (i-w*b-c)/(w*w);
-            jointsList[idx2]->servoFactorC = c;
-            jointsList[idx2]->servoFactorB = b;
-            jointsList[idx2]->servoFactorA = a;
-        }
+    legs[0]->joints[0]->SetCalibrationAnglesLinear(-90.0f*DEG_2_RADf, 0.0f);
+    legs[1]->joints[0]->SetCalibrationAnglesLinear(0.0f, +90.0f*DEG_2_RADf);
+    legs[2]->joints[0]->SetCalibrationAnglesLinear(-90.0f*DEG_2_RADf, 0.0f);
+    legs[3]->joints[0]->SetCalibrationAnglesLinear(0.0f, +90.0f*DEG_2_RADf);
+    for(int i = 0; i < 4; i++){
+        legs[i]->joints[1]->SetCalibrationAnglesQuadratic(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
+        legs[i]->joints[2]->SetCalibrationAnglesQuadratic(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
+        legs[i]->joints[3]->SetCalibrationAnglesQuadratic(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
+    }
+    for(unsigned int i = 0; i < 16; i++){
+        unsigned int calib_values[3] = {
+            (unsigned int) Config::GetInt("calib", "low_"+to_string(i), 256),
+            (unsigned int) Config::GetInt("calib", "mid_"+to_string(i), 512),
+            (unsigned int) Config::GetInt("calib", "high_"+to_string(i), 768),
+        };        
+        jointsList[i]->SetCalibrationValues(calib_values);
+        jointsList[i]->UpdateCalibrationFactors();
     }
 
     // set legs hip transform
@@ -288,13 +232,6 @@ void Robot::Startup(){
         leg->joints[1]->SetServoLedColor(0, 1, 0, 0);
         leg->joints[2]->SetServoLedColor(0, 0, 1, 0);
         leg->joints[3]->SetServoLedColor(1, 1, 0, 0);
-    }
-
-    // set servo last target angles to measured angles
-    for(Joint* joint : jointsList){
-        if(joint->ReadMeasuredAngle()){
-            joint->lastTargetAngle = joint->measuredAngle;
-        }
     }
     
 }

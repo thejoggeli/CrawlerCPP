@@ -230,6 +230,7 @@ void PacketRespondLegData::PackInner(ByteBufferWriter& writer){
 PacketRequestLegAngles::PacketRequestLegAngles() : Packet(PacketType::RequestLegAngles){}
 void PacketRequestLegAngles::UnpackInner(ByteBufferReader& reader){
     unsigned int numLegs = reader.Read<uint8_t>();
+    flags = reader.Read<uint8_t>();
     for(int i = 0; i < numLegs; i++){
         legIds.push_back(reader.Read<uint8_t>());
     }
@@ -239,14 +240,20 @@ void PacketRequestLegAngles::UnpackInner(ByteBufferReader& reader){
 PacketRespondLegAngles::PacketRespondLegAngles() : Packet(PacketType::RespondLegAngles){}
 void PacketRespondLegAngles::PackInner(ByteBufferWriter& writer){
     writer.Write<uint8_t>(legIds.size());
+    writer.Write<uint8_t>(flags);
     int k = 0;
-    for(int i = 0; i < legIds.size(); i++){
-        writer.Write<uint8_t>(legIds[i]);
-        for(int j = 0; j < 4; j++){
-            writer.Write<float>(targetAngle[k]);
-            writer.Write<float>(measuredAngle[k]);
-            k++;
-        }
+    writer.WriteVector<uint8_t>(legIds);
+    if((flags>>0)&1){
+        writer.WriteVector<float>(targetAngle);
+    }
+    if((flags>>1)&1){
+        writer.WriteVector<float>(measuredAngle);
+    }
+    if((flags>>2)&1){
+        writer.WriteVector<uint16_t>(targetXYZ);
+    }
+    if((flags>>3)&1){
+        writer.WriteVector<uint16_t>(measuredXYZ);
     }
 }
 

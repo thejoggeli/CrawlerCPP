@@ -73,9 +73,6 @@ export default class App extends React.Component {
         }
         return (
             <div className="wrapper">
-                <div className="blocker">
-                    <img src="img/disconnected.svg" />
-                </div>
                 <div className="main-container">
                     <div className="toprow">
                         <button onClick={this.handleClick}>State view: {this.state.view}</button>
@@ -85,6 +82,9 @@ export default class App extends React.Component {
                         <StatusComponent />
                     </div>
                     <div className="view-container">{view}</div>
+                </div>
+                <div className="blocker">
+                    <img src="img/disconnected.svg" />
                 </div>
             </div>
         );

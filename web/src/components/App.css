@@ -12,6 +12,9 @@ button {
     border-radius: 5px;
     padding:4px 8px;
 }
+button:disabled {
+    opacity:0.5;
+}
 
 input[type=text] {
     outline: 0;
@@ -28,6 +31,7 @@ button:not(:disabled):hover{
     position:absolute;top:0;left:0;
     height:100vh;width:100vw;
     background:rgba(0,0,0,0.75);
+    z-index:999999
 }
 .blocker img {
     width:50px;

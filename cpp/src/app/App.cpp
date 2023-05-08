@@ -17,6 +17,7 @@
 #include "brain/SurferBrain.h"
 #include "brain/GaitBrain.h"
 #include "brain/EmptyBrain.h"
+#include "brain/CalibrationBrain.h"
 #include "ServoThread.h"
 #include "InfoPackets.h"
 
@@ -53,6 +54,7 @@ bool App::Init(){
 		LogError("App", "Config initialization failed");
 		return false;
 	}
+    Config::ReadFile("calib");
 
     // init log levels
     if(!LogLevels::Init()){
@@ -162,6 +164,8 @@ bool App::Run(){
     uint64_t totalSleepTimeMicros = 0;
 
     // status timer 
+    unsigned int printStatusInterval = 10;
+    unsigned int printStatusCounter = 0;
     Timer statusTimer;
     const float statusTimerInterval = 1.0f;
 
@@ -173,7 +177,8 @@ bool App::Run(){
     robot->Startup();
     // robot->PrintServoStatus();
     // robot->SetBrain(new SurferBrain());
-    robot->SetBrain(new GaitBrain());
+    // robot->SetBrain(new GaitBrain());
+    robot->SetBrain(new CalibrationBrain());
     // robot->SetBrain(new EmptyBrain());
     // robot->TorqueOff();
     // for(Leg* leg : robot->legs){
@@ -287,18 +292,24 @@ bool App::Run(){
             float capacityFR = (float)longestFrameDurationMicros/(float)Time::fixedDeltaTimeMicros;
             float capacityST = (float)longestServoThreadTimeMicros/(float)Time::fixedDeltaTimeMicros;
             float totalSleepTime = (float) totalSleepTimeMicros * 1.0e-6;
-            LogInfo("App", iLog 
-                << "UPS=" << ups << ", "
-                << "FixedUPS=" << fixedUps << ", "
-                << "CapFR=" << (capacityFR*100.0f) << "%, "
-                << "CapST=" << (capacityST*100.0f) << "%, "
-                << "Sleep=" << (totalSleepTime/statusTimerInterval*100.0f) << "%, "
-                << "maxFR=" << longestFrameDurationMicros*0.001<< "ms, "
-                << "maxST=" << longestServoThreadTimeMicros*0.001 << "ms, "
-                << "Clients=" << ClientManager::GetAllCients().size()
-            );
 
-            // message to clients
+            // print status to console
+            printStatusCounter += 1;
+            if(printStatusCounter == printStatusInterval){
+                printStatusCounter = 0;
+                LogInfo("App", iLog 
+                    << "UPS=" << ups << ", "
+                    << "FixedUPS=" << fixedUps << ", "
+                    << "CapFR=" << (capacityFR*100.0f) << "%, "
+                    << "CapST=" << (capacityST*100.0f) << "%, "
+                    << "Sleep=" << (totalSleepTime/statusTimerInterval*100.0f) << "%, "
+                    << "maxFR=" << longestFrameDurationMicros*0.001<< "ms, "
+                    << "maxST=" << longestServoThreadTimeMicros*0.001 << "ms, "
+                    << "Clients=" << ClientManager::GetAllCients().size()
+                );
+            }
+
+            // send status to clients
             auto packet = std::make_shared<PacketMessage>("status");
             packet->AddFloat("time", Time::currentTime);
             packet->AddFloat("ups", ups);

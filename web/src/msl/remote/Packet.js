@@ -4,11 +4,13 @@ import DataType         from "../buffer/DataType.js"
 import Log              from "../log/Log.js"
 
 export default class Packet {
+    static nextPacketId = 0
     constructor(type, data){
         if(typeof type == "string"){
             type = Packet.Type.getEntryByName(type)
         }
         this.type = type
+        this.id = -1
         this.data = data = data !== undefined ? data : {}
         this.initial_buffer_size = 32
         this.buffer = new DynamicBuffer(this.initial_buffer_size)
@@ -22,6 +24,8 @@ export default class Packet {
         // data to bytes
         this.buffer.beginWrite(0)
         this.buffer.writeUint16(this.type.id)
+        this.buffer.writeUint32(Packet.nextPacketId)
+        Packet.nextPacketId += 1
         if(this.type.pack){
             this.type.pack(this.buffer, this.data)
         } else {
@@ -44,6 +48,7 @@ export default class Packet {
         this.buffer.beginRead(0)
         var type_id = this.buffer.readUint16()
         this.type = Packet.Type.getEntryById(type_id)
+        this.id = this.buffer.readUint32();
         if(this.type.unpack){
             this.type.unpack(this.buffer, this.data)
         } else {

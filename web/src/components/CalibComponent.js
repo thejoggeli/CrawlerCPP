@@ -1,6 +1,8 @@
 import React from "react";
 import "./CalibComponent.css";
 import CalibJoint from "./CalibJoint";
+import Main from "logic/Main";
+import PacketMessage from "logic/PacketMessage";
 
 export default class CalibComponent extends React.Component {
 
@@ -28,15 +30,41 @@ export default class CalibComponent extends React.Component {
     }
 
     componentDidMount(){
+        var request = new PacketMessage("requestCalib")
+        request.addInt("n", 16)
+        for(var i = 0; i < 16; i++){
+            request.addInt("j-"+i, i);
+        }
+        Main.addPacketMessage(request);
+        Main.packetMessages.subscribe("respondCalib", this, this.respondCalibHandler)
     }
 
     componentWillUnmount(){
+        Main.packetMessages.unsubscribe("respondCalib", this)
+    }
+
+    respondCalibHandler(msg){
+        console.log(msg)
+        // var legs = this.state.legs
+        var numJoints = msg.getInt("n")
+        for(var i = 0; i < numJoints; i++){
+            var jointId = msg.getInt("j-"+i)
+            var v_low = msg.getInt("l-"+jointId) // low
+            var v_mid = msg.getInt("m-"+jointId) // mid
+            var v_high = msg.getInt("h-"+jointId) // high
+            var legIndex = Math.floor(jointId/4)
+            var jointIndex = jointId%4
+            console.log(jointId, legIndex, jointIndex, v_low, v_mid, v_high)
+            // legs[legIndex].joints[jointIndex].
+        }
     }
 
     handleClick = e => {
+
     };
 
     render() {
+        console.log("render")
         return (
             <div className="calib">
                 {Array.from(this.legs).map((leg, legIdx) => {

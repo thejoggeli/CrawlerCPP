@@ -1,4 +1,4 @@
-.status-entry {
+.status-component .status-entry {
     display:inline-block;
     /* padding:2px 4px; */
     /* background:#eee; */
@@ -9,17 +9,17 @@
     position: relative;
     height:100%;
 }
-.status-entry .name {
+.status-component .status-entry .name {
     font-weight:bold;
 }
-.status-entry .value {
+.status-component .status-entry .value {
     font-weight:normal;   
     padding-right:4px;
 }
-.status-entry:not(.last)::after{
+.status-component .status-entry:not(.last)::after{
     content: "|";
 }
-.status-entry .inner {
+.status-component .status-entry .inner {
     display:inline-block;
     position: relative;
     box-sizing: border-box;

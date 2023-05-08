@@ -132,13 +132,13 @@ void ClientManager::UnsubscribePacket(PacketType type, void* obj){
 	}
 }
 
-void ClientManager::SubscribePacketMessage(const char* type, void* obj, void (*handler)(void*, PacketMessage&)){
+void ClientManager::SubscribeMessage(const char* type, void* obj, void (*handler)(void*, PacketMessage&)){
 	std::pair<void*, void (*)(void*, PacketMessage&)> pair;
 	pair = std::make_pair(obj, handler);
 	packetMessageSubscriptions[type].push_back(pair);
 }
 
-void ClientManager::UnsubscribePacketMessage(const char* type, void* obj){
+void ClientManager::UnsubscribeMessage(const char* type, void* obj){
 	auto search = packetMessageSubscriptions.find(type);
 	if(search != packetMessageSubscriptions.end()){
 		auto& vector = search->second;

@@ -39,8 +39,8 @@ public:
 	static void SubscribePacket(PacketType type, void* obj, void (*handler)(void*, Packet&));
 	static void UnsubscribePacket(PacketType type, void* obj);
 
-	static void SubscribePacketMessage(const char* type, void* obj, void (*handler)(void*, PacketMessage&));
-	static void UnsubscribePacketMessage(const char* type, void* obj);
+	static void SubscribeMessage(const char* type, void* obj, void (*handler)(void*, PacketMessage&));
+	static void UnsubscribeMessage(const char* type, void* obj);
 
 	static void SendPacket(std::shared_ptr<Packet> packet, int clientId = -1);
 	static void SendMessage(const char* message, int clientId = -1);

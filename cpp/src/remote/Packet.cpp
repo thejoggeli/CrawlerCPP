@@ -7,6 +7,8 @@ using namespace std;
 
 namespace Crawler {
 
+uint32_t Packet::nextPacketId = 0;
+
 Packet::Packet(PacketType type) {
     this->type = type;
 }
@@ -19,6 +21,9 @@ std::shared_ptr<Packet> Packet::Unpack(const uint8_t* bytes, unsigned int size, 
     // read the packet type from the byte buffer (first 2 bytes) 
     PacketType type = (PacketType) reader.Read<uint16_t>();
     // LogDebug("Packet", iLog << "unpacking " << *PacketTypeToString(type) << " client=" << clientId);
+
+    // read the packet id
+    uint32_t id = reader.Read<uint32_t>();
 
     // abort if PacketType read failed
     if(reader.errors > 0){
@@ -38,6 +43,7 @@ std::shared_ptr<Packet> Packet::Unpack(const uint8_t* bytes, unsigned int size, 
         return nullptr;
     }
 
+    packet->id = id;
     packet->clientId = clientId;
     packet->UnpackInner(reader);
 
@@ -61,7 +67,9 @@ void Packet::UnpackInner(ByteBufferReader& reader){
 void Packet::Pack(std::vector<uint8_t>& buffer){
     ByteBufferWriter writer(&buffer);
     writer.Write<uint16_t>((uint16_t)type);
+    writer.Write<uint32_t>(nextPacketId);
     PackInner(writer);
+    nextPacketId += 1;
 }
 
 // PacketTypedMessage
@@ -93,25 +101,25 @@ void PacketMessage::SetMessage(const char* message){
     this->message = message;
 }
 
-void PacketMessage::AddFloat(const char* key, float value){
+void PacketMessage::AddFloat(const std::string& key, float value){
     char buffer[20];
     sprintf(buffer, "%.8g", value);
     params[key] = buffer;
 }
 
-void PacketMessage::AddInt(const char* key, int value){
+void PacketMessage::AddInt(const std::string& key, int value){
     params[key] = std::to_string(value);
 }
 
-void PacketMessage::AddBool(const char* key, bool value){
+void PacketMessage::AddBool(const std::string& key, bool value){
     params[key] = value ? '1' : '0';
 }
 
-void PacketMessage::AddString(const char* key, const char* string){
+void PacketMessage::AddString(const std::string& key, const char* string){
     params[key] = string;
 }
 
-float PacketMessage::GetFloat(const char* key){
+float PacketMessage::GetFloat(const std::string& key){
     if(!params.contains(key)){
         LogError("Packet", iLog << "invalid param key in PacketMessage: key=" << key);
         return 0;
@@ -119,7 +127,7 @@ float PacketMessage::GetFloat(const char* key){
     return std::stof(params[key]);
 }
 
-int PacketMessage::GetInt(const char* key){
+int PacketMessage::GetInt(const std::string& key){
     if(!params.contains(key)){
         LogError("Packet", iLog << "invalid param key in PacketMessage: key=" << key);
         return 0;
@@ -127,7 +135,7 @@ int PacketMessage::GetInt(const char* key){
     return std::stoi(params[key]);
 }
 
-bool PacketMessage::GetBool(const char* key){
+bool PacketMessage::GetBool(const std::string& key){
     if(!params.contains(key)){
         LogError("Packet", iLog << "invalid param key in PacketMessage: key=" << key);
         return false;
@@ -135,7 +143,7 @@ bool PacketMessage::GetBool(const char* key){
     return params[key] == "0" ? false : true; 
 }
 
-const char* PacketMessage::GetString(const char* key){
+const char* PacketMessage::GetString(const std::string& key){
     if(!params.contains(key)){
         LogError("Packet", iLog << "invalid param key in PacketMessage: key=" << key);
         return "";

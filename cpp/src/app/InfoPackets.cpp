@@ -7,12 +7,14 @@
 #include "remote/Packet.h"
 #include "core/Log.h"
 
+using namespace std;
+
 namespace Crawler {
 
 static unsigned int caller = 0;
 static Robot* robot = nullptr;
 
-static void RequestLegAnglesHandler(void* caller, Packet& packet){
+static void OnRequestLegAngles(void* caller, Packet& packet){
 
     auto request = (PacketRespondLegAngles*)(&packet);
     auto response = std::make_shared<PacketRespondLegAngles>();
@@ -33,7 +35,7 @@ static void RequestLegAnglesHandler(void* caller, Packet& packet){
     ClientManager::SendPacket(response, packet.clientId);
 }
 
-static void RequestLegDataHandler(void* caller, Packet& packet){
+static void OnRequestLegData(void* caller, Packet& packet){
 
     // LogDebug("InfoPackets", "RequestLegDataHandler()");
     auto request = (PacketRequestLegData*)(&packet);
@@ -63,7 +65,7 @@ static void RequestLegDataHandler(void* caller, Packet& packet){
     ClientManager::SendPacket(response, packet.clientId);
 }
 
-static void RequestLegIMUHandler(void* caller, Packet& packet){
+static void OnRequestLegIMU(void* caller, Packet& packet){
     // LogDebug("InfoPackets", "RequestLegIMUHandler()");
     auto request = (PacketRequestIMUData*)(&packet);
     auto response = std::make_shared<PacketRespondIMUData>();
@@ -76,23 +78,52 @@ static void RequestLegIMUHandler(void* caller, Packet& packet){
     ClientManager::SendPacket(response, packet.clientId);
 }
 
-static void PacketMessageTestHandler(void* caller, PacketMessage& packet){
-
+static void OnMessageTest(void* caller, PacketMessage& packet){
     LogDebug("InfoPackets", iLog << "message = " << packet.message);
     for(auto& x : packet.params){
         LogDebug("InfoPackets", iLog << x.first << " = " << x.second);
     }
+}
 
+static void OnMessageGetCalib(void* caller, PacketMessage& packet){
+
+    // parse request
+    std::vector<unsigned int> jointIds;
+    unsigned int numJoints = packet.GetInt("n");
+    for(unsigned int i = 0; i < numJoints; i++){
+        unsigned int jointId = packet.GetInt("j-"+to_string(i));
+        jointIds.push_back(jointId);
+    }
+
+    // write response
+    auto response = std::make_shared<PacketMessage>("respondCalib");
+    response->AddInt("n", numJoints);
+    for(unsigned int i = 0; i < numJoints; i++){
+        unsigned int jointId = jointIds[i];
+        if(jointId >= App::robot->jointsList.size()){
+            ClientManager::SendLogError("InfoPackets", iLog << "OnMessageGetCalib() jointId " << jointId << " is invalid");
+            continue;
+        }
+        unsigned int v_low = 256;
+        unsigned int v_mid = 256*2;
+        unsigned int v_high = 256*3; 
+        response->AddInt("j-"+to_string(i), jointId); // joint id
+        response->AddInt("l-"+to_string(jointId), v_low); // low 
+        response->AddInt("m-"+to_string(jointId), v_mid); // mid
+        response->AddInt("h-"+to_string(jointId), v_high); // high
+    }
+    ClientManager::SendPacket(response, packet.clientId);
 }
 
 InfoPackets::InfoPackets(){}
 
 void InfoPackets::Init(Robot* robotPtr){
     robot = robotPtr;
-    ClientManager::SubscribePacket(PacketType::RequestLegAngles, &caller, &RequestLegAnglesHandler);
-    ClientManager::SubscribePacket(PacketType::RequestLegData, &caller, &RequestLegDataHandler);
-    ClientManager::SubscribePacket(PacketType::RequestIMUData, &caller, &RequestLegIMUHandler);
-    ClientManager::SubscribePacketMessage("test", &caller, &PacketMessageTestHandler);
+    ClientManager::SubscribePacket(PacketType::RequestLegAngles, &caller, &OnRequestLegAngles);
+    ClientManager::SubscribePacket(PacketType::RequestLegData, &caller, &OnRequestLegData);
+    ClientManager::SubscribePacket(PacketType::RequestIMUData, &caller, &OnRequestLegIMU);
+    ClientManager::SubscribeMessage("test", &caller, &OnMessageTest);
+    ClientManager::SubscribeMessage("requestCalib", &caller, &OnMessageGetCalib);
 }
 
 void InfoPackets::Cleanup(){

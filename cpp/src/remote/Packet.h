@@ -15,10 +15,13 @@ class Packet {
 
 private:
 
+    static uint32_t nextPacketId;
+
 public:
 
     int errors = 0;
     int clientId = -1;
+    uint32_t id;
 
     PacketType type = PacketType::Invalid;
 
@@ -39,14 +42,14 @@ struct PacketMessage : public Packet {
     void PackInner(ByteBufferWriter& writer) override;
     void UnpackInner(ByteBufferReader& reader) override;
     void SetMessage(const char* message);
-    void AddFloat(const char* key, float value);
-    void AddInt(const char* key, int value);
-    void AddBool(const char* key, bool value);
-    void AddString(const char* key, const char* string);
-    float GetFloat(const char* key);
-    int GetInt(const char* key);
-    bool GetBool(const char* key);
-    const char* GetString(const char* key);
+    void AddFloat(const std::string& key, float value);
+    void AddInt(const std::string& key, int value);
+    void AddBool(const std::string& key, bool value);
+    void AddString(const std::string& key, const char* string);
+    float GetFloat(const std::string& key);
+    int GetInt(const std::string& key);
+    bool GetBool(const std::string& key);
+    const char* GetString(const std::string& key);
 };
 
 struct PacketGamepadKey : public Packet {

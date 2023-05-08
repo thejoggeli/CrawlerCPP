@@ -12,7 +12,7 @@ import PacketMessage from "./PacketMessage";
 class Main {
 
     static messenger = new Messenger(); 
-    static connection = new Connection({"port": 9090});
+    static connection = new Connection({"port": 80});
     static packetReceiver = new PacketReceiver();
     static packetSender = new PacketSender();
     static events = new Subscribable();

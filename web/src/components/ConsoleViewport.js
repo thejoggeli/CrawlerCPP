@@ -22,6 +22,7 @@ export default class ConsoleViewport extends React.Component {
     componentDidMount(){
         Console.events.subscribe("addLine", this, this.onAddLine)
         Console.events.subscribe("removeLine", this, this.onRemoveLine)
+        Console.events.subscribe("clear", this, this.onClear)
         Main.events.subscribe("update", this, this.update)
         for(var line of Console.lines){
             this.onAddLine(line)
@@ -31,6 +32,7 @@ export default class ConsoleViewport extends React.Component {
     componentWillUnmount(){
         Console.events.unsubscribe("addLine", this)
         Console.events.unsubscribe("removeLine", this)
+        Console.events.unsubscribe("clear", this)
         Main.events.unsubscribe("update", this)
     }
 
@@ -49,6 +51,12 @@ export default class ConsoleViewport extends React.Component {
                 break;
             }
         }
+        this.setState(this.state)
+    }
+
+    onClear(){
+        this.state.lineElements = []
+        this.state.linesById = {}
         this.setState(this.state)
     }
 

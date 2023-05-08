@@ -154,7 +154,7 @@ static void OnMessageGetCalib(void* caller, PacketMessage& packet){
 
 static void OnMessageSetTorque(void* caller, PacketMessage& packet){
     bool torque = packet.GetBool("torque");
-    ClientManager::SendLogInfo("InfoPackets", iLog << "torque was set to <" << (torque ? "on" : "off") << ">");
+    ClientManager::SendLogInfo("InfoPackets", iLog << "torque was set to '" << (torque ? "on" : "off") << "'");
     if(torque){
         App::robot->TorqueOn(true);
     } else {

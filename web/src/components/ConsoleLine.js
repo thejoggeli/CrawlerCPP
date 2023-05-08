@@ -3,6 +3,7 @@ import React from "react";
 import "./ConsoleLine.css";
 import Main from "logic/Main";
 import Time from "msl/time/Time";
+import Console from "logic/Console";
 
 export default class ConsoleLine extends React.Component {
 
@@ -10,8 +11,12 @@ export default class ConsoleLine extends React.Component {
         super(props)
         var line = this.props.line
         this.classes = ["console-line"]
-        if(line.parsed){
-            this.classes.push("parsed")
+        if(line.type == Console.LineTypeCommand){
+            this.classes.push("command")
+        } else if(line.type == Console.LineTypeError){
+            this.classes.push("error")
+        } else if(line.type == Console.LineTypeDefault){
+            this.classes.push("default")
         }
         this.className = this.classes.join(" ")
         this.timestamp = Time.toTimestampString(line.timestamp/1000.0)

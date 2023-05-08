@@ -20,6 +20,7 @@ class Main {
     static packetMessages = new Subscribable();
 
     static init(){
+        Console.init()
         Gfw.install();
         Gfw.events.subscribe("beforeUpdate", Main, Main.update)
         Gfw.events.subscribe("resize", Main, Main.resize)
@@ -70,7 +71,7 @@ class Main {
 
     static onPacketMessageLog(message){
         Log.info("Main", message.message, message.params.type, message.params.msg)
-        Console.addLine(message.params.msg, false)
+        Console.addLine(message.params.msg, Console.LineTypeDefault)
     }
 
     static onPacketMessage(packet){

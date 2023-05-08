@@ -15,6 +15,9 @@
     font-family: "VeraMono";
     font-size:14px;
 }
-.console-line.parsed .console-text {
+.console-line.command .console-text {
     color:#e6d743;
+}
+.console-line.error .console-text {
+    color:#e64343;
 }

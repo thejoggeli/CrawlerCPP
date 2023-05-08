@@ -11,13 +11,14 @@ import Numbers from "msl/util/Numbers";
 import StatusEntry from "./StatusEntry";
 import CalibComponent from "./CalibComponent";
 import StatusComponent from "./StatusComponent";
+import ConsoleComponent from "./ConsoleComponent";
 
 export default class App extends React.Component {
 
     constructor(props){
         super(props);
         this.state = {
-            view: 3,
+            view: 4,
             connected: false,
         }
     }
@@ -48,7 +49,7 @@ export default class App extends React.Component {
 
     handleClick = e => {
         this.setState({
-            view: (this.state.view+1)%4
+            view: (this.state.view+1)%5
         });
         // this.setState(calculate(this.state, buttonName));
     };
@@ -68,8 +69,10 @@ export default class App extends React.Component {
             view = <Robo3DComponent />
         } else if(this.state.view == 2){
             view = <GamepadComponent />
-        } else {
+        } else if(this.state.view == 3){
             view = <CalibComponent />
+        } else {
+            view = <ConsoleComponent />
         }
         return (
             <div className="wrapper">

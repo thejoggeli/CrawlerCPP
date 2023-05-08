@@ -5,6 +5,7 @@ html, body {
     margin:0;padding:0;
 }
 
+input[type="submit"],
 button {
     background:#eee;
     color: #101010;
@@ -12,19 +13,22 @@ button {
     border-radius: 5px;
     padding:4px 8px;
 }
+
+input[type="submit"]:disabled,
 button:disabled {
     opacity:0.5;
 }
 
-input[type=text] {
-    outline: 0;
-}
-
+input[type="submit"]:not(:disabled):hover,
 button:not(:disabled):hover{
     background:#d0d0d0;
     color: #101010;
     border:0;
     cursor:pointer;
+}
+
+input[type=text] {
+    outline: 0;
 }
 
 .blocker {

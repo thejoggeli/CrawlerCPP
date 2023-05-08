@@ -1,0 +1,8 @@
+.console-viewport {
+    padding:4px;
+    align-self: stretch; flex-grow: 1; 
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    z-index:50;
+}

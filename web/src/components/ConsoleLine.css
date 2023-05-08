@@ -1,0 +1,20 @@
+.console-line {
+    margin-top:4px;
+    padding:4px;
+    border-radius: 5px;
+    border:0px solid #404040;
+    background:#202020;
+}
+.console-timestamp {
+    display:inline-block;
+    font-family: "VeraMono";
+    font-size:14px;
+}
+.console-line .console-text {
+    display:inline-block;
+    font-family: "VeraMono";
+    font-size:14px;
+}
+.console-line.parsed .console-text {
+    color:#e6d743;
+}

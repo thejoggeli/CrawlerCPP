@@ -39,6 +39,19 @@ class Time {
         return (new Date()).getTime();
     }
 
+    static toTimestampString(time){
+        var str = ""
+        var hours = Math.floor(time % (3600*24) / 3600)
+        str += Strings.pad("00", hours.toString(), true)
+        str += ":"
+        var minutes = Math.floor((time % 3600) / 60)
+        str += Strings.pad("00", minutes.toString(), true)
+        str += ":"
+        var seconds = Math.floor(time % 60)
+        str += Strings.pad("00", seconds.toString(), true)
+        return str        
+    }
+
     static toBeautifulString(time, ms, s, m, h, d){    
         var str = ""
         if(d){

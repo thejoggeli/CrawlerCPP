@@ -54,7 +54,8 @@ public:
 
     void PrintServoStatus();
 
-    void TorqueOff();
+    void TorqueOn(bool buffer = false);
+    void TorqueOff(bool buffer = false);
 
 };
 

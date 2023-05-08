@@ -12,6 +12,7 @@ import StatusEntry from "./StatusEntry";
 import CalibComponent from "./CalibComponent";
 import StatusComponent from "./StatusComponent";
 import ConsoleComponent from "./ConsoleComponent";
+import Navbar from "./Navbar";
 
 export default class App extends React.Component {
 
@@ -61,6 +62,12 @@ export default class App extends React.Component {
         Main.addPacketMessage(message)
     };
 
+    onSelectView = (view) => {
+        this.setState({
+            view: view,
+        })
+    }
+
     render() {
         var view;
         if(this.state.view == 0){
@@ -78,11 +85,8 @@ export default class App extends React.Component {
             <div className="wrapper">
                 <div className="main-container">
                     <div className="toprow">
-                        <button onClick={this.handleClick}>State view: {this.state.view}</button>
-                        &nbsp;
-                        <button onClick={this.handleClick2}>send test message</button>  
-                        &nbsp;&nbsp; 
-                        <StatusComponent />
+                        <StatusComponent /> 
+                        <Navbar onSelectView={this.onSelectView} view={this.state.view} />
                     </div>
                     <div className="view-container">{view}</div>
                 </div>

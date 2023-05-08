@@ -20,7 +20,7 @@ CalibrationBrain::CalibrationBrain() : Brain() {
 
 void CalibrationBrain::Init(){
     for(Joint* joint : robot->jointsList){
-        joint->TorqueOff();
+        joint->TorqueOff(true);
     }
     ClientManager::SubscribeMessage("setCalib", this, [](void* caller, PacketMessage& msg){
         

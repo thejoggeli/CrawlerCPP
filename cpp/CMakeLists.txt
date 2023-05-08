@@ -15,6 +15,8 @@ set(
     src/app/InfoPackets.cpp
     src/comm/SerialStream.cpp
     src/parts/XYZServo.cpp
+    src/parts/HardwareButton.cpp
+    src/parts/MonoLED.cpp
     src/brain/Brain.cpp
     src/brain/SurferBrain.cpp
     src/brain/GaitBrain.cpp
@@ -28,8 +30,6 @@ set(
     src/robot/Joint.cpp
     src/math/Mathf.cpp
     src/math/Numbers.cpp
-    src/util/HardwareButton.cpp
-    src/util/MonoLED.cpp
     src/util/Strings.cpp
     src/util/Timer.cpp
     src/util/Endian.cpp

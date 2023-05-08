@@ -8,6 +8,7 @@ import Time from "msl/time/Time";
 import Messenger from "msl/util/Messenger";
 import Subscribable from "msl/util/Subscribable";
 import PacketMessage from "./PacketMessage";
+import Console from "./Console";
 
 class Main {
 
@@ -69,6 +70,7 @@ class Main {
 
     static onPacketMessageLog(message){
         Log.info("Main", message.message, message.params.type, message.params.msg)
+        Console.addLine(message.params.msg, false)
     }
 
     static onPacketMessage(packet){

@@ -14,6 +14,9 @@ ServoThread::ServoThread() {
 
 void ServoThread::Init(Robot* robot){
     this->robot = robot;
+    this->ledPolicyVector.reserve(16);
+    this->ledColorVector.reserve(16);
+    this->torqueVector.reserve(16);
 }
 
 void ServoThread::ApplyBuffers(){
@@ -26,6 +29,18 @@ void ServoThread::ApplyBuffers(){
         joint->statusError.ApplyBuffer();
         joint->measuredTemperature.ApplyBuffer();
         joint->measuredVoltage.ApplyBuffer();
+        if(joint->servoLedPolicy.needsUpdate){
+            joint->servoLedPolicy.ApplyBuffer();
+            ledPolicyVector.push_back(joint);
+        }
+        if(joint->servoLedColor.needsUpdate){
+            joint->servoLedColor.ApplyBuffer();
+            ledColorVector.push_back(joint);
+        }
+        if(joint->torque.needsUpdate){
+            joint->torque.ApplyBuffer();
+            torqueVector.push_back(joint);
+        }
     }
 }
 
@@ -78,6 +93,24 @@ void ServoThread::Run(){
                 nextJoint = 0;
             }
         }
+
+        // update led color policies
+        for(Joint* joint : ledPolicyVector){
+            joint->UpdateServoLedPolicy();
+        }
+        ledPolicyVector.clear();
+
+        // update led color policies
+        for(Joint* joint : ledColorVector){
+            joint->UpdateServoLedColor();
+        }
+        ledColorVector.clear();
+
+        // update torque
+        for(Joint* joint : torqueVector){
+            joint->UpdateTorque();
+        }
+        torqueVector.clear();
 
         // remember time
         uint64_t endTimeMicros = Time::GetSystemTimeMicros();

@@ -10,6 +10,7 @@ public:
 
     T value;
     T bufferedValue;
+    bool needsUpdate = false;
 
     BufferedValue(){
         value = 0;
@@ -27,20 +28,26 @@ public:
 
     inline BufferedValue& operator = (T value){
         this->value = value;
+        needsUpdate = false;
         return *this;
     }
 
     inline BufferedValue& SetValue(T value){
         this->value = value;
+        needsUpdate = false;
         return *this;
     }
 
     inline void BufferValue(T value){
         this->bufferedValue = value;
+        needsUpdate = this->bufferedValue != this->value;
     }
 
     inline void ApplyBuffer(){
-        this->value = bufferedValue;
+        if(needsUpdate){
+            this->value = bufferedValue;
+        }
+        needsUpdate = false;
     }
 
 };

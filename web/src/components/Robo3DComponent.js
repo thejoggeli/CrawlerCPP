@@ -52,7 +52,7 @@ export default class Robo3DComponent extends React.Component {
         return (
             <div className="robo3d-wrap">
                 <div className="robo3d-toolbar">
-                    <Robo3DButton display="T" onClick={this.handleClickTarget} active={this.state.targetVisible} />su
+                    <Robo3DButton display="T" onClick={this.handleClickTarget} active={this.state.targetVisible} />
                     <Robo3DButton display="M" onClick={this.handleClickMeasured} active={this.state.measuredVisible} />
                 </div>
                 <div className="robo3d-container" id="robo3d-container" />

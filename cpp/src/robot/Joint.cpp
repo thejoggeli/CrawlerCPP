@@ -369,33 +369,75 @@ uint16_t Joint::AngleToXYZ(float angle){
     return std::min(std::max(xyz, 0.0f), 1023.0f);
 }
 
-void Joint::SetServoLedPolicyUser(){
-    servo->setLedPolicy(XYZServoLedPolicy::UserAll);
+void Joint::SetServoLedPolicyUser(bool buffer){
+    if(buffer){
+        servoLedPolicy.BufferValue(XYZServoLedPolicy::UserAll);
+    } else {
+        servoLedPolicy.SetValue(XYZServoLedPolicy::UserAll);
+        UpdateServoLedPolicy();
+    }
 }
 
-void Joint::SetServoLedPolicySystem(){
-    servo->setLedPolicy(XYZServoLedPolicy::SystemAlarmAll);
+void Joint::SetServoLedPolicySystem(bool buffer){
+    if(buffer){
+        servoLedPolicy.BufferValue(XYZServoLedPolicy::SystemAlarmAll);
+
+    } else {
+        servoLedPolicy.SetValue(XYZServoLedPolicy::SystemAlarmAll);
+        UpdateServoLedPolicy();
+    }
 }
 
-void Joint::SetServoLedColor(int r, int g, int b, int w){
-
+void Joint::SetServoLedColor(int r, int g, int b, int w, bool buffer){
     // compress color into a single int 
-    unsigned int servoLedColor = r | (g<<1) | (b<<2) | (w<<3);
-
-    // only send new led color if servo led is not already at color
-    if(servoLedColor != this->servoLedColor){
-        servo->setLedColor(r, g, b, w); // set servo led to new color
-        this->servoLedColor = servoLedColor; // store compressed color
-    }
-
-}
-
-void Joint::TorqueOff(){
-    if(canCommunicate){
-        SetServoState(ServoState::TorqueOff);
-        servo->torqueOff();
+    unsigned int color = r | (g<<1) | (b<<2) | (w<<3);
+    if(buffer){
+        servoLedColor.BufferValue(color);
+    } else {
+        servoLedColor.SetValue(color);
+        UpdateServoLedColor();
     }
 }
 
+void Joint::UpdateServoLedPolicy(){
+    servo->setLedPolicy(servoLedPolicy.value);
+
+}
+
+void Joint::UpdateServoLedColor(){
+    servo->setLedColor(servoLedColor.value); // set servo led to new color
+}
+
+void Joint::TorqueOff(bool buffer){
+    if(buffer){
+        torque.BufferValue(false);
+    } else {
+        torque.SetValue(false);
+        UpdateTorque();
+    }
+}
+
+void Joint::TorqueOn(bool buffer){
+    if(buffer){
+        torque.BufferValue(true);
+    } else {
+        torque.SetValue(true);
+        UpdateTorque();
+    }
+}
+
+void Joint::UpdateTorque(){
+    if(torque.value){
+        if(canCommunicate){
+            SetServoState(ServoState::OK);
+            MoveServoToTargetAngle(0.0f);
+        }
+    } else {
+        if(canCommunicate){
+            SetServoState(ServoState::TorqueOff);
+            servo->torqueOff();
+        }
+    }
+}
 
 }

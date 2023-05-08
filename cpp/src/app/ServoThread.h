@@ -5,10 +5,12 @@
 #include <condition_variable>
 #include <atomic>
 #include "threading/Signal.h"
+#include <vector>
 
 namespace Crawler {
 
 class Robot;
+class Joint;
 
 class ServoThread {
 
@@ -21,6 +23,10 @@ private:
     int nextJoint = 0;
     int measureState = 0;
     int nextLeg = 0;
+
+    std::vector<Joint*> ledPolicyVector;
+    std::vector<Joint*> ledColorVector;
+    std::vector<Joint*> torqueVector;
 
     void Run();
 

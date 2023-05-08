@@ -31,13 +31,6 @@ class Joint {
 
 private: 
 
-    // remember current servo led color 
-    // bit 3 = white
-    // bit 2 = blue
-    // bit 1 = green
-    // bit 0 = red 
-    unsigned int servoLedColor; 
-
     uint16_t servoCalibValues[3] = {256, 512, 768}; 
     float servoCalibAngles[3] = {0.0f, 0.0f, 0.0f};
 
@@ -67,6 +60,17 @@ public:
     uint16_t lastTargetXYZ = 0;
     uint16_t currentTargetXYZ = 0;
 
+    // the BufferedValue class is used to run the serial communication in a parallel thread
+    // their value attribute must not be changed while the main loop is running
+
+    // remember current servo led color 
+    // bit 3 = white
+    // bit 2 = blue
+    // bit 1 = green
+    // bit 0 = red 
+    BufferedValue<unsigned int> servoLedColor;
+    BufferedValue<unsigned int> servoLedPolicy;
+    BufferedValue<bool> torque;
     BufferedValue<float> measuredXYZ; // radians
     BufferedValue<float> measuredAngle; // radians
     BufferedValue<float> measuredCurrent; // mA
@@ -111,16 +115,19 @@ public:
     bool ReadStatusError(bool buffer = false, int retries = 2);
     bool ReadStatusDetail(bool buffer = false, int retries = 2);
 
-    void SetServoLedPolicyUser();
-    void SetServoLedPolicySystem();
-    void SetServoLedColor(int r, int g, int b, int w);
-    void SetServoLedColor(unsigned int rgbw);
+    void SetServoLedPolicyUser(bool buffer = false);
+    void SetServoLedPolicySystem(bool buffer = false);
+    void SetServoLedColor(int r, int g, int b, int w, bool buffer = false);
+
+    void UpdateServoLedPolicy();
+    void UpdateServoLedColor();
 
     uint16_t AngleToXYZ(float angle);
     float XYZToAngle(uint16_t xyz);
 
-    void TorqueOff();
-
+    void TorqueOff(bool buffer = false);
+    void TorqueOn(bool buffer = false);
+    void UpdateTorque();
 
 
 };    

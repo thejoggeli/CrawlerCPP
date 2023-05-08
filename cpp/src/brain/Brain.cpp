@@ -78,7 +78,7 @@ bool Brain::ApplyPoseToJoints(Eigen::Vector3f footPositions[4], float footAngles
             r = 1; g = 1; b = 0; w = 0;
         }
         for(Joint* joint : leg->joints){
-            joint->SetServoLedColor(r, g, b, w);
+            joint->SetServoLedColor(r, g, b, w, true);
         }
     }
     

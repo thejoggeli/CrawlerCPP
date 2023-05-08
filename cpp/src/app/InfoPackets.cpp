@@ -14,6 +14,8 @@ namespace Crawler {
 static unsigned int caller = 0;
 static Robot* robot = nullptr;
 
+InfoPackets::InfoPackets(){}
+
 static void OnRequestLegAngles(void* caller, Packet& packet){
 
     auto request = (PacketRespondLegAngles*)(&packet);
@@ -150,7 +152,15 @@ static void OnMessageGetCalib(void* caller, PacketMessage& packet){
     ClientManager::SendPacket(response, packet.clientId);
 }
 
-InfoPackets::InfoPackets(){}
+static void OnMessageSetTorque(void* caller, PacketMessage& packet){
+    bool torque = packet.GetBool("torque");
+    ClientManager::SendLogInfo("InfoPackets", iLog << "torque was set to <" << (torque ? "on" : "off") << ">");
+    if(torque){
+        App::robot->TorqueOn(true);
+    } else {
+        App::robot->TorqueOff(true);
+    }
+}
 
 void InfoPackets::Init(Robot* robotPtr){
     robot = robotPtr;
@@ -159,6 +169,7 @@ void InfoPackets::Init(Robot* robotPtr){
     ClientManager::SubscribePacket(PacketType::RequestIMUData, &caller, &OnRequestLegIMU);
     ClientManager::SubscribeMessage("test", &caller, &OnMessageTest);
     ClientManager::SubscribeMessage("requestCalib", &caller, &OnMessageGetCalib);
+    ClientManager::SubscribeMessage("setTorque", &caller, &OnMessageSetTorque);
 }
 
 void InfoPackets::Cleanup(){

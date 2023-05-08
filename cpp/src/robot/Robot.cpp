@@ -352,9 +352,15 @@ void Robot::PrintServoStatus(){
     LogInfo("Robot", iLog << "Total Current (mA): " << currentSumRobot);
 }
 
-void Robot::TorqueOff(){
+void Robot::TorqueOn(bool buffer){
     for(Leg* leg : legs){
-        leg->TorqueOff();
+        leg->TorqueOn(buffer);
+    }
+}
+
+void Robot::TorqueOff(bool buffer){
+    for(Leg* leg : legs){
+        leg->TorqueOff(buffer);
     }
 }
 

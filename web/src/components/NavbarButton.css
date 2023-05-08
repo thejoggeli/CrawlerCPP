@@ -1,0 +1,19 @@
+.navbar-button {
+    flex-grow: 1;
+    align-self: stretch;
+    text-align: center;
+    border-top:2px solid #101010;
+    border-right:2px solid #101010;
+    padding:8px;
+    box-sizing: border-box;
+}
+.navbar-button.active {
+    background:#303030;
+}
+.navbar-button:hover{
+    cursor:pointer;
+    background:#303030;
+}
+.navbar .navbar-button:last-child {
+    border-right: 0;
+}

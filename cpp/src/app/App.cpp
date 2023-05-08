@@ -1,8 +1,8 @@
 #include "App.h"
 
 #include <JetsonGPIO.h>
-#include "util/HardwareButton.h"
-#include "util/MonoLED.h"
+#include "parts/HardwareButton.h"
+#include "parts/MonoLED.h"
 #include "util/Timer.h"
 #include "robot/Robot.h"
 #include "robot/Leg.h"

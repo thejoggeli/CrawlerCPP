@@ -12,7 +12,7 @@ set(
     libs/serialib/Serialib.cpp
     src/app/App.cpp
     src/app/ServoThread.cpp
-    src/app/InfoPackets.cpp
+    src/app/PacketsComm.cpp
     src/comm/SerialStream.cpp
     src/parts/XYZServo.cpp
     src/parts/HardwareButton.cpp

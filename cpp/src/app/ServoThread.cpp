@@ -41,6 +41,10 @@ void ServoThread::ApplyBuffers(){
             joint->torque.ApplyBuffer();
             torqueVector.push_back(joint);
         }
+        joint->currentTargetAngle.ApplyBuffer();
+        joint->currentTargetXYZ.ApplyBuffer();
+        joint->lastTargetAngle.ApplyBuffer();
+        joint->lastTargetXYZ.ApplyBuffer();
     }
 }
 
@@ -56,6 +60,7 @@ void ServoThread::Run(){
         // LogDebug("ServoThread", "locking next loop");
         nextLoopSignal.WaitAndClear();
 
+        // stop if exit requested
         if(exitRequested){
             break;
         }

@@ -228,23 +228,28 @@ void Robot::Startup(){
 
     // set LED colors
     for(Leg* leg : legs){
-        leg->joints[0]->SetServoLedColor(0, 1, 1, 0);
-        leg->joints[1]->SetServoLedColor(0, 1, 0, 0);
+        leg->joints[0]->SetServoLedColor(0, 0, 1, 0);
+        leg->joints[1]->SetServoLedColor(0, 0, 1, 0);
         leg->joints[2]->SetServoLedColor(0, 0, 1, 0);
-        leg->joints[3]->SetServoLedColor(1, 1, 0, 0);
+        leg->joints[3]->SetServoLedColor(0, 0, 1, 0);
+    }
+
+    // initialize joint states
+    for(Joint* joint : jointsList){
+        joint->ReadMeasuredStatus();
+        joint->lastTargetAngle = joint->currentTargetAngle;
     }
     
 }
 
-void Robot::SetServosLedPolicyUser(){
+void Robot::SetServosLedPolicyUser(bool buffer){
     for(Joint* joint : jointsList){
-        joint->SetServoLedPolicyUser();
-        joint->SetServoLedColor(1, 0, 1, 0);
+        joint->SetServoLedPolicyUser(buffer);
     }
 }
-void Robot::SetServosLedPolicySystem(){
+void Robot::SetServosLedPolicySystem(bool buffer){
     for(Joint* joint : jointsList){
-        joint->SetServoLedPolicySystem();
+        joint->SetServoLedPolicySystem(buffer);
     }
 }
 

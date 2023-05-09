@@ -54,11 +54,11 @@ export default class ConsoleInput extends React.Component {
         if(e.keyCode == 38){
             // prev line
             if(this.historyPtr == -1){
-                this.historyPtr = Console.lines.length-1
+                this.historyPtr = Console.submittedLines.length-1
             } else {
                 this.historyPtr -= 1
                 if(this.historyPtr < 0){
-                    this.historyPtr = Console.lines.length-1
+                    this.historyPtr = Console.submittedLines.length-1
                 }
             }
             historyPtrChanged = true
@@ -68,7 +68,7 @@ export default class ConsoleInput extends React.Component {
                 this.historyPtr = 0
             } else {
                 this.historyPtr += 1
-                if(this.historyPtr >= Console.lines.length){
+                if(this.historyPtr >= Console.submittedLines.length){
                     this.historyPtr = 0
                 }
             }
@@ -76,7 +76,7 @@ export default class ConsoleInput extends React.Component {
         }
         if(historyPtrChanged){
             this.setState({
-                text: Console.lines[this.historyPtr].text
+                text: Console.submittedLines[this.historyPtr].text
             })
             this.cursorNeedsUpdate = true
         }

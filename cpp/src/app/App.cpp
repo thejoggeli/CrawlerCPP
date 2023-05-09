@@ -19,7 +19,7 @@
 #include "brain/EmptyBrain.h"
 #include "brain/CalibrationBrain.h"
 #include "ServoThread.h"
-#include "InfoPackets.h"
+#include "PacketsComm.h"
 
 using namespace std;
 
@@ -98,7 +98,7 @@ bool App::Init(){
     servoThread.Init(robot);
 
     // init info packets
-    InfoPackets::Init(robot);
+    PacketsComm::Init(robot);
 
     // init success
     return true;
@@ -132,7 +132,7 @@ bool App::InitServos(){
 bool App::Cleanup(){
 
     LogInfo("App", "Cleanup()");
-    InfoPackets::Cleanup();
+    PacketsComm::Cleanup();
 
     // close servo serial stream
     LogInfo("App", "serial stream close");
@@ -204,7 +204,7 @@ bool App::Run(){
     // main loop
     LogInfo("App", "main loop start");
     while(!exitRequested){
-        
+
         // update time
         Time::Update();
 
@@ -220,7 +220,7 @@ bool App::Run(){
         // update buttons
         mainButton->Update();
         if(mainButton->onPress){
-            RequestExit();
+            // RequestExit("MainButton");
         }
 
         // print debug info
@@ -255,7 +255,7 @@ bool App::Run(){
 
             // ServoThread is waiting for next loop, meaning it is not modyfing the buffers
             // thus it is safe to apply the buffers here
-            servoThread.ApplyBuffers(); 
+            servoThread.ApplyBuffers();
             
 
             // signal ServoThread that it can start the next loop
@@ -348,9 +348,9 @@ bool App::Run(){
     }
     LogInfo("App", "main loop end");
 
-    // let ServoThread finish the final loop
-    // and then wait servo thread to finish
+    //  wait servo thread to finish
     LogInfo("App", "waiting for servo thread to finish");
+    servoThread.RequestExit();
     servoThread.nextLoopSignal.Set();
     servoThread.threadFinishSignal.Wait();
 
@@ -361,12 +361,12 @@ bool App::Run(){
     
 }
 
-void App::RequestExit(){
+void App::RequestExit(const char* requester){
     if(exitRequested){
         return;
     }
-    LogInfo("App", "RequestExit()");
-    servoThread.RequestExit();
+
+    ClientManager::SendLogInfo("App", iLog << "exit requested (requester=" << requester << ")");
     exitRequested = true;
 }
 

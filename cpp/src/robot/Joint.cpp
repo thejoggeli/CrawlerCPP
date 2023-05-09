@@ -16,6 +16,17 @@ std::string JointTypeToString(JointType jointType){
     return "JointTypeStringMissing";
 }
 
+std::shared_ptr<std::string> ServoStateToString(ServoState state){
+    switch(state){
+        case ServoState::Error: return std::make_shared<std::string>("Error");
+        case ServoState::Ready: return std::make_shared<std::string>("Ready");
+        case ServoState::OK: return std::make_shared<std::string>("OK");
+        case ServoState::TorqueOff: return std::make_shared<std::string>("TorqueOff");
+        case ServoState::Rebooting: return std::make_shared<std::string>("Reboot");
+    }
+    return std::make_shared<std::string>("Invalid");
+}
+
 Joint::Joint(Leg* leg, JointType jointType){
     this->leg = leg;
     this->type = jointType;
@@ -154,11 +165,18 @@ bool Joint::PingServo(){
     return true;
 }
 
-void Joint::SetTargetAngle(float angle){
-    lastTargetAngle = currentTargetAngle;
-    lastTargetXYZ = currentTargetXYZ;
-    currentTargetAngle = angle;
-    currentTargetXYZ = AngleToXYZ(currentTargetAngle);
+void Joint::SetTargetAngle(float angle, bool buffer){
+    if(buffer){
+        lastTargetAngle.BufferValue(currentTargetAngle);
+        lastTargetXYZ.BufferValue(currentTargetXYZ);
+        currentTargetAngle.BufferValue(angle);
+        currentTargetXYZ.BufferValue(angle);
+    } else {
+        lastTargetAngle.SetValue(currentTargetAngle);
+        lastTargetXYZ.SetValue(currentTargetXYZ);
+        currentTargetAngle.SetValue(angle);
+        currentTargetXYZ.SetValue(angle);
+    }
 }
 
 void Joint::MoveServoToTargetAngle(float seconds){

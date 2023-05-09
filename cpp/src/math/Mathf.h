@@ -28,6 +28,8 @@ public:
 
     static Eigen::Matrix3f LookRotationNew(const Eigen::Vector3f& forward, const Eigen::Vector3f& upwards);
 
+    static void Vector3ToString(const Eigen::Vector3f& v, const char* format, char* out);
+
 };
 
 }

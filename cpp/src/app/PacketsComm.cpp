@@ -1,4 +1,4 @@
-#include "InfoPackets.h"
+#include "PacketsComm.h"
 #include "robot/Robot.h"
 #include "robot/Leg.h"
 #include "robot/Joint.h"
@@ -6,6 +6,7 @@
 #include "remote/ClientManager.h"
 #include "remote/Packet.h"
 #include "core/Log.h"
+#include "math/Mathf.h"
 
 using namespace std;
 
@@ -14,7 +15,7 @@ namespace Crawler {
 static unsigned int caller = 0;
 static Robot* robot = nullptr;
 
-InfoPackets::InfoPackets(){}
+PacketsComm::PacketsComm(){}
 
 static void OnRequestLegAngles(void* caller, Packet& packet){
 
@@ -24,7 +25,7 @@ static void OnRequestLegAngles(void* caller, Packet& packet){
     response->flags = request->flags;
     for(uint8_t legId : request->legIds){
         if(legId >= robot->legs.size()){
-            LogError("InfoPackets", iLog << "invalid leg id=" << legId << " in RequestLegAnglesHandler");
+            LogError("PacketsComm", iLog << "invalid leg id=" << legId << " in RequestLegAnglesHandler");
             return;
         }
         response->legIds.push_back(legId);
@@ -70,13 +71,13 @@ static void OnRequestLegAngles(void* caller, Packet& packet){
 
 static void OnRequestLegData(void* caller, Packet& packet){
 
-    // LogDebug("InfoPackets", "RequestLegDataHandler()");
+    // LogDebug("PacketsComm", "RequestLegDataHandler()");
     auto request = (PacketRequestLegData*)(&packet);
     auto response = std::make_shared<PacketRespondLegData>();
 
     for(uint8_t legId : request->legIds){
         if(legId >= robot->legs.size()){
-            LogError("InfoPackets", iLog << "invalid leg id=" << legId << " in RequestLegDataHandler");
+            LogError("PacketsComm", iLog << "invalid leg id=" << legId << " in RequestLegDataHandler");
             return;
         }
         response->legIds.push_back(legId);
@@ -99,7 +100,7 @@ static void OnRequestLegData(void* caller, Packet& packet){
 }
 
 static void OnRequestLegIMU(void* caller, Packet& packet){
-    // LogDebug("InfoPackets", "RequestLegIMUHandler()");
+    // LogDebug("PacketsComm", "RequestLegIMUHandler()");
     auto request = (PacketRequestIMUData*)(&packet);
     auto response = std::make_shared<PacketRespondIMUData>();
     response->acceleration.push_back(0.0f); // acceleration x
@@ -112,9 +113,9 @@ static void OnRequestLegIMU(void* caller, Packet& packet){
 }
 
 static void OnMessageTest(void* caller, PacketMessage& packet){
-    LogDebug("InfoPackets", iLog << "message = " << packet.message);
+    LogDebug("PacketsComm", iLog << "message = " << packet.message);
     for(auto& x : packet.params){
-        LogDebug("InfoPackets", iLog << x.first << " = " << x.second);
+        LogDebug("PacketsComm", iLog << x.first << " = " << x.second);
     }
 }
 
@@ -134,7 +135,7 @@ static void OnMessageGetCalib(void* caller, PacketMessage& packet){
     for(unsigned int i = 0; i < numJoints; i++){
         unsigned int jointId = jointIds[i];
         if(jointId >= App::robot->jointsList.size()){
-            ClientManager::SendLogError("InfoPackets", iLog << "OnMessageGetCalib() jointId " << jointId << " is invalid");
+            ClientManager::SendLogError("PacketsComm", iLog << "OnMessageGetCalib() jointId " << jointId << " is invalid");
             continue;
         }
         unsigned int values[3];
@@ -154,7 +155,7 @@ static void OnMessageGetCalib(void* caller, PacketMessage& packet){
 
 static void OnMessageSetTorque(void* caller, PacketMessage& packet){
     bool torque = packet.GetBool("torque");
-    ClientManager::SendLogInfo("InfoPackets", iLog << "torque was set to '" << (torque ? "on" : "off") << "'");
+    ClientManager::SendLogInfo("PacketsComm", iLog << "torque was set to '" << (torque ? "on" : "off") << "'");
     if(torque){
         App::robot->TorqueOn(true);
     } else {
@@ -162,7 +163,104 @@ static void OnMessageSetTorque(void* caller, PacketMessage& packet){
     }
 }
 
-void InfoPackets::Init(Robot* robotPtr){
+static void OnMessagePrintStatus(void* caller, PacketMessage& packet){
+    Robot* robot = App::robot;
+    char buffer[200]; 
+    for(Leg* leg : robot->legs){
+        sprintf(buffer, "%s | (torque) %-3s %-3s %-3s %-3s | (status) %-9s %-9s %-9s %-9s", 
+            leg->name.c_str(), 
+            leg->joints[0]->torque ? "on" : "off",
+            leg->joints[1]->torque ? "on" : "off",
+            leg->joints[2]->torque ? "on" : "off",
+            leg->joints[3]->torque ? "on" : "off",
+            ServoStateToString(leg->joints[0]->servoState)->c_str(),
+            ServoStateToString(leg->joints[1]->servoState)->c_str(),
+            ServoStateToString(leg->joints[2]->servoState)->c_str(),
+            ServoStateToString(leg->joints[3]->servoState)->c_str()
+        );
+        ClientManager::SendLogInfo("PacketsComm", iLog << buffer);
+    }
+}
+
+static void OnMessagePrintAngles(void* caller, PacketMessage& packet){
+    Robot* robot = App::robot;
+    char buffer[200];
+    for(Leg* leg : robot->legs){
+        sprintf(buffer, "%s target:   %6.1f %6.1f %6.1f %6.1f (deg)", 
+            leg->name.c_str(), 
+            leg->joints[0]->currentTargetAngle * RAD_2_DEGf,
+            leg->joints[1]->currentTargetAngle * RAD_2_DEGf,
+            leg->joints[2]->currentTargetAngle * RAD_2_DEGf,
+            leg->joints[3]->currentTargetAngle * RAD_2_DEGf
+        );
+        ClientManager::SendLogInfo("PacketsComm", iLog << buffer);
+    }
+    for(Leg* leg : robot->legs){
+        sprintf(buffer, "%s measured: %6.1f %6.1f %6.1f %6.1f (deg)", 
+            leg->name.c_str(), 
+            leg->joints[0]->measuredAngle.value * RAD_2_DEGf,
+            leg->joints[1]->measuredAngle.value * RAD_2_DEGf,
+            leg->joints[2]->measuredAngle.value * RAD_2_DEGf,
+            leg->joints[3]->measuredAngle.value * RAD_2_DEGf
+        );
+        ClientManager::SendLogInfo("PacketsComm", iLog << buffer);
+    }
+}
+
+static void OnMessagePrintPositions(void* caller, PacketMessage& packet){
+    Robot* robot = App::robot;
+    char buffer[200];
+    ClientManager::SendLogInfo("PacketsComm", "foot positions (mm) using target angles:");
+    for(Leg* leg : robot->legs){
+        float angles[4] = {
+            leg->joints[0]->currentTargetAngle,
+            leg->joints[1]->currentTargetAngle,
+            leg->joints[2]->currentTargetAngle,
+            leg->joints[3]->currentTargetAngle
+        };
+        leg->FKJoints(angles);
+        sprintf(buffer, "%s | (joint) %4.0f %4.0f %4.0f | (body) %4.0f %4.0f %4.0f", 
+            leg->name.c_str(), 
+            leg->fkJointsResult.jointPositions[4][0]*1000.0f,
+            leg->fkJointsResult.jointPositions[4][1]*1000.0f,
+            leg->fkJointsResult.jointPositions[4][2]*1000.0f,
+            (leg->hipTransform * leg->fkJointsResult.jointPositions[4])[0]*1000.0f,
+            (leg->hipTransform * leg->fkJointsResult.jointPositions[4])[1]*1000.0f,
+            (leg->hipTransform * leg->fkJointsResult.jointPositions[4])[2]*1000.0f
+        );
+        ClientManager::SendLogInfo("PacketsComm", iLog << buffer);
+    }
+    ClientManager::SendLogInfo("PacketsComm", "foot positions (mm) using measured angles:");
+    for(Leg* leg : robot->legs){
+        float angles[4] = {
+            leg->joints[0]->measuredAngle,
+            leg->joints[1]->measuredAngle,
+            leg->joints[2]->measuredAngle,
+            leg->joints[3]->measuredAngle
+        };
+        leg->FKJoints(angles);
+        sprintf(buffer, "%s | (joint) %4.0f %4.0f %4.0f | (body) %4.0f %4.0f %4.0f", 
+            leg->name.c_str(), 
+            leg->fkJointsResult.jointPositions[4][0]*1000.0f,
+            leg->fkJointsResult.jointPositions[4][1]*1000.0f,
+            leg->fkJointsResult.jointPositions[4][2]*1000.0f,
+            (leg->hipTransform * leg->fkJointsResult.jointPositions[4])[0]*1000.0f,
+            (leg->hipTransform * leg->fkJointsResult.jointPositions[4])[1]*1000.0f,
+            (leg->hipTransform * leg->fkJointsResult.jointPositions[4])[2]*1000.0f
+        );
+        ClientManager::SendLogInfo("PacketsComm", iLog << buffer);
+    }
+}
+
+static void OnMessageExit(void* caller, PacketMessage& packet){
+    App::RequestExit("Remote");
+}
+
+static void OnMessageReboot(void* caller, PacketMessage& packet){
+    ClientManager::SendLogInfo("PacketsComm", "reboot not implemented");
+}
+
+void PacketsComm::Init(Robot* robotPtr){
     robot = robotPtr;
     ClientManager::SubscribePacket(PacketType::RequestLegAngles, &caller, &OnRequestLegAngles);
     ClientManager::SubscribePacket(PacketType::RequestLegData, &caller, &OnRequestLegData);
@@ -170,9 +268,14 @@ void InfoPackets::Init(Robot* robotPtr){
     ClientManager::SubscribeMessage("test", &caller, &OnMessageTest);
     ClientManager::SubscribeMessage("requestCalib", &caller, &OnMessageGetCalib);
     ClientManager::SubscribeMessage("setTorque", &caller, &OnMessageSetTorque);
+    ClientManager::SubscribeMessage("printStatus", &caller, &OnMessagePrintStatus);
+    ClientManager::SubscribeMessage("printAngles", &caller, &OnMessagePrintAngles);
+    ClientManager::SubscribeMessage("printPositions", &caller, &OnMessagePrintPositions);
+    ClientManager::SubscribeMessage("exit", &caller, &OnMessageExit);
+    ClientManager::SubscribeMessage("reboot", &caller, &OnMessageReboot);
 }
 
-void InfoPackets::Cleanup(){
+void PacketsComm::Cleanup(){
 
 }
 

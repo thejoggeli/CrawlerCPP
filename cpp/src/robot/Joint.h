@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include "threading/BufferedValue.h"
+#include <memory>
 
 class XYZServo;
 
@@ -24,6 +25,7 @@ enum class ServoState {
     Rebooting, 
     TorqueOff,
 };
+std::shared_ptr<std::string> ServoStateToString(ServoState state);
 
 static std::string JointTypeToString(JointType jointType);
 
@@ -54,23 +56,19 @@ public:
     float limitMax = +1.0f;
     float length = 1.0f;
     
-    float lastTargetAngle = 0.0f;
-    float currentTargetAngle = 0.0f;
 
-    uint16_t lastTargetXYZ = 0;
-    uint16_t currentTargetXYZ = 0;
-
-    // the BufferedValue class is used to run the serial communication in a parallel thread
-    // their value attribute must not be changed while the main loop is running
-
-    // remember current servo led color 
-    // bit 3 = white
-    // bit 2 = blue
-    // bit 1 = green
-    // bit 0 = red 
-    BufferedValue<unsigned int> servoLedColor;
+    // the main thread buffers these values 
+    // the buffered values are applied once at the beginning of each main loop
+    BufferedValue<float> lastTargetAngle;
+    BufferedValue<float> currentTargetAngle;
+    BufferedValue<uint16_t> lastTargetXYZ;
+    BufferedValue<uint16_t> currentTargetXYZ;
+    BufferedValue<unsigned int> servoLedColor; // bits 3,2,1,0 = W,B,G,R
     BufferedValue<unsigned int> servoLedPolicy;
     BufferedValue<bool> torque;
+
+    // the servo thread buffers these values
+    // the buffered values are applied once at the beginning of each main loop
     BufferedValue<float> measuredXYZ; // radians
     BufferedValue<float> measuredAngle; // radians
     BufferedValue<float> measuredCurrent; // mA
@@ -104,7 +102,7 @@ public:
     void RebootServo();
     bool PingServo();
 
-    void SetTargetAngle(float angle);
+    void SetTargetAngle(float angle, bool buffer = false);
     void MoveServoToTargetAngle(float seconds);
 
     bool ReadMeasuredStatus(bool buffer = false, int retries = 2); // reads: angle, pwm, current, statusError, statusDetail 

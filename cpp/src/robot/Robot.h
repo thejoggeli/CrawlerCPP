@@ -49,8 +49,8 @@ public:
     bool PingServos();
     void RebootServos(float sleepTime = 3.5f);
 
-    void SetServosLedPolicyUser();
-    void SetServosLedPolicySystem();
+    void SetServosLedPolicyUser(bool buffer = false);
+    void SetServosLedPolicySystem(bool buffer = false);
 
     void PrintServoStatus();
 

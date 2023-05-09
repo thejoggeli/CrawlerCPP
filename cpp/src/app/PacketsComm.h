@@ -4,10 +4,10 @@ namespace Crawler {
 
 class Robot;
 
-class InfoPackets {
+class PacketsComm {
 private:
     
-    InfoPackets();
+    PacketsComm();
 
 public:
 

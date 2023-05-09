@@ -127,6 +127,9 @@ Eigen::Matrix3f Mathf::LookRotationNew(const Eigen::Vector3f& forward, const Eig
     return mat;
 }
 
+void Mathf::Vector3ToString(const Eigen::Vector3f& v, const char* format, char* out){
+    sprintf(out, format, v[0], v[1], v[2]);
+}
 
 }
 

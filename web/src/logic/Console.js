@@ -14,6 +14,7 @@ export default class Console {
     static linesById = {}
     static lines = []
     static maxLines = 100
+    static submittedLines = []
 
     static init(){
         this.addLine("type 'help' for a list of possible commands")
@@ -28,13 +29,19 @@ export default class Console {
         if(ret.precall){
             ret.precall() 
         }
-        this.addLine(text, ret.parsed ? Console.LineTypeCommand : Console.LineTypeDefault)
+        var line = this.addLine(text, ret.parsed ? Console.LineTypeCommand : Console.LineTypeDefault)
         if(ret.error){
             this.addLine(ret.error, Console.LineTypeError)
         }
         if(ret.postcall){
             ret.postcall() 
         }
+        for (var i = this.submittedLines.length - 1; i >= 0; i--) {
+            if(this.submittedLines[i].text == line.text){
+                this.submittedLines.splice(i, 1);   
+            }
+        }
+        this.submittedLines.push(line)   
     }
     
     static addLine(text, type){
@@ -54,6 +61,7 @@ export default class Console {
             this.lines.shift()
         }
         this.nextLineId += 1
+        return line
     }
 
     static parseLine(text){
@@ -97,12 +105,15 @@ export default class Console {
             err = "invalid argument for joint command"
         } else if(cmd == "print"){
             var what = split[1]
+            var parsed = true
             if(what == "status"){
                 msg = new PacketMessage("printStatus")
             } else if (what == "angles"){
                 msg = new PacketMessage("printAngles")
             } else if (what == "positions"){
                 msg = new PacketMessage("printPositions")
+            } else {
+                err = "invalid argument for print command"
             }
         } else if(cmd == "help"){
             parsed = true

@@ -60,7 +60,7 @@ bool Brain::ApplyPoseToJoints(Eigen::Vector3f footPositions[4], float footAngles
             for(int j = 0; j < 4; j++){
                 float angle = outAngles[i][j];
                 assert(!isnan(angle));
-                robot->legs[i]->joints[j]->SetTargetAngle(angle);
+                robot->legs[i]->joints[j]->SetTargetAngle(angle, true);
             }
         }
     } else {

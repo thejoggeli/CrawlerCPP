@@ -63,7 +63,7 @@ export default class ConsoleViewport extends React.Component {
     update(){   
         if(this.newLines > 0){
             this.viewport.current.scrollTop = this.viewport.current.scrollHeight
-            this.newLines = 0
+            this.newLines -= 1
         }
     }
 

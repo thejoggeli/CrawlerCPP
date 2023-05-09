@@ -22,7 +22,7 @@ public:
     static bool InitServos();
     static bool Run();
     static bool Cleanup();
-    static void RequestExit(); 
+    static void RequestExit(const char* requester); 
 
 };
 

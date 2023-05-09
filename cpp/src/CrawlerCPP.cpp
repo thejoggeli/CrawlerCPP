@@ -15,7 +15,7 @@ using namespace Crawler;
 unsigned int sigIntCounter = 0;
 
 void mySigIntHandler(int s){
-    App::RequestExit();
+    App::RequestExit("SigInt");
     sigIntCounter++;
     if(sigIntCounter >= 3){
         exit(EXIT_FAILURE);

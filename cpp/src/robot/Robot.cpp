@@ -4,6 +4,7 @@
 #include "brain/Brain.h"
 #include "parts/XYZServo.h"
 #include "comm/SerialStream.h"
+#include "libi2c/i2c.h"
 #include "math/Mathf.h"
 #include "core/Log.h"
 #include "core/Time.h"
@@ -16,8 +17,17 @@ namespace Crawler {
 
 Robot::Robot(){ 
 
-    // create serial stream for servo communication
-    servoSerialStream = new SerialStream();
+}
+
+Robot::~Robot(){ 
+    for(Leg* leg : legs){
+        delete leg;
+    }
+    legs.clear();
+    delete masterServo;
+}
+
+void Robot::Init(){
 
     // all servo ids in order [hip, knee, knee, knee] 
     servoIds = {
@@ -25,6 +35,16 @@ Robot::Robot(){
         21, 22, 23, 24, // back-left   
         31, 32, 33, 34, // back-right  
         41, 42, 43, 44, // front right 
+    };
+
+    // weight sensor data pins
+    unsigned int weightSensorDataPins[] = {
+        4, 4, 4, 4
+    };
+
+    // weight sensor clock pins
+    unsigned int weightSensorClockPins[] = {
+        17, 17, 17, 17
     };
 
     // leg names
@@ -42,8 +62,22 @@ Robot::Robot(){
     // create the legs
     for(int i = 0; i < 4; i++){
 
-        Leg* leg = new Leg(this, legNames[i]);
+        Leg* leg = new Leg(this, i, legNames[i]);
         legs.push_back(leg);
+
+        // init distance sensor
+        if(!leg->InitDistanceSensor()){
+            LogError("Robot", iLog << "InitDistanceSensor() failed, legId=" << leg->id);
+        } else {
+            LogError("Robot", iLog << "InitDistanceSensor() success, legId=" << leg->id);
+        }
+
+        // init weight sensor
+        if(!leg->InitWeightSensor(weightSensorDataPins[i], weightSensorClockPins[i])){
+            LogError("Robot", iLog << "InitWeightSensor() failed, legId=" << leg->id);
+        } else {
+            LogError("Robot", iLog << "InitWeightSensor() success, legId=" << leg->id);
+        }
 
         // add all joints of current leg to jointsList
         for(Joint* joint : leg->joints){
@@ -112,15 +146,6 @@ Robot::Robot(){
         legs[i]->joints[2]->length = 0.078;
         legs[i]->joints[3]->length = 0.078;
     }
-
-}
-
-Robot::~Robot(){ 
-    for(Leg* leg : legs){
-        delete leg;
-    }
-    legs.clear();
-    delete masterServo;
 }
 
 void Robot::SetBrain(Brain* brain){
@@ -138,12 +163,45 @@ void Robot::SetBrain(Brain* brain){
 }
 
 bool Robot::OpenSerialStream(const char* device){
+    if(servoSerialStream){
+        LogError("Robot", "servoSerialStream is not null");
+        return false;
+    }
+    // create serial stream for servo communication
+    servoSerialStream = new SerialStream();
     int ret = servoSerialStream->open(device, 115200);
     return ret;
 }
 
 void Robot::CloseSerialStream(){
     servoSerialStream->close();
+}
+
+bool Robot::OpenI2CDevice(const char* device){
+    if(i2cDevice){
+        LogError("Robot", "i2cDevice is not null");
+        return false;
+    }
+    // create i2c device
+    int bus = i2c_open(device);
+    if(bus == -1){
+        LogError("Robot", iLog << "i2c_open() failed, bus=" << (int)bus);
+        return false;
+    }
+    i2cDevice = new I2CDevice();
+    i2cDevice->bus = bus;
+    i2cDevice->addr = 0x13;
+    i2cDevice->iaddr_bytes = 1;
+    i2cDevice->page_bytes = 16;
+    i2cDevice->tenbit = false;
+    return true;
+}
+
+void Robot::CloseI2CDevice(){
+    if(!i2cDevice){
+        return;
+    }
+    i2c_close(i2cDevice->bus);
 }
 
 void Robot::MoveJointsToTargetSync(float time, bool forceTorqueOn){

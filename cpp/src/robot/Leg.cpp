@@ -6,6 +6,8 @@
 #include "math/Mathf.h"
 #include "Robot.h"
 #include "core/Log.h"
+#include "parts/WeightSensor.h"
+#include "parts/DistanceSensor.h"
 
 using namespace std;
 
@@ -13,10 +15,17 @@ using namespace std;
 
 namespace Crawler {
 
-Leg::Leg(Robot* robot, const std::string& name){
+Leg::Leg(Robot* robot, unsigned int id, const std::string& name){
 
+    this->id = id;
     this->robot = robot;
     this->name = name;
+    
+    // create weight sensor
+    this->weightSensor = new WeightSensor();
+
+    // create distance sensor
+    this->distanceSensor = new DistanceSensor();
 
     // create joints
     joints.push_back(new Joint(this, JointType::H0));
@@ -30,6 +39,14 @@ Leg::Leg(Robot* robot, const std::string& name){
     const float phiMax = +45.0f * DEG_2_RADf;
     IKSearchConfig(numPhiVals, phiMin, phiMax);
     
+}
+
+bool Leg::InitDistanceSensor(){
+    return this->distanceSensor->Init(robot->i2cDevice);
+}
+
+bool Leg::InitWeightSensor(unsigned int dataPin, unsigned int clockPin){
+    return this->weightSensor->Init(dataPin, clockPin);
 }
 
 void Leg::SetHipTransform(const Eigen::Vector3f& translation, float angle){
@@ -257,6 +274,21 @@ void Leg::TorqueOff(bool buffer){
     for(Joint* joint : joints){
         joint->TorqueOff(buffer);
     }
+}
+
+bool Leg::ReadMeasuredDistance(bool buffer){
+    uint16_t proximity = distanceSensor->ReadProximity();
+    float distance = (float)proximity;
+    if(buffer){
+        measuredDistance.BufferValue(distance);
+    } else {
+        measuredDistance.SetValue(distance);
+    }
+    return true;
+}
+
+bool Leg::ReadMeasuredWeight(bool buffer){
+    return true;
 }
 
 

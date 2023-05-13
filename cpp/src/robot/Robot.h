@@ -5,6 +5,7 @@
 
 class XYZServo;
 class SerialStream;
+class I2CDevice;
 
 namespace Crawler {
 
@@ -21,6 +22,7 @@ public:
 
     Brain* brain = nullptr;
     SerialStream* servoSerialStream = nullptr;
+    I2CDevice* i2cDevice = nullptr;
     XYZServo* masterServo = nullptr;
 
     std::vector<XYZServo*> jointServos;
@@ -32,6 +34,11 @@ public:
 
     bool OpenSerialStream(const char* device);
     void CloseSerialStream();
+
+    bool OpenI2CDevice(const char* device);
+    void CloseI2CDevice();
+
+    void Init();
 
     // void Update();
     // void FixedUpdate();

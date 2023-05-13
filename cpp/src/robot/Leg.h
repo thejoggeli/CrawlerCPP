@@ -4,10 +4,13 @@
 #include "Eigen/Geometry"
 #include "Joint.h"
 #include <vector>
+#include "threading/BufferedValue.h"
 
 namespace Crawler {
 
 class Robot;
+class WeightSensor;
+class DistanceSensor;
 
 class Leg {
 private:
@@ -17,6 +20,14 @@ private:
     std::vector<float> ikSearchPhiValues;
 
 public:
+
+    unsigned int id;
+
+    DistanceSensor* distanceSensor;
+    WeightSensor* weightSensor;
+
+    BufferedValue<float> measuredDistance;
+    BufferedValue<float> measuredWeight;
 
     struct FKJointsResult {
         // all positions are in the hip coordinate system
@@ -46,7 +57,10 @@ public:
 
     FKJointsResult fkJointsResult;
 
-    Leg(Robot* robot, const std::string& name);
+    Leg(Robot* robot, unsigned int id, const std::string& name);
+
+    bool InitDistanceSensor();
+    bool InitWeightSensor(unsigned int dataPin, unsigned int clockPin);
 
     void SetHipTransform(const Eigen::Vector3f& translation, float angle);
 
@@ -66,6 +80,9 @@ public:
 
     void TorqueOn(bool buffer = false);
     void TorqueOff(bool buffer = false);
+
+    bool ReadMeasuredDistance(bool buffer = false);
+    bool ReadMeasuredWeight(bool buffer = false);
 
 };
 

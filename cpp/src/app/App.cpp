@@ -90,9 +90,20 @@ bool App::Init(){
     if(robot->OpenSerialStream("/dev/ttyTHS0")){
         LogInfo("App", "serial stream open");
     } else {
-        LogInfo("App", "serial stream open failed");
+        LogError("App", "serial stream open failed");
         return false;
     }
+
+    // open servo i2c device
+    if(robot->OpenI2CDevice("/dev/i2c-8")){
+        LogInfo("App", "i2c device open");
+    } else {
+        LogError("App", "i2c device open failed");
+        return false;
+    }
+
+    // init robot
+    robot->Init();
 
     // init servo thread
     servoThread.Init(robot);

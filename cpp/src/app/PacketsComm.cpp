@@ -93,8 +93,10 @@ static void OnRequestLegData(void* caller, Packet& packet){
             response->statusDetail.push_back(joint->statusDetail);
             response->statusError.push_back(joint->statusError);
         }
-        response->distance.push_back(0.0f);
-        response->weight.push_back(0.0f);
+        leg->ReadMeasuredDistance(false);
+        leg->ReadMeasuredWeight(false);
+        response->distance.push_back(leg->measuredDistance.value);
+        response->weight.push_back(leg->measuredWeight.value);
     }
     ClientManager::SendPacket(response, packet.clientId);
 }

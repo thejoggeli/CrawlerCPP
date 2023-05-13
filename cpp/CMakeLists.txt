@@ -10,6 +10,7 @@ set(
     CRAWLER_SOURCE_FILES
     src/CrawlerCPP.cpp
     libs/serialib/Serialib.cpp
+    libs/libi2c/i2c.cpp
     src/app/App.cpp
     src/app/ServoThread.cpp
     src/app/PacketsComm.cpp
@@ -17,6 +18,10 @@ set(
     src/parts/XYZServo.cpp
     src/parts/HardwareButton.cpp
     src/parts/MonoLED.cpp
+    src/parts/DistanceSensor.cpp
+    src/parts/WeightSensor.cpp
+    src/parts/VCNL4010/VCNL4010.cpp
+    src/parts/HX711/HX711.cpp
     src/brain/Brain.cpp
     src/brain/SurferBrain.cpp
     src/brain/GaitBrain.cpp
@@ -82,13 +87,15 @@ function(CreateCrawlerExecutable ExecutableName ExecutableMain)
     target_link_libraries(${ExecutableName} libCrawler)
 endfunction()
 
-CreateCrawlerExecutable(TestThreading "test/TestThreading.cpp")
+# CreateCrawlerExecutable(TestThreading "test/TestThreading.cpp")
 # CreateCrawlerExecutable(TestBuffer "test/TestBuffer.cpp")
 # CreateCrawlerExecutable(TestServer "test/TestServer.cpp")
 # CreateCrawlerExecutable(TestTime "test/TestTime.cpp")
 # CreateCrawlerExecutable(TestEigen "test/TestEigen.cpp")
 # CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")
 # CreateCrawlerExecutable(TestGait "test/TestGait.cpp")
+# CreateCrawlerExecutable(TestI2C "test/TestI2C.cpp")
+CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
 
 CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
 

@@ -10,6 +10,7 @@
 #include "core/Time.h"
 #include "core/Config.h"
 #include <string>
+#include "parts/MuxI2C.h"
 
 using namespace std;
 
@@ -37,16 +38,6 @@ void Robot::Init(){
         41, 42, 43, 44, // front right 
     };
 
-    // weight sensor data pins
-    unsigned int weightSensorDataPins[] = {
-        4, 4, 4, 4
-    };
-
-    // weight sensor clock pins
-    unsigned int weightSensorClockPins[] = {
-        17, 17, 17, 17
-    };
-
     // leg names
     string legNames[4] = {"FL", "BL", "BR", "FR"};
 
@@ -66,14 +57,14 @@ void Robot::Init(){
         legs.push_back(leg);
 
         // init distance sensor
-        if(!leg->InitDistanceSensor()){
+        if(!leg->InitDistanceSensor(mux1, i)){
             LogError("Robot", iLog << "InitDistanceSensor() failed, legId=" << leg->id);
         } else {
             LogError("Robot", iLog << "InitDistanceSensor() success, legId=" << leg->id);
         }
 
         // init weight sensor
-        if(!leg->InitWeightSensor(weightSensorDataPins[i], weightSensorClockPins[i])){
+        if(!leg->InitWeightSensor(mux0, i)){
             LogError("Robot", iLog << "InitWeightSensor() failed, legId=" << leg->id);
         } else {
             LogError("Robot", iLog << "InitWeightSensor() success, legId=" << leg->id);
@@ -177,31 +168,53 @@ void Robot::CloseSerialStream(){
     servoSerialStream->close();
 }
 
-bool Robot::OpenI2CDevice(const char* device){
-    if(i2cDevice){
-        LogError("Robot", "i2cDevice is not null");
+bool Robot::OpenI2C(){
+
+    // open bus 0
+    int i2cBus0 = i2c_open("/dev/i2c-1");
+    if(i2cBus0 == -1){
+        LogError("Robot", iLog << "i2c_open() failed, i2cBus1=" << i2cBus0);
         return false;
     }
-    // create i2c device
-    int bus = i2c_open(device);
-    if(bus == -1){
-        LogError("Robot", iLog << "i2c_open() failed, bus=" << (int)bus);
+    this->i2cBus0 = i2cBus0;
+
+    // open bus 1
+    int i2cBus1 = i2c_open("/dev/i2c-8");
+    if(i2cBus1 == -1){
+        LogError("Robot", iLog << "i2c_open() failed, i2cBus1=" << i2cBus1);
         return false;
     }
-    i2cDevice = new I2CDevice();
-    i2cDevice->bus = bus;
-    i2cDevice->addr = 0x13;
-    i2cDevice->iaddr_bytes = 1;
-    i2cDevice->page_bytes = 16;
-    i2cDevice->tenbit = false;
+    this->i2cBus1 = i2cBus1;
+
+    // create i2c multiplexers
+    mux0 = new MuxI2C();
+    mux1 = new MuxI2C();
+
+    if(!mux0->Init(i2cBus0)){
+        LogError("Robot", iLog << "mux0 init failed");
+        CloseI2C();
+        return false;
+    }
+
+    if(!mux1->Init(i2cBus1)){
+        LogError("Robot", iLog << "mux1 init failed");
+        CloseI2C();
+        return false;
+    }
+
     return true;
+
 }
 
-void Robot::CloseI2CDevice(){
-    if(!i2cDevice){
-        return;
+void Robot::CloseI2C(){
+    i2c_close(i2cBus0);
+    i2c_close(i2cBus1);
+    if(mux0){
+        delete mux0;
     }
-    i2c_close(i2cDevice->bus);
+    if(mux1){
+        delete mux1;
+    }
 }
 
 void Robot::MoveJointsToTargetSync(float time, bool forceTorqueOn){
@@ -425,6 +438,10 @@ void Robot::TorqueOff(bool buffer){
     for(Leg* leg : legs){
         leg->TorqueOff(buffer);
     }
+}
+
+void Robot::ReadIMU(bool buffer){
+    
 }
 
 }

@@ -1,27 +1,25 @@
 #include "WeightSensor.h"
 #include "libi2c/i2c.h"
-#include "parts/HX711/HX711.h"
+#include "MuxI2C.h"
 
 namespace Crawler {
 
 WeightSensor::WeightSensor(){
-    this->hx711 = new HX711();
+
 }
 
 WeightSensor::~WeightSensor(){
-    if(this->hx711){
-        delete this->hx711;
-    }
+    
 }
 
-bool WeightSensor::Init(unsigned int dataPin, unsigned int clockPin){
-    this->hx711->begin(dataPin, clockPin);
-    this->hx711->set_average_mode();
+bool WeightSensor::Init(MuxI2C* mux, int channel){
     return true;
 }
 
 float WeightSensor::GetValue(){
-    return hx711->get_value(5);
+    mux->OpenChannel(channel);
+    return 0.0f;
+    mux->CloseChannel(channel);
 }
 
 }

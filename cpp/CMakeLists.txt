@@ -1,6 +1,9 @@
 include_directories(
     "${CMAKE_CURRENT_LIST_DIR}/src"
     "${CMAKE_CURRENT_LIST_DIR}/libs"
+    "${CMAKE_CURRENT_LIST_DIR}/libs/adafruit/Adafruit_Sensor"
+    "${CMAKE_CURRENT_LIST_DIR}/libs/adafruit/Adafruit_BusIO"
+    "${CMAKE_CURRENT_LIST_DIR}/libs/adafruit/Adafruit_LSM6DS"
 )
 
 find_package(JetsonGPIO)
@@ -15,13 +18,15 @@ set(
     src/app/ServoThread.cpp
     src/app/PacketsComm.cpp
     src/comm/SerialStream.cpp
+    src/parts/MuxI2C.cpp
+    src/parts/TCA9548A/TCA9548A.cpp
     src/parts/XYZServo.cpp
     src/parts/HardwareButton.cpp
     src/parts/MonoLED.cpp
     src/parts/DistanceSensor.cpp
     src/parts/WeightSensor.cpp
+    src/parts/IMU.cpp
     src/parts/VCNL4010/VCNL4010.cpp
-    src/parts/HX711/HX711.cpp
     src/brain/Brain.cpp
     src/brain/SurferBrain.cpp
     src/brain/GaitBrain.cpp
@@ -95,7 +100,8 @@ endfunction()
 # CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")
 # CreateCrawlerExecutable(TestGait "test/TestGait.cpp")
 # CreateCrawlerExecutable(TestI2C "test/TestI2C.cpp")
-CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
+# CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
+CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
 
 CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
 

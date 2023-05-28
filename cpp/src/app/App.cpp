@@ -94,11 +94,11 @@ bool App::Init(){
         return false;
     }
 
-    // open servo i2c device
-    if(robot->OpenI2CDevice("/dev/i2c-8")){
-        LogInfo("App", "i2c device open");
+    // open i2c device
+    if(robot->OpenI2C()){
+        LogInfo("App", "i2c open success");
     } else {
-        LogError("App", "i2c device open failed");
+        LogError("App", "i2c open failed");
         return false;
     }
 
@@ -148,6 +148,9 @@ bool App::Cleanup(){
     // close servo serial stream
     LogInfo("App", "serial stream close");
     robot->CloseSerialStream();
+
+    // close i2c
+    robot->CloseI2C();
 
     // main button cleanup
     mainButton->Cleanup();

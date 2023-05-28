@@ -1,13 +1,18 @@
 #pragma once
 
 class I2CDevice;
-class HX711;
 
 namespace Crawler {
 
+class MuxI2C;
+
 class WeightSensor {
 
-    HX711* hx711;
+private: 
+
+    I2CDevice* i2c = nullptr;
+    MuxI2C* mux = nullptr;
+    int channel;
 
 public:
 
@@ -15,7 +20,7 @@ public:
     WeightSensor();
     ~WeightSensor();
 
-    bool Init(unsigned int dataPin, unsigned int clockPin);
+    bool Init(MuxI2C* mux, int channel);
     float GetValue();
 
 };

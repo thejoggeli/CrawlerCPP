@@ -1,5 +1,7 @@
 #include "DistanceSensor.h"
 #include "VCNL4010/VCNL4010.h"
+#include "libi2c/i2c.h"
+#include "MuxI2C.h"
 
 namespace Crawler {
 
@@ -11,22 +13,55 @@ DistanceSensor::~DistanceSensor(){
     if(this->vcnl){
         delete this->vcnl;
     }
+    if(this->i2c){
+        delete this->i2c;
+    }
 }
 
-bool DistanceSensor::Init(I2CDevice* i2cDevice){
-    if (initialized || !vcnl->begin(i2cDevice)){
+bool DistanceSensor::Init(MuxI2C* mux, int channel){
+    
+    if(initialized){
         return false;
     }
+    
+    if(i2c){
+        return false;
+    }
+
+    this->mux = mux;
+    this->channel = channel;
+
+    i2c = new I2CDevice();
+    i2c->bus = mux->GetBus();
+    i2c->addr = 0x13;
+    i2c->iaddr_bytes = 1;
+    i2c->page_bytes = 16;
+    i2c->tenbit = false;
+
+    mux->OpenChannel(channel);
+    if (!vcnl->begin(i2c)){
+        mux->CloseChannel(channel);
+        delete i2c;
+        return false;
+    }
+    mux->CloseChannel(channel);
+
     initialized = true;
     return true;
 }
 
 uint16_t DistanceSensor::ReadAmbient(){
-    return vcnl->readAmbient();
+    mux->OpenChannel(channel);
+    uint16_t val = vcnl->readAmbient();
+    mux->CloseChannel(channel);
+    return val;
 }
 
 uint16_t DistanceSensor::ReadProximity(){
-    return vcnl->readProximity();
+    mux->OpenChannel(channel);
+    uint16_t val = vcnl->readProximity();
+    mux->CloseChannel(channel);
+    return val;
 }
 
 }

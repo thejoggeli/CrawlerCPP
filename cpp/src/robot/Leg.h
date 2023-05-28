@@ -11,6 +11,7 @@ namespace Crawler {
 class Robot;
 class WeightSensor;
 class DistanceSensor;
+class MuxI2C;
 
 class Leg {
 private:
@@ -59,8 +60,8 @@ public:
 
     Leg(Robot* robot, unsigned int id, const std::string& name);
 
-    bool InitDistanceSensor();
-    bool InitWeightSensor(unsigned int dataPin, unsigned int clockPin);
+    bool InitDistanceSensor(MuxI2C* mux, int channel);
+    bool InitWeightSensor(MuxI2C* mux, int channel);
 
     void SetHipTransform(const Eigen::Vector3f& translation, float angle);
 

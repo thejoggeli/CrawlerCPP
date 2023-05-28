@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "parts/WeightSensor.h"
 #include "parts/DistanceSensor.h"
+#include "parts/MuxI2C.h"
 
 using namespace std;
 
@@ -41,12 +42,12 @@ Leg::Leg(Robot* robot, unsigned int id, const std::string& name){
     
 }
 
-bool Leg::InitDistanceSensor(){
-    return this->distanceSensor->Init(robot->i2cDevice);
+bool Leg::InitDistanceSensor(MuxI2C* mux, int channel){
+    return this->distanceSensor->Init(mux, channel);
 }
 
-bool Leg::InitWeightSensor(unsigned int dataPin, unsigned int clockPin){
-    return this->weightSensor->Init(dataPin, clockPin);
+bool Leg::InitWeightSensor(MuxI2C* mux, int channel){
+    return this->weightSensor->Init(mux, channel);
 }
 
 void Leg::SetHipTransform(const Eigen::Vector3f& translation, float angle){

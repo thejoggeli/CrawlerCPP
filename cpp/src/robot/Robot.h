@@ -12,6 +12,7 @@ namespace Crawler {
 class Leg;
 class Joint;
 class Brain;
+class MuxI2C;
 
 class Robot {
 private:
@@ -20,9 +21,13 @@ private:
 
 public:
 
+    int i2cBus0;
+    int i2cBus1;
+    MuxI2C* mux0 = nullptr;
+    MuxI2C* mux1 = nullptr;
+
     Brain* brain = nullptr;
     SerialStream* servoSerialStream = nullptr;
-    I2CDevice* i2cDevice = nullptr;
     XYZServo* masterServo = nullptr;
 
     std::vector<XYZServo*> jointServos;
@@ -35,13 +40,10 @@ public:
     bool OpenSerialStream(const char* device);
     void CloseSerialStream();
 
-    bool OpenI2CDevice(const char* device);
-    void CloseI2CDevice();
+    bool OpenI2C();
+    void CloseI2C();
 
     void Init();
-
-    // void Update();
-    // void FixedUpdate();
 
     void MoveJointsToTargetSync(float time, bool forceTorqueOn = false);
 
@@ -63,6 +65,8 @@ public:
 
     void TorqueOn(bool buffer = false);
     void TorqueOff(bool buffer = false);
+
+    void ReadIMU(bool buffer = false);
 
 };
 

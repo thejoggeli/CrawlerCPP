@@ -19,6 +19,7 @@ set(
     src/app/PacketsComm.cpp
     src/comm/SerialStream.cpp
     src/parts/MuxI2C.cpp
+    src/parts/ISM330DHXC/ism330dhcx_reg.c
     src/parts/TCA9548A/TCA9548A.cpp
     src/parts/XYZServo.cpp
     src/parts/HardwareButton.cpp
@@ -101,7 +102,8 @@ endfunction()
 # CreateCrawlerExecutable(TestGait "test/TestGait.cpp")
 # CreateCrawlerExecutable(TestI2C "test/TestI2C.cpp")
 # CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
-CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
+# CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
+CreateCrawlerExecutable(TestIMU "test/TestIMU.cpp")
 
 CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
 

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <cstdint>
+
 class I2CDevice;
+class NAU7802;
 
 namespace Crawler {
 
@@ -12,6 +15,7 @@ private:
 
     I2CDevice* i2c = nullptr;
     MuxI2C* mux = nullptr;
+    NAU7802* nau = nullptr;
     int channel;
 
 public:
@@ -21,7 +25,7 @@ public:
     ~WeightSensor();
 
     bool Init(MuxI2C* mux, int channel);
-    float GetValue();
+    int32_t GetValue();
 
 };
 

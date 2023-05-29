@@ -8,7 +8,7 @@
 #include "i2c.h"
 
 /* I2C default delay */
-#define I2C_DEFAULT_DELAY 1
+#define I2C_DEFAULT_DELAY 100
 
 /* I2C internal address max length */
 #define INT_ADDR_MAX_BYTES 4
@@ -20,7 +20,7 @@
 #define GET_I2C_FLAGS(tenbit, flags) ((tenbit) ? ((flags) | I2C_M_TEN) : (flags))
 #define GET_WRITE_SIZE(addr, remain, page_bytes) ((addr) + (remain) > (page_bytes) ? (page_bytes) - (addr) : remain)
 
-static void i2c_delay(unsigned char delay);
+static void i2c_delay(unsigned long delay);
 
 /*
 **	@brief		:	Open i2c bus
@@ -56,8 +56,8 @@ void i2c_init_device(I2CDevice *device)
     /* 7 bit device address */
     device->tenbit = 0;
 
-    /* 1ms delay */
-    device->delay = 1;
+    /* 100us delay */
+    device->delay = 100;
 
     /* 8 bytes per page */
     device->page_bytes = 8;
@@ -77,7 +77,7 @@ void i2c_init_device(I2CDevice *device)
 char *i2c_get_device_desc(const I2CDevice *device, char *buf, size_t size)
 {
     memset(buf, 0, size);
-    snprintf(buf, size, "Device address: 0x%x, tenbit: %s, internal(word) address: %d bytes, page max %d bytes, delay: %dms",
+    snprintf(buf, size, "Device address: 0x%x, tenbit: %s, internal(word) address: %d bytes, page max %d bytes, delay: %uls",
              device->addr, device->tenbit ? "True" : "False", device->iaddr_bytes, device->page_bytes, device->delay);
 
     return buf;
@@ -155,7 +155,7 @@ ssize_t i2c_ioctl_write(const I2CDevice *device, unsigned int iaddr, const void 
     ssize_t remain = len;
     size_t size = 0, cnt = 0;
     const unsigned char *buffer = (unsigned char*) buf;
-    unsigned char delay = GET_I2C_DELAY(device->delay);
+    unsigned long delay = GET_I2C_DELAY(device->delay);
     unsigned short flags = GET_I2C_FLAGS(device->tenbit, device->flags);
 
     struct i2c_msg ioctl_msg;
@@ -216,7 +216,7 @@ ssize_t i2c_read(const I2CDevice *device, unsigned int iaddr, void *buf, size_t 
 {
     ssize_t cnt;
     unsigned char addr[INT_ADDR_MAX_BYTES];
-    unsigned char delay = GET_I2C_DELAY(device->delay);
+    unsigned long delay = GET_I2C_DELAY(device->delay);
 
     /* Set i2c slave address */
     if (i2c_select(device->bus, device->addr, device->tenbit) == -1) {
@@ -263,7 +263,7 @@ ssize_t i2c_write(const I2CDevice *device, unsigned int iaddr, const void *buf, 
     ssize_t ret;
     size_t cnt = 0, size = 0;
     const unsigned char *buffer = (unsigned char*)buf;
-    unsigned char delay = GET_I2C_DELAY(device->delay);
+    unsigned long delay = GET_I2C_DELAY(device->delay);
     unsigned char tmp_buf[PAGE_MAX_BYTES + INT_ADDR_MAX_BYTES];
 
     /* Set i2c slave address */
@@ -364,8 +364,8 @@ int i2c_select(int bus, unsigned long dev_addr, unsigned long tenbit)
 **	@brief	:	i2c delay
 **	#msec	:	milliscond to be delay
 */
-static void i2c_delay(unsigned char msec)
+static void i2c_delay(unsigned long usec)
 {
-    usleep(msec * 1e3);
+    usleep(usec);
 }
 

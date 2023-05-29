@@ -18,16 +18,18 @@ set(
     src/app/ServoThread.cpp
     src/app/PacketsComm.cpp
     src/comm/SerialStream.cpp
-    src/parts/MuxI2C.cpp
+    src/comm/I2CBus.cpp
+    src/parts/NAU7802/NAU7802.cpp
     src/parts/ISM330DHXC/ism330dhcx_reg.c
     src/parts/TCA9548A/TCA9548A.cpp
+    src/parts/VCNL4010/VCNL4010.cpp
+    src/parts/MuxI2C.cpp
     src/parts/XYZServo.cpp
     src/parts/HardwareButton.cpp
     src/parts/MonoLED.cpp
     src/parts/DistanceSensor.cpp
     src/parts/WeightSensor.cpp
     src/parts/IMU.cpp
-    src/parts/VCNL4010/VCNL4010.cpp
     src/brain/Brain.cpp
     src/brain/SurferBrain.cpp
     src/brain/GaitBrain.cpp
@@ -101,8 +103,8 @@ endfunction()
 # CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")
 # CreateCrawlerExecutable(TestGait "test/TestGait.cpp")
 # CreateCrawlerExecutable(TestI2C "test/TestI2C.cpp")
-# CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
-# CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
+CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
+CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
 CreateCrawlerExecutable(TestIMU "test/TestIMU.cpp")
 
 CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")

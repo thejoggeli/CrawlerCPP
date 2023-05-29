@@ -13,6 +13,7 @@ class Leg;
 class Joint;
 class Brain;
 class MuxI2C;
+class I2CBus;
 
 class Robot {
 private:
@@ -21,8 +22,9 @@ private:
 
 public:
 
-    int i2cBus0;
-    int i2cBus1;
+    I2CBus* bus0 = nullptr;
+    I2CBus* bus1 = nullptr;
+
     MuxI2C* mux0 = nullptr;
     MuxI2C* mux1 = nullptr;
 

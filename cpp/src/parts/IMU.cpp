@@ -42,11 +42,9 @@ bool IMU::Init(unsigned int bus){
     }
 
     i2c = new I2CDevice();
+    i2c_init_device(i2c);
     i2c->bus = bus;
     i2c->addr = 0x6A;
-    i2c->iaddr_bytes = 1;
-    i2c->page_bytes = 16;
-    i2c->tenbit = false;
 
     // check device id
     uint8_t deviceId;

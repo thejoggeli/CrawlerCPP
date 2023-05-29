@@ -20,11 +20,7 @@ DistanceSensor::~DistanceSensor(){
 
 bool DistanceSensor::Init(MuxI2C* mux, int channel){
     
-    if(initialized){
-        return false;
-    }
-    
-    if(i2c){
+    if(initialized || i2c){
         return false;
     }
 
@@ -32,11 +28,9 @@ bool DistanceSensor::Init(MuxI2C* mux, int channel){
     this->channel = channel;
 
     i2c = new I2CDevice();
+    i2c_init_device(i2c);
     i2c->bus = mux->GetBus();
     i2c->addr = 0x13;
-    i2c->iaddr_bytes = 1;
-    i2c->page_bytes = 16;
-    i2c->tenbit = false;
 
     mux->OpenChannel(channel);
     if (!vcnl->begin(i2c)){

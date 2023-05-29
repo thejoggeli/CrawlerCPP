@@ -3,23 +3,24 @@
 #include <JetsonGPIO.h>
 #include "parts/IMU.h"
 #include "libi2c/i2c.h"
+#include "comm/I2CBus.h"
 
 using namespace Crawler;
 
 int main(){
 
-    // create i2c device
-    int bus = i2c_open("/dev/i2c-8");
-    if(bus == -1){
-        LogError("main", iLog << "i2c_open() failed, bus=" << (int)bus);
-        return EXIT_FAILURE;
+    // create i2c bus
+    I2CBus bus;
+    if(bus.Open("/dev/i2c-8")){
+        LogInfo("main", iLog << "bus Open() success");
     } else {
-        LogInfo("main", iLog << "i2c_open() success, bus=" << (int)bus);
+        LogError("main", iLog << "bus Open() failed");
+        return EXIT_FAILURE;
     }
 
     // create imu
     IMU imu;
-    if(!imu.Init(bus)){
+    if(!imu.Init(bus.fd)){
         LogError("main", iLog << "IMU Init() failed");
         return EXIT_FAILURE;
     }

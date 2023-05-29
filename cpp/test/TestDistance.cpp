@@ -4,6 +4,7 @@
 #include <JetsonGPIO.h>
 #include "libi2c/i2c.h"
 #include "parts/MuxI2C.h"
+#include "comm/I2CBus.h"
 
 using namespace Crawler;
 
@@ -12,18 +13,18 @@ int main(){
     LogInfo("main", "GPIO init");
     GPIO::setmode(GPIO::BCM);
 
-    // create i2c device
-    int bus = i2c_open("/dev/i2c-8");
-    if(bus == -1){
-        LogError("Robot", iLog << "i2c_open() failed, bus=" << (int)bus);
-        return EXIT_FAILURE;
+    // create i2c bus
+    I2CBus bus;
+    if(bus.Open("/dev/i2c-8")){
+        LogInfo("main", iLog << "bus Open() success");
     } else {
-        LogInfo("Robot", iLog << "i2c_open() success, bus=" << (int)bus);
+        LogError("main", iLog << "bus Open() failed");
+        return EXIT_FAILURE;
     }
 
     // init mux
     MuxI2C mux;
-    mux.Init(bus);
+    mux.Init(bus.fd);
 
     // init sensors
     std::vector<DistanceSensor*> sensors;
@@ -31,10 +32,10 @@ int main(){
         DistanceSensor* sensor = new DistanceSensor();
         LogInfo("main", "DistanceSensor init");
         if(!sensor->Init(&mux, i)){
-            LogError("Robot", iLog << "sensor " << i << " Init() failed");
+            LogError("main", iLog << "sensor " << i << " Init() failed");
             return EXIT_FAILURE;
         } else {
-            LogInfo("Robot", iLog << "sensor " << i << " Init() success");
+            LogInfo("main", iLog << "sensor " << i << " Init() success");
         }
         sensors.push_back(sensor);
     }
@@ -44,8 +45,15 @@ int main(){
         std::stringstream ss;
         for(int i = 0; i < sensors.size(); i++){
             DistanceSensor* sensor = sensors[i];
+
+            uint64_t t_start = Time::GetSystemTimeMicros();
             uint16_t value = sensor->ReadProximity();
-            ss << "sensor" << i << " value: " << value << " ";
+            uint64_t t_end = Time::GetSystemTimeMicros();
+            uint64_t t_total = t_end - t_start;
+
+            char buffer[2000];
+            sprintf(buffer, "s%d -> dur: %5.2f ms, value: %5d | ", i, t_total/1000.0f, value);
+            ss << buffer;
         }
         LogInfo("main", ss.str());
         Time::SleepMicros(1000000);

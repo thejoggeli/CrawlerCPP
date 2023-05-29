@@ -11,6 +11,7 @@
 #include "core/Config.h"
 #include <string>
 #include "parts/MuxI2C.h"
+#include "comm/I2CBus.h"
 
 using namespace std;
 
@@ -171,32 +172,30 @@ void Robot::CloseSerialStream(){
 bool Robot::OpenI2C(){
 
     // open bus 0
-    int i2cBus0 = i2c_open("/dev/i2c-1");
-    if(i2cBus0 == -1){
-        LogError("Robot", iLog << "i2c_open() failed, i2cBus1=" << i2cBus0);
+    bus0 = new I2CBus();
+    if(!bus0->Open("/dev/i2c-1")){
+        LogError("Robot", iLog << "i2cBus0 Open() failed");
         return false;
     }
-    this->i2cBus0 = i2cBus0;
 
     // open bus 1
-    int i2cBus1 = i2c_open("/dev/i2c-8");
-    if(i2cBus1 == -1){
-        LogError("Robot", iLog << "i2c_open() failed, i2cBus1=" << i2cBus1);
+    bus1 = new I2CBus();
+    if(!bus1->Open("/dev/i2c-8")){
+        LogError("Robot", iLog << "i2cBus1 Open() failed");
         return false;
     }
-    this->i2cBus1 = i2cBus1;
 
     // create i2c multiplexers
     mux0 = new MuxI2C();
     mux1 = new MuxI2C();
 
-    if(!mux0->Init(i2cBus0)){
+    if(!mux0->Init(bus0->fd)){
         LogError("Robot", iLog << "mux0 init failed");
         CloseI2C();
         return false;
     }
 
-    if(!mux1->Init(i2cBus1)){
+    if(!mux1->Init(bus1->fd)){
         LogError("Robot", iLog << "mux1 init failed");
         CloseI2C();
         return false;
@@ -207,13 +206,25 @@ bool Robot::OpenI2C(){
 }
 
 void Robot::CloseI2C(){
-    i2c_close(i2cBus0);
-    i2c_close(i2cBus1);
+    if(bus0){
+        bus0->Close();
+        delete bus0;
+        bus0 = nullptr;
+    }
+    if(bus1){
+        bus1->Close();
+        delete bus1;
+        bus1 = nullptr;
+    }
     if(mux0){
+        mux0->Shutdown();
         delete mux0;
+        mux0 = nullptr;
     }
     if(mux1){
+        mux1->Shutdown();
         delete mux1;
+        mux1 = nullptr;
     }
 }
 

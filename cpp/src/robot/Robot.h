@@ -14,6 +14,7 @@ class Joint;
 class Brain;
 class MuxI2C;
 class I2CBus;
+class IMU;
 
 class Robot {
 private:
@@ -21,6 +22,8 @@ private:
     std::vector<uint8_t> servoIds;
 
 public:
+
+    IMU* imu = nullptr;
 
     I2CBus* bus0 = nullptr;
     I2CBus* bus1 = nullptr;
@@ -40,12 +43,9 @@ public:
     ~Robot();
 
     bool OpenSerialStream(const char* device);
-    void CloseSerialStream();
-
     bool OpenI2C();
-    void CloseI2C();
 
-    void Init();
+    bool Init();
 
     void MoveJointsToTargetSync(float time, bool forceTorqueOn = false);
 

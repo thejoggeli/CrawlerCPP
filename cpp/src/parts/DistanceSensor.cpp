@@ -6,15 +6,17 @@
 namespace Crawler {
 
 DistanceSensor::DistanceSensor(){
-    this->vcnl = new VCNL4010();
+    vcnl = new VCNL4010();
 }
 
 DistanceSensor::~DistanceSensor(){
-    if(this->vcnl){
-        delete this->vcnl;
+    if(vcnl){
+        delete vcnl;
+        vcnl = nullptr;
     }
-    if(this->i2c){
-        delete this->i2c;
+    if(i2c){
+        delete i2c;
+        i2c = nullptr;
     }
 }
 

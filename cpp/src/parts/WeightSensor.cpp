@@ -11,7 +11,17 @@ WeightSensor::WeightSensor(){
 }
 
 WeightSensor::~WeightSensor(){
-    
+    if(nau){
+        mux->OpenChannel(channel);
+        nau->powerDown();
+        mux->CloseChannel(channel);
+        delete nau;
+        nau = nullptr;
+    }
+    if(i2c){
+        delete i2c;
+        i2c = nullptr;
+    }
 }
 
 bool WeightSensor::Init(MuxI2C* mux, int channel){
@@ -28,10 +38,13 @@ bool WeightSensor::Init(MuxI2C* mux, int channel){
     i2c->bus = mux->GetBus();
     i2c->addr = 0x2A;
 
+    mux->OpenChannel(channel);
     if(!nau->begin(i2c, true)){
+        mux->CloseChannel(channel);
         LogError("WeightSensor", iLog << "NAU7802 begin failed");
         return false;
     }
+    mux->CloseChannel(channel);
 
     return true;
 }

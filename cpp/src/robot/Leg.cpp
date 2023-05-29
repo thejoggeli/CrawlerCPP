@@ -42,6 +42,15 @@ Leg::Leg(Robot* robot, unsigned int id, const std::string& name){
     
 }
 
+Leg::~Leg(){
+    if(weightSensor){
+        delete weightSensor;
+    }
+    if(distanceSensor){
+        delete distanceSensor;
+    }
+}
+
 bool Leg::InitDistanceSensor(MuxI2C* mux, int channel){
     return this->distanceSensor->Init(mux, channel);
 }

@@ -59,6 +59,7 @@ public:
     FKJointsResult fkJointsResult;
 
     Leg(Robot* robot, unsigned int id, const std::string& name);
+    ~Leg();
 
     bool InitDistanceSensor(MuxI2C* mux, int channel);
     bool InitWeightSensor(MuxI2C* mux, int channel);

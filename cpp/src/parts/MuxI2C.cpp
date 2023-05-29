@@ -6,16 +6,15 @@
 namespace Crawler {
 
 MuxI2C::MuxI2C(){
-
+    tca = new TCA9548A();
 }
 
 MuxI2C::~MuxI2C(){
-
     if(tca){
+        tca->closeAll();
         delete tca;
         tca = nullptr;
     }
-
     if(i2c){
         delete i2c;
         i2c = nullptr;
@@ -29,16 +28,11 @@ bool MuxI2C::Init(unsigned int bus){
         return false;
     }
 
-    if(tca){
-        return false;
-    }
-
     i2c = new I2CDevice();
     i2c_init_device(i2c);
     i2c->bus = bus;
     i2c->addr = 0x70;
 
-    tca = new TCA9548A();
     tca->begin(i2c);
     tca->closeAll();
 

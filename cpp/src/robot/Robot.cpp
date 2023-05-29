@@ -12,6 +12,7 @@
 #include <string>
 #include "parts/MuxI2C.h"
 #include "comm/I2CBus.h"
+#include "parts/IMU.h"
 
 using namespace std;
 
@@ -22,14 +23,60 @@ Robot::Robot(){
 }
 
 Robot::~Robot(){ 
+
+    // delete legs
     for(Leg* leg : legs){
         delete leg;
     }
-    legs.clear();
-    delete masterServo;
+
+    // delete servos
+    for(XYZServo* servo : jointServos){
+        delete servo;
+    }
+    if(masterServo){
+        delete masterServo;
+    }
+
+    // delete imu
+    if(imu){
+        delete imu;
+    }
+
+    // delete muxers
+    if(mux0){
+        mux0->Shutdown();
+        delete mux0;
+    }
+    if(mux1){
+        mux1->Shutdown();
+        delete mux1;
+    }
+
+    // closes i2c bus
+    if(bus0){
+        bus0->Close();
+        delete bus0;
+    }
+    if(bus1){
+        bus1->Close();
+        delete bus1;
+    }
+
+    // close serial stream
+    if(servoSerialStream){
+        servoSerialStream->close();
+        delete servoSerialStream;
+    }
 }
 
-void Robot::Init(){
+bool Robot::Init(){
+
+    // imu
+    imu = new IMU();
+    if(!imu->Init(bus1->fd)){
+        LogError("Robot", iLog << "IMU init failed");
+        return false;
+    }
 
     // all servo ids in order [hip, knee, knee, knee] 
     servoIds = {
@@ -60,15 +107,17 @@ void Robot::Init(){
         // init distance sensor
         if(!leg->InitDistanceSensor(mux1, i)){
             LogError("Robot", iLog << "InitDistanceSensor() failed, legId=" << leg->id);
+            return false;
         } else {
-            LogError("Robot", iLog << "InitDistanceSensor() success, legId=" << leg->id);
+            LogInfo("Robot", iLog << "InitDistanceSensor() success, legId=" << leg->id);
         }
 
         // init weight sensor
         if(!leg->InitWeightSensor(mux0, i)){
             LogError("Robot", iLog << "InitWeightSensor() failed, legId=" << leg->id);
+            return false;
         } else {
-            LogError("Robot", iLog << "InitWeightSensor() success, legId=" << leg->id);
+            LogInfo("Robot", iLog << "InitWeightSensor() success, legId=" << leg->id);
         }
 
         // add all joints of current leg to jointsList
@@ -138,6 +187,9 @@ void Robot::Init(){
         legs[i]->joints[2]->length = 0.078;
         legs[i]->joints[3]->length = 0.078;
     }
+
+    return true;
+
 }
 
 void Robot::SetBrain(Brain* brain){
@@ -165,10 +217,6 @@ bool Robot::OpenSerialStream(const char* device){
     return ret;
 }
 
-void Robot::CloseSerialStream(){
-    servoSerialStream->close();
-}
-
 bool Robot::OpenI2C(){
 
     // open bus 0
@@ -191,41 +239,16 @@ bool Robot::OpenI2C(){
 
     if(!mux0->Init(bus0->fd)){
         LogError("Robot", iLog << "mux0 init failed");
-        CloseI2C();
         return false;
     }
 
     if(!mux1->Init(bus1->fd)){
         LogError("Robot", iLog << "mux1 init failed");
-        CloseI2C();
         return false;
     }
 
     return true;
 
-}
-
-void Robot::CloseI2C(){
-    if(bus0){
-        bus0->Close();
-        delete bus0;
-        bus0 = nullptr;
-    }
-    if(bus1){
-        bus1->Close();
-        delete bus1;
-        bus1 = nullptr;
-    }
-    if(mux0){
-        mux0->Shutdown();
-        delete mux0;
-        mux0 = nullptr;
-    }
-    if(mux1){
-        mux1->Shutdown();
-        delete mux1;
-        mux1 = nullptr;
-    }
 }
 
 void Robot::MoveJointsToTargetSync(float time, bool forceTorqueOn){

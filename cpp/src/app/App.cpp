@@ -103,7 +103,12 @@ bool App::Init(){
     }
 
     // init robot
-    robot->Init();
+    if(robot->Init()){
+        LogInfo("App", "Robot init success");
+    } else {
+        LogError("App", "Robot init failed");
+        return false;
+    }
 
     // init servo thread
     servoThread.Init(robot);
@@ -145,19 +150,15 @@ bool App::Cleanup(){
     LogInfo("App", "Cleanup()");
     PacketsComm::Cleanup();
 
-    // close servo serial stream
-    LogInfo("App", "serial stream close");
-    robot->CloseSerialStream();
-
-    // close i2c
-    robot->CloseI2C();
-
     // main button cleanup
     mainButton->Cleanup();
     mainButtonLED->SetState(false);
     mainButtonLED->Cleanup();
     delete mainButton;
     delete mainButtonLED;
+    
+    // robot cleanup
+    delete robot;
 
     return true;
 

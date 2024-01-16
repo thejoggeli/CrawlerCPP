@@ -63,6 +63,8 @@ void CalibrationBrain::Init(){
             Config::Set("calib", "high_" + std::to_string(jointId), (int) newValue);
         }
 
+        Config::WriteFile("calib");
+
         // response
         auto response = std::make_shared<PacketMessage>("setCalibResponse");
         response->AddInt("jointId", jointId); // joint id

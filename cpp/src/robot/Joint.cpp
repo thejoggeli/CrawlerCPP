@@ -69,21 +69,15 @@ void Joint::SetServo(XYZServo* servo){
 
 }
 
-void Joint::SetCalibrationAnglesLinear(float low, float high){
-    servoCalibLinear = true;
+void Joint::SetCalibrationAngles(float low, float high){
+    numCalibPoints = 2;
     servoCalibAngles[0] = low;
     servoCalibAngles[1] = (low+high)*0.5f;
     servoCalibAngles[2] = high;
 }
 
-void Joint::SetCalibrationAnglesQuadratic(float low, float mid, float high){
-    if(mid != 0.0f){
-        LogError("Joint", "SetCalibAnglesQuadratic() mid != 0.0");
-    }
-    if(low != -high){
-        LogError("Joint", "SetCalibAnglesQuadratic() low != -high");
-    }
-    servoCalibLinear = false;
+void Joint::SetCalibrationAngles(float low, float mid, float high){
+    numCalibPoints = 3;
     servoCalibAngles[0] = low;
     servoCalibAngles[1] = mid;
     servoCalibAngles[2] = high;
@@ -120,29 +114,14 @@ float Joint::GetCalibrationAngle(unsigned int number){
 }
 
 void Joint::UpdateCalibrationFactors(){
-    if(servoCalibLinear){
-        const float u = servoCalibAngles[0];
-        const float v = servoCalibAngles[2];
-        const float g = (float)servoCalibValues[0];
-        const float h = (float)servoCalibValues[2];
-        const float c = (h*u-g*v)/(u-v);
-        const float b = (g-h)/(u-v);
-        const float a = 0.0f;
-        servoCalibFactorC = c;
-        servoCalibFactorB = b;
-        servoCalibFactorA = a;
+    if(numCalibPoints == 2){
+        servoCalibFactorA0 = ((float)servoCalibValues[0] - (float)servoCalibValues[2]) / (servoCalibAngles[0] - servoCalibAngles[2]);
+        servoCalibFactorB0 = (float)servoCalibValues[0] - servoCalibFactorA0 * servoCalibAngles[0];
     } else {
-        const float u = servoCalibAngles[0];
-        const float w = servoCalibAngles[2];
-        const float g = (float)servoCalibValues[0];
-        const float h = (float)servoCalibValues[1];
-        const float i = (float)servoCalibValues[2];
-        const float c = h;
-        const float b = (g-i)/(u-w);
-        const float a = (i-w*b-c)/(w*w);
-        servoCalibFactorC = c;
-        servoCalibFactorB = b;
-        servoCalibFactorA = a;
+        servoCalibFactorA0 = ((float)servoCalibValues[0] - (float)servoCalibValues[1]) / (servoCalibAngles[0] - servoCalibAngles[1]);
+        servoCalibFactorA1 = ((float)servoCalibValues[1] - (float)servoCalibValues[2]) / (servoCalibAngles[1] - servoCalibAngles[2]);
+        servoCalibFactorB0 = (float)servoCalibValues[0] - servoCalibFactorA0 * servoCalibAngles[0];
+        servoCalibFactorB1 = (float)servoCalibValues[1] - servoCalibFactorA1 * servoCalibAngles[1];
     }
 }
 
@@ -363,28 +342,30 @@ bool Joint::ReadStatusDetail(bool buffer, int retries){
 }
 
 float Joint::XYZToAngle(uint16_t xyz){
-    const float x = xyz;
-    const float a = servoCalibFactorA;
-    const float b = servoCalibFactorB;
-    const float c = servoCalibFactorC;
-    if(a == 0.0f){
-        return (x-c)/b;
+    if(numCalibPoints == 2){
+        return ((float)xyz - servoCalibFactorB0) / servoCalibFactorA0;
+    } else {
+        if(xyz < servoCalibValues[1]){
+            return ((float)xyz - servoCalibFactorB0) / servoCalibFactorA0;
+        } else {
+            return ((float)xyz - servoCalibFactorB1) / servoCalibFactorA1;
+        }
     }
-    const float s = 4.0f*a*(x-c)+b*b;
-    if(s > 0.0f){
-        return (sqrt(s)-b)/(2.0f*a);
-    }
-    const float z = -4.0f*a*c + 4.0f*a*x + b*b;
-    return -(sqrt(z)+b)/(2.0f*a);
 }
 
 uint16_t Joint::AngleToXYZ(float angle){
-    const float x = angle;
-    const float a = servoCalibFactorA;
-    const float b = servoCalibFactorB;
-    const float c = servoCalibFactorC;
-    const float xyz = x*x*a + x*b + c;
-    return std::min(std::max(xyz, 0.0f), 1023.0f);
+    if(numCalibPoints == 2){
+        float xyz = servoCalibFactorA0 * angle + servoCalibFactorB0;
+        return std::min(std::max(xyz, 0.0f), 1023.0f);
+    } else {
+        if(angle < servoCalibAngles[1]){
+            float xyz = servoCalibFactorA0 * angle + servoCalibFactorB0;
+            return std::min(std::max(xyz, 0.0f), 1023.0f);
+        } else {
+            float xyz = servoCalibFactorA1 * angle + servoCalibFactorB1;
+            return std::min(std::max(xyz, 0.0f), 1023.0f);
+        }
+    }
 }
 
 void Joint::SetServoLedPolicyUser(bool buffer){

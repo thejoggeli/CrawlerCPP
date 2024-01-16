@@ -133,14 +133,14 @@ bool Robot::Init(){
     }
 
     // calibrate servos
-    legs[0]->joints[0]->SetCalibrationAnglesLinear(-90.0f*DEG_2_RADf, 0.0f);
-    legs[1]->joints[0]->SetCalibrationAnglesLinear(0.0f, +90.0f*DEG_2_RADf);
-    legs[2]->joints[0]->SetCalibrationAnglesLinear(-90.0f*DEG_2_RADf, 0.0f);
-    legs[3]->joints[0]->SetCalibrationAnglesLinear(0.0f, +90.0f*DEG_2_RADf);
+    legs[0]->joints[0]->SetCalibrationAngles(-90.0f*DEG_2_RADf, 0.0f);
+    legs[1]->joints[0]->SetCalibrationAngles(0.0f, +90.0f*DEG_2_RADf);
+    legs[2]->joints[0]->SetCalibrationAngles(-90.0f*DEG_2_RADf, 0.0f);
+    legs[3]->joints[0]->SetCalibrationAngles(0.0f, +90.0f*DEG_2_RADf);
     for(int i = 0; i < 4; i++){
-        legs[i]->joints[1]->SetCalibrationAnglesQuadratic(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
-        legs[i]->joints[2]->SetCalibrationAnglesQuadratic(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
-        legs[i]->joints[3]->SetCalibrationAnglesQuadratic(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
+        legs[i]->joints[1]->SetCalibrationAngles(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
+        legs[i]->joints[2]->SetCalibrationAngles(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
+        legs[i]->joints[3]->SetCalibrationAngles(0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
     }
     for(unsigned int i = 0; i < 16; i++){
         unsigned int calib_values[3] = {
@@ -324,10 +324,10 @@ void Robot::Startup(){
     // legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
     // legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
     // legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
-    legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * -25.0f);
-    legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +25.0f);
-    legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -25.0f);
-    legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +25.0f);
+    legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
+    legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
+    legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
+    legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
     MoveJointsToTargetSync(2.0f);
     Time::Sleep(2.5f);
 

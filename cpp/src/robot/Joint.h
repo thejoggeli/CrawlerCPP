@@ -36,11 +36,12 @@ private:
     uint16_t servoCalibValues[3] = {256, 512, 768}; 
     float servoCalibAngles[3] = {0.0f, 0.0f, 0.0f};
 
-    float servoCalibFactorA = 0.0f;
-    float servoCalibFactorB = 0.0f;
-    float servoCalibFactorC = 0.0f;
+    float servoCalibFactorA0 = 0.0f;
+    float servoCalibFactorA1 = 0.0f;    
+    float servoCalibFactorB0 = 0.0f;
+    float servoCalibFactorB1 = 0.0f;
 
-    bool servoCalibLinear = false;
+    int numCalibPoints = 0;
 
 public:
 
@@ -86,8 +87,8 @@ public:
 
     Joint(Leg* leg, JointType jointType);
 
-    void SetCalibrationAnglesLinear(float low, float high);
-    void SetCalibrationAnglesQuadratic(float low, float mid, float high);
+    void SetCalibrationAngles(float low, float high);
+    void SetCalibrationAngles(float low, float mid, float high);
     void GetCalibrationAngles(float values[3]);
     float GetCalibrationAngle(unsigned int number);
     void SetCalibrationValues(unsigned int values[3]);

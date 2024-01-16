@@ -9,10 +9,11 @@ class Gait;
 class WalkerBrain : public Brain {
 private:
 
-public:
+    float dx = 0.16f;
+    float dy = 0.16f;
+    float dz = 0.0f;
 
-    bool playing = true;
-    float speed = 1.0f;
+public:
 
     Gait* g_walk_1 = nullptr;
     Gait* g_walk_2 = nullptr;
@@ -27,6 +28,11 @@ public:
     virtual void Update() override;
     virtual void FixedUpdate() override;
     virtual void Destroy() override;
+
+private:
+
+    void InitGaitWalk();
+    void InitGaitTurn();
 
 };
 

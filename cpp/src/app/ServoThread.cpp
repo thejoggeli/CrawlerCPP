@@ -84,20 +84,30 @@ void ServoThread::Run(){
         //     nextLeg = 0;
         // }
 
-        // read temperature and voltage measurements
-        Joint* joint = robot->jointsList[nextJoint];
-        if(measureState == 0){
-            joint->ReadMeasuredVoltage(true, 0);
-            measureState = 1;
-        } else {
-            joint->ReadMeasuredTemperature(true, 0);
-            measureState = 0;
-            // measure another joint in next loop 
-            nextJoint++;
-            if(nextJoint >= robot->jointsList.size()){
-                nextJoint = 0;
-            }
+        // read angle measurements
+        Leg* leg = robot->legs[nextLeg];
+        for(Joint* joint : leg->joints){
+            joint->ReadMeasuredAngle(true, 0);
         }
+        nextLeg += 1;
+        if(nextLeg >= robot->legs.size()){
+            nextLeg = 0;
+        }
+
+        // read temperature and voltage measurements
+        // Joint* joint = robot->jointsList[nextJoint];
+        // if(measureState == 0){
+        //     joint->ReadMeasuredVoltage(true, 0);
+        //     measureState = 1;
+        // } else {
+        //     joint->ReadMeasuredTemperature(true, 0);
+        //     measureState = 0;
+        //     // measure another joint in next loop 
+        //     nextJoint++;
+        //     if(nextJoint >= robot->jointsList.size()){
+        //         nextJoint = 0;
+        //     }
+        // }
 
         // update led color policies
         for(Joint* joint : ledPolicyVector){

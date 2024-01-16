@@ -1,5 +1,6 @@
 #include "Gait.h"
 #include "core/Log.h"
+#include <cassert>
 
 namespace Crawler {
 
@@ -31,6 +32,32 @@ void Gait::AddTransition(float transitionTime){
     frames[frames.size()-1]->startTime = duration;
     frames[frames.size()-1]->endTime = duration + transitionTime;
     duration = frames[frames.size()-1]->endTime;
+}
+
+void Gait::StepTo(float time){
+
+    assert(time >= 0.0f);
+    assert(time <= this->duration);
+
+    this->time = time;
+    currFrameIndex = 0;
+    nextFrameIndex = 1;
+
+    // compute new frame indices
+    while(time > frames[currFrameIndex]->endTime){
+        currFrameIndex += 1;
+        nextFrameIndex += 1;
+        if(currFrameIndex == frames.size()){
+            currFrameIndex = 0;
+            time -= duration;
+        } else if(nextFrameIndex == frames.size()){
+            nextFrameIndex = 0;
+        }
+    }
+
+    // compute positions
+    ComputePositions();
+
 }
 
 void Gait::StepForward(float deltaTime){

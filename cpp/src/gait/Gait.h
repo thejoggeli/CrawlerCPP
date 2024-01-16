@@ -30,6 +30,7 @@ public:
     void AddFrame(const GaitFrame& frame);
     void AddTransition(float transitionTime);
 
+    void StepTo(float time);
     void StepForward(float deltaTime);
     void StepBackward(float deltaTime);
 

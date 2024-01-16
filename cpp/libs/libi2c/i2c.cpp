@@ -77,7 +77,7 @@ void i2c_init_device(I2CDevice *device)
 char *i2c_get_device_desc(const I2CDevice *device, char *buf, size_t size)
 {
     memset(buf, 0, size);
-    snprintf(buf, size, "Device address: 0x%x, tenbit: %s, internal(word) address: %d bytes, page max %d bytes, delay: %uls",
+    snprintf(buf, size, "Device address: 0x%x, tenbit: %s, internal(word) address: %d bytes, page max %d bytes, delay: %lu",
              device->addr, device->tenbit ? "True" : "False", device->iaddr_bytes, device->page_bytes, device->delay);
 
     return buf;

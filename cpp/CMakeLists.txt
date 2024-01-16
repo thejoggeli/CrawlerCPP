@@ -4,15 +4,27 @@ include_directories(
     "${CMAKE_CURRENT_LIST_DIR}/libs/adafruit/Adafruit_Sensor"
     "${CMAKE_CURRENT_LIST_DIR}/libs/adafruit/Adafruit_BusIO"
     "${CMAKE_CURRENT_LIST_DIR}/libs/adafruit/Adafruit_LSM6DS"
+    "/home/crawler/onnxruntime/include"                        
+    "/home/crawler/onnxruntime/include/onnxruntime"            
+    "/home/crawler/onnxruntime/include/onnxruntime/core/session"
 )
+
+link_directories("/home/crawler/onnxruntime/build/Linux/Release")
+
+set(ONNXRUNTIME_ROOTDIR "/home/crawler/onnxruntime/build/Linux/Release")
+# set(ONNXRUNTIME_LIB "/home/crawler/.local/lib/python3.8/site-packages/onnxruntime/capi/libonnxruntime_providers_cuda.so")
 
 find_package(JetsonGPIO)
 find_package(Seasocks)
+# find_package(Torch REQUIRED PATHS /home/crawler/.local/lib/python3.8/site-packages/torch)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+
+add_definitions(-DUSE_CUDA)
 
 set(
     CRAWLER_SOURCE_FILES
     src/CrawlerCPP.cpp
-    libs/serialib/Serialib.cpp
+    libs/serialib/Serialib.cpp 
     libs/libi2c/i2c.cpp
     src/app/App.cpp
     src/app/ServoThread.cpp
@@ -33,6 +45,7 @@ set(
     src/brain/Brain.cpp
     src/brain/SurferBrain.cpp
     src/brain/GaitBrain.cpp
+    src/brain/WalkerBrain.cpp
     src/brain/EmptyBrain.cpp
     src/brain/CalibrationBrain.cpp
     src/core/Time.cpp
@@ -82,12 +95,46 @@ set_property(
 	${libseasocks_location}
 )
 
+
+find_library(
+	libonnxruntime_location
+	NAMES libonnxruntime.so
+	PATHS "/home/crawler/onnxruntime/build/Linux/RelWithDebInfo"
+)
+message("libonnxruntime_location: " ${libonnxruntime_location})
+add_library(libonnxruntime SHARED IMPORTED)
+set_property(
+	TARGET libonnxruntime
+	PROPERTY IMPORTED_LOCATION
+	${libonnxruntime_location}
+)
+
+# find_library(
+# 	libtorch_location
+# 	NAMES libtorch.so
+# 	PATHS /home/crawler/.local/lib/python3.8/site-packages/torch/lib/
+# )
+# message("libtorch_location: " ${libtorch_location})
+# add_library(libtorch SHARED IMPORTED)
+# set_property(
+# 	TARGET libtorch
+# 	PROPERTY IMPORTED_LOCATION
+# 	${libtorch_location}
+# )
+
+
 # make library
 add_library(libCrawler SHARED ${CRAWLER_SOURCE_FILES})
 set_property(TARGET libCrawler PROPERTY CXX_STANDARD 20)
 set_property(TARGET libCrawler PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 target_link_libraries(libCrawler JetsonGPIO::JetsonGPIO)
 target_link_libraries(libCrawler libseasocks)
+target_link_libraries(libCrawler libonnxruntime)
+# target_link_libraries(libCrawler "${TORCH_LIBRARIES}")
+# set_property(TARGET libCrawler PROPERTY CXX_STANDARD 17)
+
+
+# target_link_libraries(libCrawler libtorch)
 
 function(CreateCrawlerExecutable ExecutableName ExecutableMain)
     add_executable (${ExecutableName} ${ExecutableMain})
@@ -103,9 +150,10 @@ endfunction()
 # CreateCrawlerExecutable(TestSerialCom "test/TestSerialCom.cpp")
 # CreateCrawlerExecutable(TestGait "test/TestGait.cpp")
 # CreateCrawlerExecutable(TestI2C "test/TestI2C.cpp")
-CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
-CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
-CreateCrawlerExecutable(TestIMU "test/TestIMU.cpp")
+# CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
+# CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
+# CreateCrawlerExecutable(TestIMU "test/TestIMU.cpp")
+CreateCrawlerExecutable(TestModel "test/TestModel.cpp")
 
 CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
 

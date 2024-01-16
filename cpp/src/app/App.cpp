@@ -17,6 +17,7 @@
 #include "brain/SurferBrain.h"
 #include "brain/GaitBrain.h"
 #include "brain/EmptyBrain.h"
+#include "brain/WalkerBrain.h"
 #include "brain/CalibrationBrain.h"
 #include "ServoThread.h"
 #include "PacketsComm.h"
@@ -40,8 +41,8 @@ App::~App(){}
 
 bool App::Init(){
 
-    mainButton = new HardwareButton(24, 200*1000);
-    mainButtonLED = new MonoLED(22); 
+    mainButton = new HardwareButton(18, 200*1000);
+    mainButtonLED = new MonoLED(17); 
 
     if(initialized){
         return false;
@@ -191,9 +192,19 @@ bool App::Run(){
     // start up robot
     robot->Startup();
     // robot->PrintServoStatus();
+
+    // walker
+    robot->SetBrain(new WalkerBrain());
+
+    // surfer
     // robot->SetBrain(new SurferBrain());
+
+    // dancer
     // robot->SetBrain(new GaitBrain());
-    robot->SetBrain(new CalibrationBrain());
+
+
+
+    // robot->SetBrain(new CalibrationBrain());
     // robot->SetBrain(new EmptyBrain());
     // robot->TorqueOff();
     // for(Leg* leg : robot->legs){
@@ -202,6 +213,8 @@ bool App::Run(){
     //     leg->joints[2]->SetTargetAngle(90.0f * DEG_2_RADf);
     //     leg->joints[3]->SetTargetAngle(0.0f * DEG_2_RADf);
     // }
+    
+    // return false;
 
     // the beginning of time
     Time::Start();
@@ -235,7 +248,7 @@ bool App::Run(){
         // update buttons
         mainButton->Update();
         if(mainButton->onPress){
-            // RequestExit("MainButton");
+            RequestExit("MainButton");
         }
 
         // print debug info

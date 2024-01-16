@@ -75,22 +75,22 @@ void ServoThread::Run(){
         robot->MoveJointsToTargetSync(Time::fixedDeltaTime);
 
         // read status measurements
-        Leg* leg = robot->legs[nextLeg];
-        for(Joint* joint : leg->joints){
-            joint->ReadMeasuredStatus(true);
-        }
-        nextLeg += 1;
-        if(nextLeg >= robot->legs.size()){
-            nextLeg = 0;
-        }
+        // Leg* leg = robot->legs[nextLeg];
+        // for(Joint* joint : leg->joints){
+        //     joint->ReadMeasuredStatus(true);
+        // }
+        // nextLeg += 1;
+        // if(nextLeg >= robot->legs.size()){
+        //     nextLeg = 0;
+        // }
 
         // read temperature and voltage measurements
         Joint* joint = robot->jointsList[nextJoint];
         if(measureState == 0){
-            joint->ReadMeasuredVoltage(true);
+            joint->ReadMeasuredVoltage(true, 0);
             measureState = 1;
         } else {
-            joint->ReadMeasuredTemperature(true);
+            joint->ReadMeasuredTemperature(true, 0);
             measureState = 0;
             // measure another joint in next loop 
             nextJoint++;

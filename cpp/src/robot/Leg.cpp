@@ -52,11 +52,13 @@ Leg::~Leg(){
 }
 
 bool Leg::InitDistanceSensor(MuxI2C* mux, int channel){
-    return this->distanceSensor->Init(mux, channel);
+    return true;
+    // return this->distanceSensor->Init(mux, channel);
 }
 
 bool Leg::InitWeightSensor(MuxI2C* mux, int channel){
-    return this->weightSensor->Init(mux, channel);
+    return true;
+    // return this->weightSensor->Init(mux, channel);
 }
 
 void Leg::SetHipTransform(const Eigen::Vector3f& translation, float angle){

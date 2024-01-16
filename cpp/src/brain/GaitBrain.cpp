@@ -37,19 +37,24 @@ void GaitBrain::Init(){
     }
 
 
-    unsigned int steps = 100;
+    unsigned int steps = 200;
     float step = 1.0/(float)steps;
-    float speed = 3.0f;
+    float speed = 0.4f;
+    float a = 0.5f;
+    float b = 1.0f - a;
     for(unsigned int i = 0; i < steps; i++){
         float t = (float)i*step;
-        float z = (sin(t*PI2f)*0.5f+0.5f)*0.10f;
-        float rotx = cos(t*PI2f*1.0f)*25.0f*DEG_2_RADf;
-        frame.bodyPosition = {0.0f, 0.0f, z};
-        frame.bodyRotation = {rotx, 0.0f, 0.0f};
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float posy = sin(t*PI2f)*0.03f;
+        float posz = cos(t*PI2f)*0.03f + 0.05f;
+        float rotx = sin(t*PI2f) * 5.0f * DEG_2_RADf;
+        float rotz = -sin(t*PI2f) * 5.0f * DEG_2_RADf;
+        frame.bodyPosition = {0.0f, posy, posz};
+        frame.bodyRotation = {rotx, 0.0f, rotz};
         gait->AddFrame(frame);
-        gait->AddTransition(step*speed);
+        gait->AddTransition(step/speed);
     }
-
+   
     // float dxy = 0.05f;
 
     // frame.bodyPosition = {dxy, 0.0f, 0.0f};

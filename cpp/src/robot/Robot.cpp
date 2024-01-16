@@ -75,7 +75,7 @@ bool Robot::Init(){
     imu = new IMU();
     if(!imu->Init(bus1->fd)){
         LogError("Robot", iLog << "IMU init failed");
-        return false;
+        // return false;
     }
 
     // all servo ids in order [hip, knee, knee, knee] 
@@ -178,7 +178,7 @@ bool Robot::Init(){
         legs[i]->joints[1]->limitMax = +100.0f * DEG_2_RADf;
         legs[i]->joints[2]->limitMin = -150.0f * DEG_2_RADf;
         legs[i]->joints[2]->limitMax = +150.0f * DEG_2_RADf;
-        legs[i]->joints[3]->limitMin = -90.0f * DEG_2_RADf;
+        legs[i]->joints[3]->limitMin = -45.0f * DEG_2_RADf;
         legs[i]->joints[3]->limitMax = +90.0f * DEG_2_RADf;
 
         // set joints lengths

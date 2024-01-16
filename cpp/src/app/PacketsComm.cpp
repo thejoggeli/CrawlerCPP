@@ -93,15 +93,15 @@ static void OnRequestLegData(void* caller, Packet& packet){
             response->statusDetail.push_back(joint->statusDetail);
             response->statusError.push_back(joint->statusError);
         }
-        leg->ReadMeasuredDistance(false);
-        leg->ReadMeasuredWeight(false);
+        // leg->ReadMeasuredDistance(false);
+        // leg->ReadMeasuredWeight(false);
         response->distance.push_back(leg->measuredDistance.value);
         response->weight.push_back(leg->measuredWeight.value);
     }
     ClientManager::SendPacket(response, packet.clientId);
 }
 
-static void OnRequestLegIMU(void* caller, Packet& packet){
+static void OnRequestIMU(void* caller, Packet& packet){
     // LogDebug("PacketsComm", "RequestLegIMUHandler()");
     auto request = (PacketRequestIMUData*)(&packet);
     auto response = std::make_shared<PacketRespondIMUData>();
@@ -266,7 +266,7 @@ void PacketsComm::Init(Robot* robotPtr){
     robot = robotPtr;
     ClientManager::SubscribePacket(PacketType::RequestLegAngles, &caller, &OnRequestLegAngles);
     ClientManager::SubscribePacket(PacketType::RequestLegData, &caller, &OnRequestLegData);
-    ClientManager::SubscribePacket(PacketType::RequestIMUData, &caller, &OnRequestLegIMU);
+    ClientManager::SubscribePacket(PacketType::RequestIMUData, &caller, &OnRequestIMU);
     ClientManager::SubscribeMessage("test", &caller, &OnMessageTest);
     ClientManager::SubscribeMessage("requestCalib", &caller, &OnMessageGetCalib);
     ClientManager::SubscribeMessage("setTorque", &caller, &OnMessageSetTorque);

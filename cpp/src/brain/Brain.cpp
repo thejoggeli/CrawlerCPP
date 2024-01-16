@@ -48,6 +48,7 @@ bool Brain::ApplyPoseToJoints(Eigen::Vector3f footPositions[4], float footAngles
         ikSuccess[i] = result;        
         if(!result){
             ikSuccessAll = false;
+            LogDebug("Brain", iLog << "inverse kinematics search failed << i=" << i);
         }
 
     }

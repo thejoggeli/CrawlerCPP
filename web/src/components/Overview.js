@@ -284,7 +284,7 @@ export default class Overview extends React.Component {
                         })}
                     </tbody>
                 </table>
-                <table>
+                <table style={{display:"none"}}>
                     <thead>
                         <tr key={"servos.h1"}>
                             <th key={"servos.h1.1"} colSpan={2}>Leg</th>
@@ -356,7 +356,7 @@ export default class Overview extends React.Component {
                         </tr>
                     </tbody>
                 </table>
-                <table>
+                <table style={{display:"none"}}>
                     <thead>
                         <tr key={"state.h1"}>
                             <th key={"state.h1.leg"} colSpan={2}>Leg</th>

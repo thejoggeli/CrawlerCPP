@@ -70,19 +70,22 @@ bool Brain::ApplyPoseToJoints(Eigen::Vector3f footPositions[4], float footAngles
     }
 
     // set IK servo colors
-    for(int i = 0; i < 4; i++){
-        Leg* leg = robot->legs[i];
-        int r, g, b, w;
-        if(ikSuccess[i]){
-            r = 0; g = 1; b = 1; w = 0;
-        } else {
-            r = 1; g = 1; b = 0; w = 0;
-        }
-        for(Joint* joint : leg->joints){
-            joint->SetServoLedColor(r, g, b, w, true);
+    if(false){
+        for(int i = 0; i < 4; i++){
+            Leg* leg = robot->legs[i];
+            int r, g, b, w;
+            if(ikSuccess[i]){
+                r = 0; g = 1; b = 1; w = 0;
+                r = 0; g = 1; b = 1; w = 0;
+            } else {
+                r = 1; g = 1; b = 0; w = 0;
+            }
+            for(Joint* joint : leg->joints){
+                joint->SetServoLedColor(r, g, b, w, true);
+            }
         }
     }
-    
+
     return ikSuccessAll;
 
 

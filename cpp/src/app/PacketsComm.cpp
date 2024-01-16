@@ -184,6 +184,11 @@ static void OnMessagePrintStatus(void* caller, PacketMessage& packet){
     }
 }
 
+static void OnMessageSetBrain(void* caller, PacketMessage& packet){
+    string brainName = packet.GetString("name");
+    LogInfo("PacketsComm", iLog << "SetBrain: " << brainName);
+}
+
 static void OnMessagePrintAngles(void* caller, PacketMessage& packet){
     Robot* robot = App::robot;
     char buffer[200];
@@ -270,6 +275,7 @@ void PacketsComm::Init(Robot* robotPtr){
     ClientManager::SubscribeMessage("test", &caller, &OnMessageTest);
     ClientManager::SubscribeMessage("requestCalib", &caller, &OnMessageGetCalib);
     ClientManager::SubscribeMessage("setTorque", &caller, &OnMessageSetTorque);
+    ClientManager::SubscribeMessage("setBrain", &caller, &OnMessageSetBrain);
     ClientManager::SubscribeMessage("printStatus", &caller, &OnMessagePrintStatus);
     ClientManager::SubscribeMessage("printAngles", &caller, &OnMessagePrintAngles);
     ClientManager::SubscribeMessage("printPositions", &caller, &OnMessagePrintPositions);

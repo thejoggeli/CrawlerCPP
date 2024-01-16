@@ -178,7 +178,7 @@ bool Joint::ReadMeasuredStatus(bool buffer, int retries){
             LogWarning("Joint", iLog << debugName << " ReadMeasuredStatus() failed, retries=" << retries);
             return ReadMeasuredStatus(buffer, retries-1);
         } else {
-            SetServoState(ServoState::Error);
+            // SetServoState(ServoState::Error);
             LogError("Joint", iLog << debugName << " ReadMeasuredStatus() failed");
             return false;
         }
@@ -211,7 +211,7 @@ bool Joint::ReadMeasuredAngle(bool buffer, int retries){
             LogWarning("Joint", iLog << debugName << " ReadMeasuredAngle() failed, retries=" << retries);
             return ReadMeasuredAngle(buffer, retries-1);
         } else {
-            SetServoState(ServoState::Error);
+            // SetServoState(ServoState::Error);
             LogError("Joint", iLog << debugName << " ReadMeasuredAngle() failed");
             return false;
         }
@@ -236,7 +236,7 @@ bool Joint::ReadMeasuredCurrent(bool buffer, int retries){
             LogWarning("Joint", iLog << debugName << " ReadMeasuredCurrent() failed, retries=" << retries);
             return ReadMeasuredCurrent(buffer, retries-1);
         } else {
-            SetServoState(ServoState::Error);
+            // SetServoState(ServoState::Error);
             LogError("Joint", iLog << debugName << " ReadMeasuredCurrent() failed");
             return false;
         }
@@ -259,7 +259,7 @@ bool Joint::ReadMeasuredVoltage(bool buffer, int retries){
             LogWarning("Joint", iLog << debugName << " ReadMeasuredVoltage() failed, retries=" << retries);
             return ReadMeasuredVoltage(buffer, retries-1);
         } else {
-            SetServoState(ServoState::Error);
+            // SetServoState(ServoState::Error);
             LogError("Joint", iLog << debugName << " ReadMeasuredVoltage() failed");
             return false;
         }
@@ -282,7 +282,7 @@ bool Joint::ReadMeasuredTemperature(bool buffer, int retries){
             LogWarning("Joint", iLog << debugName << " ReadMeasuredTemperature() failed, retries=" << retries);
             return ReadMeasuredTemperature(buffer, retries-1);
         } else {
-            SetServoState(ServoState::Error);
+            // SetServoState(ServoState::Error);
             LogError("Joint", iLog << debugName << " ReadMeasuredTemperature() failed");
             return false;
         }
@@ -305,7 +305,7 @@ bool Joint::ReadStatusError(bool buffer, int retries){
             LogWarning("Joint", iLog << debugName << " ReadStatusError() failed, retries=" << retries);
             return ReadStatusError(buffer, retries-1);
         } else {
-            SetServoState(ServoState::Error);
+            // SetServoState(ServoState::Error);
             LogError("Joint", iLog << debugName << " ReadStatusError() failed");
             return false;
         }
@@ -328,7 +328,7 @@ bool Joint::ReadStatusDetail(bool buffer, int retries){
             LogWarning("Joint", iLog << debugName << " ReadStatusDetail() failed, retries=" << retries);
             return ReadStatusDetail(buffer, retries-1);
         } else {
-            SetServoState(ServoState::Error);
+            // SetServoState(ServoState::Error);
             LogError("Joint", iLog << debugName << " ReadStatusDetail() failed");
             return false;
         }

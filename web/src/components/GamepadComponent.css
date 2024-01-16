@@ -1,5 +1,19 @@
-#gamepad-container {
+#gamepad-flexbox {
     width:100%; height:100%;overflow:hidden;
+    display:flex;flex-direction:column;
+}
+
+#gamepad-navbar {
+    flex: 0 0; align-self: stretch;
+}
+
+#gamepad-navbar select {
+    font-size:25px;padding:10px;width:100%;
+    background:#303030;color:#cdcdcd;border:0;
+}
+
+#gamepad-container {
+    flex: 1 0; align-self: stretch;
 }
 
 #gamepad-container .gfw-canvas-container {

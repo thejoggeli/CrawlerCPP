@@ -34,9 +34,16 @@ WalkerBrain::~WalkerBrain(){
 void WalkerBrain::Init(){
     InitGaitWalk();
     InitGaitTurn();
+
+    for(Joint* joint: robot->jointsList){
+        joint->SetServoLedColor(0, 0, 0, 0, true);
+    }
+
 }
 
 void WalkerBrain::InitGaitWalk(){
+
+    LogDebug("WalkerBrain", "init gait walk start");
     
     g_walk_1 = new Gait();
     g_walk_2 = new Gait();
@@ -59,10 +66,10 @@ void WalkerBrain::InitGaitWalk(){
     float h_floor = -0.1;
     float h_up = -0.05;
 
-    float t0 = 0.5f;
+    float t0 = 0.2f;
     float t1 = 0.04f;
     float t2 = 0.04f;
-    float t3 = 0.04f;
+    float t3 = 0.08f;
 
     f1.footPositions[0][0] = +dx_far;
     f1.footPositions[0][1] = +dy;
@@ -127,10 +134,10 @@ void WalkerBrain::InitGaitTurn(){
     float a_from = -5.0f * DEG_2_RADf;
     float a_to   = +5.0f * DEG_2_RADf;
 
-    float t0 = 0.5f;
+    float t0 = 0.2f;
     float t1 = 0.04f;
     float t2 = 0.04f;
-    float t3 = 0.04f;
+    float t3 = 0.08f;
 
     float t_tot = t0 + t1 + t2 + t3;
 

@@ -48,6 +48,7 @@ set(
     src/brain/WalkerBrain.cpp
     src/brain/EmptyBrain.cpp
     src/brain/CalibrationBrain.cpp
+    src/brain/ModelBrain.cpp
     src/core/Time.cpp
     src/core/Log.cpp
     src/core/Config.cpp
@@ -59,6 +60,7 @@ set(
     src/util/Strings.cpp
     src/util/Timer.cpp
     src/util/Endian.cpp
+    src/util/OnnxRunner.cpp
     src/buffer/SmartBuffer.cpp
     src/buffer/ByteBufferReader.cpp
     src/buffer/ByteBufferWriter.cpp 
@@ -153,8 +155,9 @@ endfunction()
 # CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
 # CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
 # CreateCrawlerExecutable(TestIMU "test/TestIMU.cpp")
-CreateCrawlerExecutable(TestModel "test/TestModel.cpp")
+CreateCrawlerExecutable(TestOnnxRunner "test/TestOnnxRunner.cpp")
+# CreateCrawlerExecutable(TestModel "test/TestModel.cpp")
 
-CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
+# CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
 
 

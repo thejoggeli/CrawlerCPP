@@ -145,6 +145,11 @@ bool Joint::PingServo(){
 }
 
 void Joint::SetTargetAngle(float angle, bool buffer){
+    if(angle < limitMin){
+        angle = limitMin;
+    } else if(angle > limitMax){
+        angle = limitMax;
+    }
     if(buffer){
         lastTargetAngle.BufferValue(currentTargetAngle);
         lastTargetXYZ.BufferValue(currentTargetXYZ);

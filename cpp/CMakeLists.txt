@@ -155,9 +155,8 @@ endfunction()
 # CreateCrawlerExecutable(TestWeight "test/TestWeight.cpp")
 # CreateCrawlerExecutable(TestDistance "test/TestDistance.cpp")
 # CreateCrawlerExecutable(TestIMU "test/TestIMU.cpp")
-CreateCrawlerExecutable(TestOnnxRunner "test/TestOnnxRunner.cpp")
+# CreateCrawlerExecutable(TestOnnxRunner "test/TestOnnxRunner.cpp")
 # CreateCrawlerExecutable(TestModel "test/TestModel.cpp")
 
-# CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp")
-
-
+CreateCrawlerExecutable(CrawlerCPP "src/CrawlerCPP.cpp") 
+ 

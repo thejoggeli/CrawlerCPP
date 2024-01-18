@@ -15,6 +15,14 @@ private:
     std::vector<float> inputValues;
     std::vector<float> outputValues;
 
+    std::vector<float> measuredAngles;
+    std::vector<float> oldMeasuredAngles;
+    std::vector<float> angleVelocities;
+
+    void UpdateMeasuredAngles();
+    void ApplyTargetAngles();
+    float OutputToAngle(float val, float low, float high);
+
 public:
 
     ModelBrain();

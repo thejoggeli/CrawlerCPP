@@ -14,6 +14,7 @@
 #include "remote/ClientManager.h"
 #include "remote/Client.h"
 #include "remote/Packet.h"
+#include "brain/ModelBrain.h"
 #include "brain/SurferBrain.h"
 #include "brain/GaitBrain.h"
 #include "brain/EmptyBrain.h"
@@ -194,7 +195,7 @@ bool App::Run(){
     // robot->PrintServoStatus();
 
     // walker
-    robot->SetBrain(new WalkerBrain());
+    // robot->SetBrain(new WalkerBrain());
 
     // surfer
     // robot->SetBrain(new SurferBrain());
@@ -202,20 +203,13 @@ bool App::Run(){
     // dancer
     // robot->SetBrain(new GaitBrain());
 
-
-
+    // calibration
     // robot->SetBrain(new CalibrationBrain());
-    // robot->SetBrain(new EmptyBrain());
     // robot->TorqueOff();
-    // for(Leg* leg : robot->legs){
-    //     leg->joints[0]->SetTargetAngle(0.0f * DEG_2_RADf);
-    //     leg->joints[1]->SetTargetAngle(90.0f * DEG_2_RADf);
-    //     leg->joints[2]->SetTargetAngle(90.0f * DEG_2_RADf);
-    //     leg->joints[3]->SetTargetAngle(0.0f * DEG_2_RADf);
-    // }
-    
-    // return false;
 
+    // model
+    robot->SetBrain(new ModelBrain());
+    
     // the beginning of time
     Time::Start();
 

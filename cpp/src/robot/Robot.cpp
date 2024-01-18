@@ -133,11 +133,8 @@ bool Robot::Init(){
     }
 
     // calibrate servos
-    legs[0]->joints[0]->SetCalibrationAngles(-90.0f*DEG_2_RADf, 0.0f);
-    legs[1]->joints[0]->SetCalibrationAngles(0.0f, +90.0f*DEG_2_RADf);
-    legs[2]->joints[0]->SetCalibrationAngles(-90.0f*DEG_2_RADf, 0.0f);
-    legs[3]->joints[0]->SetCalibrationAngles(0.0f, +90.0f*DEG_2_RADf);
     for(int i = 0; i < 4; i++){
+        legs[i]->joints[0]->SetCalibrationAngles(-45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
         legs[i]->joints[1]->SetCalibrationAngles(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
         legs[i]->joints[2]->SetCalibrationAngles(-90.0f*DEG_2_RADf, 0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
         legs[i]->joints[3]->SetCalibrationAngles(0.0f*DEG_2_RADf, +90.0f*DEG_2_RADf);
@@ -156,29 +153,21 @@ bool Robot::Init(){
     float hip_dx = 0.065f;
     float hip_dy = 0.065f;
     float hip_dz = 0.0f;   
-    legs[0]->SetHipTransform(Eigen::Vector3f(+hip_dx, +hip_dy, hip_dz), 90.0f * DEG_2_RADf);
-    legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 90.0f * DEG_2_RADf);
-    legs[2]->SetHipTransform(Eigen::Vector3f(-hip_dx, -hip_dy, hip_dz), -90.0f * DEG_2_RADf);
-    legs[3]->SetHipTransform(Eigen::Vector3f(+hip_dx, -hip_dy, hip_dz), -90.0f * DEG_2_RADf);
-
-    // set hip joints angle limits
-    legs[0]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
-    legs[0]->joints[0]->limitMax =   0.0f * DEG_2_RADf;
-    legs[1]->joints[0]->limitMin =   0.0f * DEG_2_RADf;
-    legs[1]->joints[0]->limitMax =  90.0f * DEG_2_RADf;
-    legs[2]->joints[0]->limitMin = -90.0f * DEG_2_RADf;
-    legs[2]->joints[0]->limitMax =   0.0f * DEG_2_RADf;
-    legs[3]->joints[0]->limitMin =   0.0f * DEG_2_RADf;
-    legs[3]->joints[0]->limitMax =  90.0f * DEG_2_RADf;
+    legs[0]->SetHipTransform(Eigen::Vector3f(+hip_dx, +hip_dy, hip_dz), 45.0f * DEG_2_RADf);
+    legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 135.0f * DEG_2_RADf);
+    legs[2]->SetHipTransform(Eigen::Vector3f(-hip_dx, -hip_dy, hip_dz), -135.0f * DEG_2_RADf);
+    legs[3]->SetHipTransform(Eigen::Vector3f(+hip_dx, -hip_dy, hip_dz), -45.0f * DEG_2_RADf);
 
     for(int i = 0; i < 4; i++){
 
         // set knee joints angle limits
-        legs[i]->joints[1]->limitMin = -100.0f * DEG_2_RADf;
-        legs[i]->joints[1]->limitMax = +100.0f * DEG_2_RADf;
+        legs[i]->joints[0]->limitMin = -45.0f * DEG_2_RADf;
+        legs[i]->joints[0]->limitMax = +45.0f * DEG_2_RADf;
+        legs[i]->joints[1]->limitMin = -90.0f * DEG_2_RADf;
+        legs[i]->joints[1]->limitMax = +90.0f * DEG_2_RADf;
         legs[i]->joints[2]->limitMin = -150.0f * DEG_2_RADf;
         legs[i]->joints[2]->limitMax = +150.0f * DEG_2_RADf;
-        legs[i]->joints[3]->limitMin = -45.0f * DEG_2_RADf;
+        legs[i]->joints[3]->limitMin = -15.0f * DEG_2_RADf;
         legs[i]->joints[3]->limitMax = +90.0f * DEG_2_RADf;
 
         // set joints lengths
@@ -313,21 +302,11 @@ void Robot::Startup(){
     // move servos to initial position
     LogInfo("Robot", "moving to default position");
     for(Leg* leg : legs){
-        // leg->joints[1]->SetTargetAngle(DEG_2_RADf * +30.0f);
-        // leg->joints[2]->SetTargetAngle(DEG_2_RADf * +30.0f);
-        // leg->joints[3]->SetTargetAngle(DEG_2_RADf * +30.0f);
+        leg->joints[0]->SetTargetAngle(DEG_2_RADf * 0.0f);
         leg->joints[1]->SetTargetAngle(DEG_2_RADf * -60.0f);
         leg->joints[2]->SetTargetAngle(DEG_2_RADf * +120.0f);
         leg->joints[3]->SetTargetAngle(DEG_2_RADf * +30.0f);
     }
-    // legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
-    // legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
-    // legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
-    // legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
-    legs[0]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
-    legs[1]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
-    legs[2]->joints[0]->SetTargetAngle(DEG_2_RADf * -45.0f);
-    legs[3]->joints[0]->SetTargetAngle(DEG_2_RADf * +45.0f);
     MoveJointsToTargetSync(2.0f);
     Time::Sleep(2.5f);
 

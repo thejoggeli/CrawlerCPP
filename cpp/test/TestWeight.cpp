@@ -1,23 +1,25 @@
 #include "core/Log.h"
 #include "parts/WeightSensor.h"
 #include "core/Time.h"
-#include <JetsonGPIO.h>
 #include "comm/I2CBus.h"
 #include "parts/MuxI2C.h"
+#include <vector>
+#include <JetsonGPIO.h>
 
 using namespace Crawler;
 
 int main(){
 
-    unsigned int dataPin = 21;
-    unsigned int clockPin = 17;
-
     LogInfo("main", "GPIO init");
     GPIO::setmode(GPIO::BCM);
+    GPIO::setup(4, GPIO::Directions::OUT);
+    GPIO::setup(5, GPIO::Directions::OUT);
+    GPIO::output(4, GPIO::HIGH);
+    GPIO::output(5, GPIO::HIGH);
 
     // create i2c bus
     I2CBus bus;
-    if(bus.Open("/dev/i2c-8")){
+    if(bus.Open("/dev/i2c-1")){
         LogInfo("main", iLog << "bus Open() success");
     } else {
         LogError("main", iLog << "bus Open() failed");
@@ -26,20 +28,27 @@ int main(){
 
     // init mux
     MuxI2C mux;
-    mux.Init(bus.fd);
+    if(!mux.Init(bus.fd)){
+        LogError("main", iLog << "mux Init() failed");
+        return EXIT_FAILURE;
+    }
 
     // init sensors
+    bool failed = false;
     std::vector<WeightSensor*> sensors;
-    for(int i = 0; i < 2; i++){
+    for(int i = 0; i < 4; i++){
         WeightSensor* sensor = new WeightSensor();
-        LogInfo("main", "WeightSensor init");
+        LogInfo("main", iLog << "WeightSensor " << i << " init");
         if(!sensor->Init(&mux, i)){
             LogError("main", iLog << "sensor " << i << " Init() failed");
-            return EXIT_FAILURE;
+            failed = true;
         } else {
             LogInfo("main", iLog << "sensor " << i << " Init() success");
         }
         sensors.push_back(sensor);
+    }
+    if(failed){
+        return EXIT_FAILURE;
     }
 
     LogInfo("main", "starting read loop");
@@ -54,11 +63,11 @@ int main(){
             uint64_t t_total = t_end - t_start;
 
             char buffer[2000];
-            sprintf(buffer, "s%d -> dur: %5.2f ms, value: %5d | ", i, t_total/1000.0f, value);
+            sprintf(buffer, "s%d %5.2f ms %5d | ", i, t_total/1000.0f, value);
             ss << buffer;
         }
         LogInfo("main", ss.str());
-        Time::SleepMicros(1000000);
+        Time::SleepMicros(100000);
     }
 
     return EXIT_SUCCESS;

@@ -25,11 +25,13 @@ Robot::Robot(){
 Robot::~Robot(){ 
 
     // delete legs
+    LogInfo("Robot", "deleting legs");
     for(Leg* leg : legs){
         delete leg;
     }
 
     // delete servos
+    LogInfo("Robot", "deleting servos");
     for(XYZServo* servo : jointServos){
         delete servo;
     }
@@ -38,31 +40,37 @@ Robot::~Robot(){
     }
 
     // delete imu
+    LogInfo("Robot", "deleting IMU");
     if(imu){
         delete imu;
     }
 
     // delete muxers
+    LogInfo("Robot", "deleting mux0");
     if(mux0){
         mux0->Shutdown();
         delete mux0;
     }
+    LogInfo("Robot", "deleting mux1");
     if(mux1){
         mux1->Shutdown();
         delete mux1;
     }
 
     // closes i2c bus
+    LogInfo("Robot", "deleting i2c bus0");
     if(bus0){
         bus0->Close();
         delete bus0;
     }
+    LogInfo("Robot", "deleting i2c bus1");
     if(bus1){
         bus1->Close();
         delete bus1;
     }
 
     // close serial stream
+    LogInfo("Robot", "deleting servo serial stream");
     if(servoSerialStream){
         servoSerialStream->close();
         delete servoSerialStream;
@@ -152,7 +160,7 @@ bool Robot::Init(){
     // set legs hip transform
     float hip_dx = 0.065f;
     float hip_dy = 0.065f;
-    float hip_dz = 0.0f;   
+    float hip_dz = 0.0f;
     legs[0]->SetHipTransform(Eigen::Vector3f(+hip_dx, +hip_dy, hip_dz), 45.0f * DEG_2_RADf);
     legs[1]->SetHipTransform(Eigen::Vector3f(-hip_dx, +hip_dy, hip_dz), 135.0f * DEG_2_RADf);
     legs[2]->SetHipTransform(Eigen::Vector3f(-hip_dx, -hip_dy, hip_dz), -135.0f * DEG_2_RADf);
@@ -165,9 +173,9 @@ bool Robot::Init(){
         legs[i]->joints[0]->limitMax = +45.0f * DEG_2_RADf;
         legs[i]->joints[1]->limitMin = -90.0f * DEG_2_RADf;
         legs[i]->joints[1]->limitMax = +90.0f * DEG_2_RADf;
-        legs[i]->joints[2]->limitMin = -150.0f * DEG_2_RADf;
+        legs[i]->joints[2]->limitMin = -90.0f * DEG_2_RADf;
         legs[i]->joints[2]->limitMax = +150.0f * DEG_2_RADf;
-        legs[i]->joints[3]->limitMin = -15.0f * DEG_2_RADf;
+        legs[i]->joints[3]->limitMin = -30.0f * DEG_2_RADf;
         legs[i]->joints[3]->limitMax = +90.0f * DEG_2_RADf;
 
         // set joints lengths
@@ -453,8 +461,27 @@ void Robot::TorqueOff(bool buffer){
     }
 }
 
-void Robot::ReadIMU(bool buffer){
-    
+void Robot::ReadIMU(){
+    // read acceleration
+    float acc[3];
+    imu->ReadAcceleration(acc);
+    imu_acc[0] = -acc[1];
+    imu_acc[1] = +acc[0];
+    imu_acc[2] = +acc[2];
+
+    // read gyro
+    // float gyro[3];
+    // imu->ReadGyro(gyro);
+    // imu_gyro[0] = -gyro[1];
+    // imu_gyro[1] = +gyro[0];
+    // imu_gyro[2] = +gyro[2];
+}
+
+void Robot::ReadMeasuredWeight(){
+    // read acceleration
+    for(Leg* leg : legs){
+        leg->ReadMeasuredWeight(false);
+    }
 }
 
 }

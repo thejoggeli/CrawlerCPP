@@ -128,10 +128,10 @@ struct XYZServoStatus {
 class XYZServo {
    public:
 
-    unsigned int readAckHeaderTimeout = 100;
-    unsigned int readAckData1Timeout = 100;
-    unsigned int readAckData2Timeout = 100;
-    unsigned int flushReadTimeout = 100;
+    unsigned int readAckHeaderTimeout = 15;
+    unsigned int readAckData1Timeout = 15;
+    unsigned int readAckData2Timeout = 15;
+    unsigned int flushReadTimeout = 15;
 
     XYZServoError lastError;
     uint8_t id;

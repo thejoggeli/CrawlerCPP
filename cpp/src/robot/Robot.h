@@ -39,6 +39,9 @@ public:
     std::vector<Leg*> legs;
     std::vector<Joint*> jointsList;
 
+    float imu_acc[3] = {0, 0, 0};
+    float imu_gyro[3] = {0, 0, 0};
+
     Robot();
     ~Robot();
 
@@ -68,7 +71,8 @@ public:
     void TorqueOn(bool buffer = false);
     void TorqueOff(bool buffer = false);
 
-    void ReadIMU(bool buffer = false);
+    void ReadIMU();
+    void ReadMeasuredWeight();
 
 };
 

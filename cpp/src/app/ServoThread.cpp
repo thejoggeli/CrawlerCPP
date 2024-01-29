@@ -85,27 +85,35 @@ void ServoThread::Run(){
         // }
 
         // read angle measurements
-        Leg* leg = robot->legs[nextLeg];
-        for(Joint* joint : leg->joints){
+        // for(Leg* leg : robot->legs){
+        //     Joint* joint = leg->joints[readMeasuredAngleIdx];
+        //     joint->ReadMeasuredAngle(true, 0);
+
+        //     Joint* joint2 = leg->joints[readMeasuredAngleIdx+1];
+        //     joint2->ReadMeasuredAngle(true, 0);
+        // }
+
+        // readMeasuredAngleIdx += 2;
+        // if(readMeasuredAngleIdx >= 4){
+        //     readMeasuredAngleIdx = 0;
+        // }
+
+        for(Joint* joint : robot->jointsList){
             joint->ReadMeasuredAngle(true, 0);
-        }
-        nextLeg += 1;
-        if(nextLeg >= robot->legs.size()){
-            nextLeg = 0;
         }
 
         // read temperature and voltage measurements
-        // Joint* joint = robot->jointsList[nextJoint];
-        // if(measureState == 0){
+        // Joint* joint = robot->jointsList[voltTempNextJoint];
+        // if(voltTempMeasureState == 0){
         //     joint->ReadMeasuredVoltage(true, 0);
-        //     measureState = 1;
+        //     voltTempMeasureState = 1;
         // } else {
         //     joint->ReadMeasuredTemperature(true, 0);
-        //     measureState = 0;
+        //     voltTempMeasureState = 0;
         //     // measure another joint in next loop 
-        //     nextJoint++;
-        //     if(nextJoint >= robot->jointsList.size()){
-        //         nextJoint = 0;
+        //     voltTempNextJoint++;
+        //     if(voltTempNextJoint >= robot->jointsList.size()){
+        //         voltTempNextJoint = 0;
         //     }
         // }
 

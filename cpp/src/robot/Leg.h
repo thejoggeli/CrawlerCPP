@@ -24,8 +24,8 @@ public:
 
     unsigned int id;
 
-    DistanceSensor* distanceSensor;
-    WeightSensor* weightSensor;
+    DistanceSensor* distanceSensor = nullptr;
+    WeightSensor* weightSensor = nullptr;
 
     BufferedValue<float> measuredDistance;
     BufferedValue<float> measuredWeight;

@@ -12,9 +12,11 @@ WeightSensor::WeightSensor(){
 
 WeightSensor::~WeightSensor(){
     if(nau){
-        mux->OpenChannel(channel);
-        nau->powerDown();
-        mux->CloseChannel(channel);
+        if(mux){
+            mux->OpenChannel(channel);
+            nau->powerDown();
+            mux->CloseChannel(channel);
+        }
         delete nau;
         nau = nullptr;
     }

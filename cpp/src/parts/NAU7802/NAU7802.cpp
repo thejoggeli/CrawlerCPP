@@ -23,6 +23,7 @@
 #include "NAU7802.h"
 #include "libi2c/i2c.h"
 #include "core/Time.h"
+#include "core/Log.h"
 
 using namespace Crawler;
 
@@ -41,32 +42,40 @@ bool NAU7802::begin(I2CDevice* i2c, bool initialize)
   this->i2c = i2c;
 
   //Check if the device ack's over I2C
-  if (isConnected() == false)
-  {
-    //There are rare times when the sensor is occupied and doesn't ack. A 2nd try resolves this.
-    if (isConnected() == false)
-      return (false);
-  }
+  // if (isConnected() == false)
+  // {
+  //   //There are rare times when the sensor is occupied and doesn't ack. A 2nd try resolves this.
+  //   if (isConnected() == false)
+  //     return (false);
+  // }
 
   bool result = true; //Accumulate a result as we do the setup
 
   if (initialize)
   {
     result &= reset(); //Reset all registers
+    LogDebug("NAU7802", iLog << "reset " << result);
 
     result &= powerUp(); //Power on analog and digital sections of the scale
+    LogDebug("NAU7802", iLog << "powerUp " << result);
 
     result &= setLDO(NAU7802_LDO_3V3); //Set LDO to 3.3V
+    LogDebug("NAU7802", iLog << "setLDO " << result);
 
-    result &= setGain(NAU7802_GAIN_128); //Set gain to 128
+    result &= setGain(NAU7802_GAIN_2); //Set gain to 128
+    LogDebug("NAU7802", iLog << "setGain " << result);
 
-    result &= setSampleRate(NAU7802_SPS_80); //Set samples per second to 10
+    result &= setSampleRate(NAU7802_SPS_320); //Set samples per second to 10
+    LogDebug("NAU7802", iLog << "setSampleRate " << result);
 
     result &= setRegister(NAU7802_ADC, 0x30); //Turn off CLK_CHP. From 9.1 power on sequencing.
+    LogDebug("NAU7802", iLog << "setRegister " << result);
 
     result &= setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
+    LogDebug("NAU7802", iLog << "setBit " << result);
 
-    result &= calibrateAFE(); //Re-cal analog front end when we change gain, sample rate, or channel
+    // result &= calibrateAFE(); //Re-cal analog front end when we change gain, sample rate, or channel
+    // LogDebug("NAU7802", iLog << "calibrateAFE " << result);
   }
 
   return (result);

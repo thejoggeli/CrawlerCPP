@@ -43,9 +43,15 @@ Leg::Leg(Robot* robot, unsigned int id, const std::string& name){
 }
 
 Leg::~Leg(){
+    LogInfo("Leg", "deleting joints");
+    for(Joint* joint : joints){
+        delete joint;
+    }
+    LogInfo("Leg", "deleting weight sensor");
     if(weightSensor){
         delete weightSensor;
     }
+    LogInfo("Leg", "deleting distance sensor");
     if(distanceSensor){
         delete distanceSensor;
     }
@@ -57,8 +63,8 @@ bool Leg::InitDistanceSensor(MuxI2C* mux, int channel){
 }
 
 bool Leg::InitWeightSensor(MuxI2C* mux, int channel){
-    return true;
-    // return this->weightSensor->Init(mux, channel);
+    // return true;
+    return this->weightSensor->Init(mux, channel);
 }
 
 void Leg::SetHipTransform(const Eigen::Vector3f& translation, float angle){
@@ -102,7 +108,7 @@ bool Leg::IKExact(const Eigen::Vector3f& Q, float phi, float angles_out[4]){
         }
     }
     
-    float a2 = -acos(v); 
+    float a2 = acos(v); 
     a2 = Mathf::AngleToSymmetric(a2);
     if(a2 < joints[2]->limitMin || a2 > joints[2]->limitMax){
         #ifdef DEBUG_LEG_IK
@@ -111,7 +117,7 @@ bool Leg::IKExact(const Eigen::Vector3f& Q, float phi, float angles_out[4]){
         return false;
     }
 
-    float a1 = atan2(z, xy) - atan2(L2 * sin(a2), L1 + L2 * cos(a2));
+    float a1 = - atan2(z, xy) + atan2(L2 * sin(-a2), L1 + L2 * cos(-a2));
     a1 = Mathf::AngleToSymmetric(a1);
     if(a1 < joints[1]->limitMin || a1 > joints[1]->limitMax){
         #ifdef DEBUG_LEG_IK
@@ -120,7 +126,7 @@ bool Leg::IKExact(const Eigen::Vector3f& Q, float phi, float angles_out[4]){
         return false;
     }
 
-    float a3 = phi - a1 - a2 - PIf * 0.5f;
+    float a3 = - phi - a1 - a2 + PIf * 0.5f;
     a3 = Mathf::AngleToSymmetric(a3);
     if(a3 < joints[3]->limitMin || a3 > joints[3]->limitMax){
         #ifdef DEBUG_LEG_IK
@@ -139,9 +145,9 @@ bool Leg::IKExact(const Eigen::Vector3f& Q, float phi, float angles_out[4]){
     }
     
     angles_out[0] = a0;
-    angles_out[1] = -a1;
-    angles_out[2] = -a2;
-    angles_out[3] = -a3;
+    angles_out[1] = a1;
+    angles_out[2] = a2;
+    angles_out[3] = a3;
     
     return true;
 
@@ -300,6 +306,17 @@ bool Leg::ReadMeasuredDistance(bool buffer){
 }
 
 bool Leg::ReadMeasuredWeight(bool buffer){
+    uint32_t value = weightSensor->GetValue();
+    uint32_t thresh = 60000;
+    float weight = 0.f;
+    if(value < thresh){
+        weight = (float) value / 65535.0f * 1000.0f;
+    }
+    if(buffer){
+        measuredWeight.BufferValue(weight);
+    } else {
+        measuredWeight.SetValue(weight);
+    }
     return true;
 }
 

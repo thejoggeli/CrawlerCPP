@@ -28,7 +28,7 @@ ModelBrain::~ModelBrain() {
 
 void ModelBrain::Init(){
 
-    onnxRunner = new OnnxRunner("Crawler2.onnx");
+    onnxRunner = new OnnxRunner("Crawler2.pth.onnx");
 
     // initialize input values vector
     inputValues = std::vector<float> (onnxRunner->GetInputSize());    
@@ -62,6 +62,25 @@ void ModelBrain::Init(){
     for(int i = 0; i < measuredAngles.size(); i++){
         angleVelocities[i] = 0;
     }
+
+    // initialize myAcc
+    myAcc = std::vector<float>(16);
+    for(int i = 0; i < myAcc.size(); i++){
+        myAcc[i] = 0;
+    }
+
+    // initialize myVel
+    myVel = std::vector<float>(16);
+    for(int i = 0; i < myVel.size(); i++){
+        myVel[i] = 0;
+    }
+
+    // initialize myPos
+    myPos = std::vector<float>(16);
+    for(int i = 0; i < myPos.size(); i++){
+        myPos[i] = measuredAngles[i];
+    }
+
 }
 
 void ModelBrain::UpdateMeasuredAngles(){
@@ -97,44 +116,65 @@ void ModelBrain::FixedUpdate(){
         angleVelocities[i] = (measuredAngles[i] - oldMeasuredAngles[i]) / Time::fixedDeltaTime;
     }
 
-    // set input values [0, 15] -> current angles  
+    // begin input values
+    int idx = 0;
+
+    // set input values - current angles  
     const float dof_pos_scale = 1.0f;
     for(int i = 0; i < measuredAngles.size(); i++){
-        inputValues[i] = measuredAngles[i] * dof_pos_scale;
+        inputValues[idx++] = measuredAngles[i] * dof_pos_scale;
     }
 
-    // set input values [16-31] -> current angle velocities
-    const float dof_vel_scale = 0.05f;
+    // set input values - current angle velocities
+    const float dof_vel_scale = 0.2f;
     for(int i = 0; i < angleVelocities.size(); i++){
-        inputValues[i+16] = angleVelocities[i] * dof_vel_scale;
+        inputValues[idx++] = angleVelocities[i] * dof_vel_scale;
     }
 
-    // set input values [32-34] -> imu acceleration values
-    inputValues[32] = 0.0f; // TODO
-    inputValues[33] = 0.0f; // TODO
-    inputValues[34] = 0.0f; // TODO
+    // set input values - myVel
+    for(int i = 0; i < myVel.size(); i++){
+        inputValues[idx++] = myVel[i];
+    }
 
-    // set input values [35-37] -> imu gyro values
-    inputValues[35] = 0.0f; // TODO
-    inputValues[36] = 0.0f; // TODO
-    inputValues[37] = 0.0f; // TODO
+    // set input values - myPos
+    for(int i = 0; i < myPos.size(); i++){
+        inputValues[idx++] = myPos[i];
+    }
 
-    // set input values [38-39] -> command (x,y) values
-    inputValues[38] = 1.0f; // TODO
-    inputValues[39] = 0.0f; // TODO
-
-    // set input values [40-55] -> previous output values
+    // set input values - actions
     for(int i = 0; i < outputValues.size(); i++){
-        inputValues[i+40] = outputValues[i];
-    }    
+        inputValues[idx++] = outputValues[i];
+    }
+
+    // // set input values - imu acceleration values
+    // float x = -robot->imu_acc[1];
+    // float y = +robot->imu_acc[0];
+    // float z = +robot->imu_acc[2];
+    // float mag = sqrtf(x*x + y*y + z*z);
+    // float magInv = 1.0f/mag;
+    // x *= magInv;
+    // y *= magInv;
+    // z *= magInv;
+    // inputValues[idx++] = x;
+    // inputValues[idx++] = y;
+    // inputValues[idx++] = z;
+
+    // // set input values - command (x,y) values
+    // inputValues[idx++] = 1.0f; // TODO
+    // inputValues[idx++] = 0.0f; // TODO
 
     // run inference
     onnxRunner->SetInputValues(inputValues);
     onnxRunner->Run();
     onnxRunner->GetOutputValues(outputValues);
 
+    // char buffer[1000];
+    // sprintf(buffer, "%8.4f %8.4f %8.4f %8.4f ... %8.4f %8.4f %8.4f %8.4f", outputValues[0], outputValues[1], outputValues[2], outputValues[3], outputValues[12], outputValues[13], outputValues[14], outputValues[15]);
+    // LogDebug("ModelBrain", iLog << buffer);
+
     // apply output angles
-    ApplyTargetAngles();
+    // ApplyTargetAngles();
+    ApplyTargetAccelerations();
 
     // remember old angles
     for(int i = 0; i < measuredAngles.size(); i++){
@@ -143,34 +183,60 @@ void ModelBrain::FixedUpdate(){
 
 }
 
-float ModelBrain::OutputToAngle(float val, float low, float high){
+float ModelBrain::OutputFromTo(float val, float low, float high){
     return (val * 0.5f + 0.5f) * (high-low) + low;
+}
+
+void ModelBrain::ApplyTargetAccelerations(){
+
+    for(int i = 0; i < 16; i++){
+        myAcc[i] = OutputFromTo(outputValues[i], -25, 25);
+        myVel[i] += myAcc[i] * Time::fixedDeltaTime;
+        myPos[i] += myVel[i] * Time::fixedDeltaTime;
+    }
+
+    robot->legs[0]->joints[0]->SetTargetAngle(myPos[0],  true);
+    robot->legs[0]->joints[1]->SetTargetAngle(myPos[1],  true);
+    robot->legs[0]->joints[2]->SetTargetAngle(myPos[2],  true);
+    robot->legs[0]->joints[3]->SetTargetAngle(myPos[3],  true);
+    robot->legs[1]->joints[0]->SetTargetAngle(myPos[4],  true);
+    robot->legs[1]->joints[1]->SetTargetAngle(myPos[5],  true);
+    robot->legs[1]->joints[2]->SetTargetAngle(myPos[6],  true);
+    robot->legs[1]->joints[3]->SetTargetAngle(myPos[7],  true);
+    robot->legs[2]->joints[0]->SetTargetAngle(myPos[8],  true);
+    robot->legs[2]->joints[1]->SetTargetAngle(myPos[9],  true);
+    robot->legs[2]->joints[2]->SetTargetAngle(myPos[10], true);
+    robot->legs[2]->joints[3]->SetTargetAngle(myPos[11], true);
+    robot->legs[3]->joints[0]->SetTargetAngle(myPos[12], true);
+    robot->legs[3]->joints[1]->SetTargetAngle(myPos[13], true);
+    robot->legs[3]->joints[2]->SetTargetAngle(myPos[14], true);
+    robot->legs[3]->joints[3]->SetTargetAngle(myPos[15], true);
+
 }
 
 void ModelBrain::ApplyTargetAngles(){
 
     float angles[16];
 
-    angles[0+0]  = OutputToAngle(outputValues[0+0],  -45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
-    angles[0+4]  = OutputToAngle(outputValues[0+4],  -45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
-    angles[0+8]  = OutputToAngle(outputValues[0+8],  -45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
-    angles[0+12] = OutputToAngle(outputValues[0+12], -45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
+    angles[0+0]  = OutputFromTo(outputValues[0+0],  -45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
+    angles[0+4]  = OutputFromTo(outputValues[0+4],  -45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
+    angles[0+8]  = OutputFromTo(outputValues[0+8],  -45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
+    angles[0+12] = OutputFromTo(outputValues[0+12], -45.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
 
-    angles[1+0]  = OutputToAngle(outputValues[1+0],  -90.0*DEG_2_RADf, 90.0f*DEG_2_RADf);
-    angles[1+4]  = OutputToAngle(outputValues[1+4],  -90.0*DEG_2_RADf, 90.0f*DEG_2_RADf);
-    angles[1+8]  = OutputToAngle(outputValues[1+8],  -90.0*DEG_2_RADf, 90.0f*DEG_2_RADf);
-    angles[1+12] = OutputToAngle(outputValues[1+12], -90.0*DEG_2_RADf, 90.0f*DEG_2_RADf);
+    angles[1+0]  = OutputFromTo(outputValues[1+0],  -90.0*DEG_2_RADf, 90.0f*DEG_2_RADf);
+    angles[1+4]  = OutputFromTo(outputValues[1+4],  -90.0*DEG_2_RADf, 90.0f*DEG_2_RADf);
+    angles[1+8]  = OutputFromTo(outputValues[1+8],  -90.0*DEG_2_RADf, 90.0f*DEG_2_RADf);
+    angles[1+12] = OutputFromTo(outputValues[1+12], -90.0*DEG_2_RADf, 90.0f*DEG_2_RADf);
 
-    angles[2+0]  = OutputToAngle(outputValues[2+0],  -150.0f*DEG_2_RADf, 150.0f*DEG_2_RADf);
-    angles[2+4]  = OutputToAngle(outputValues[2+4],  -150.0f*DEG_2_RADf, 150.0f*DEG_2_RADf);
-    angles[2+8]  = OutputToAngle(outputValues[2+8],  -150.0f*DEG_2_RADf, 150.0f*DEG_2_RADf);
-    angles[2+12] = OutputToAngle(outputValues[2+12], -150.0f*DEG_2_RADf, 150.0f*DEG_2_RADf);
+    angles[2+0]  = OutputFromTo(outputValues[2+0],  -90.0f*DEG_2_RADf, 150.0f*DEG_2_RADf);
+    angles[2+4]  = OutputFromTo(outputValues[2+4],  -90.0f*DEG_2_RADf, 150.0f*DEG_2_RADf);
+    angles[2+8]  = OutputFromTo(outputValues[2+8],  -90.0f*DEG_2_RADf, 150.0f*DEG_2_RADf);
+    angles[2+12] = OutputFromTo(outputValues[2+12], -90.0f*DEG_2_RADf, 150.0f*DEG_2_RADf);
 
-    angles[2+0]  = OutputToAngle(outputValues[3+0],  -15.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
-    angles[2+4]  = OutputToAngle(outputValues[3+4],  -15.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
-    angles[2+8]  = OutputToAngle(outputValues[3+8],  -15.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
-    angles[2+12] = OutputToAngle(outputValues[3+12], -15.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
-
+    angles[2+0]  = OutputFromTo(outputValues[3+0],  -15.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
+    angles[2+4]  = OutputFromTo(outputValues[3+4],  -15.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
+    angles[2+8]  = OutputFromTo(outputValues[3+8],  -15.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
+    angles[2+12] = OutputFromTo(outputValues[3+12], -15.0f*DEG_2_RADf, 45.0f*DEG_2_RADf);
 
     robot->legs[0]->joints[0]->SetTargetAngle(angles[0],  true);
     robot->legs[0]->joints[1]->SetTargetAngle(angles[1],  true);

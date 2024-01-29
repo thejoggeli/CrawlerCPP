@@ -25,7 +25,7 @@ bool DistanceSensor::Init(MuxI2C* mux, int channel){
     if(initialized || i2c){
         return false;
     }
-
+ 
     this->mux = mux;
     this->channel = channel;
 

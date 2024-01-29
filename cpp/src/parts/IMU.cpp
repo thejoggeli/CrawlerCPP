@@ -68,8 +68,10 @@ bool IMU::Init(unsigned int bus){
     /* Enable Block Data Update */
     ism330dhcx_block_data_update_set((stmdev_ctx_t*)ctx, PROPERTY_ENABLE);
     /* Set Output Data Rate */
-    ism330dhcx_xl_data_rate_set((stmdev_ctx_t*)ctx, ISM330DHCX_XL_ODR_12Hz5);
-    ism330dhcx_gy_data_rate_set((stmdev_ctx_t*)ctx, ISM330DHCX_GY_ODR_12Hz5);
+    // ism330dhcx_xl_data_rate_set((stmdev_ctx_t*)ctx, ISM330DHCX_XL_ODR_12Hz5);
+    // ism330dhcx_gy_data_rate_set((stmdev_ctx_t*)ctx, ISM330DHCX_GY_ODR_12Hz5);
+    ism330dhcx_xl_data_rate_set((stmdev_ctx_t*)ctx, ISM330DHCX_XL_ODR_104Hz);
+    ism330dhcx_gy_data_rate_set((stmdev_ctx_t*)ctx, ISM330DHCX_GY_ODR_104Hz);
     /* Set full scale */
     ism330dhcx_xl_full_scale_set((stmdev_ctx_t*)ctx, ISM330DHCX_2g);
     ism330dhcx_gy_full_scale_set((stmdev_ctx_t*)ctx, ISM330DHCX_2000dps);

@@ -15,7 +15,7 @@ bool VCNL4010::begin(I2CDevice* i2c) {
     uint8_t rev = read8(0x81); // read Product ID Revision Register
     // LogDebug("VCNL4010", iLog << "read(0x81) returned " << (int)rev);
     if ((rev & 0xF0) != 0x20) {
-        LogError("VCNL4010", "(rev & 0xF0) != 0x20");
+        LogError("VCNL4010", iLog << "(rev & 0xF0) != 0x20 got " << ((rev & 0xF0) != 0x20) << " instead");
         return false;
     }
 

@@ -187,7 +187,8 @@ bool App::Run(){
     const float statusTimerInterval = 1.0f;
 
     // set fixed update rate
-    Time::SetFixedDeltaTimeMicros(1000000/40);
+    const float fixedFrequency = 10.0f;
+    Time::SetFixedDeltaTimeMicros(1000000/fixedFrequency);
     uint64_t lastUpdateTimeMicros = 0;
 
     // start up robot
@@ -195,7 +196,7 @@ bool App::Run(){
     // robot->PrintServoStatus();
 
     // walker
-    // robot->SetBrain(new WalkerBrain());
+    robot->SetBrain(new WalkerBrain()); 
 
     // surfer
     // robot->SetBrain(new SurferBrain());
@@ -208,7 +209,7 @@ bool App::Run(){
     // robot->TorqueOff();
 
     // model
-    robot->SetBrain(new ModelBrain());
+    // robot->SetBrain(new ModelBrain());
     
     // the beginning of time
     Time::Start();
@@ -287,6 +288,8 @@ bool App::Run(){
             servoThread.serialCommStartSignal.WaitAndClear();
 
             // call fixed update
+            robot->ReadIMU();
+            robot->ReadMeasuredWeight();
             robot->FixedUpdate();
 
             // increase fixed fps counter

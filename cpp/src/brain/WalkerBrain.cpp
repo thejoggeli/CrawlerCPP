@@ -197,7 +197,6 @@ void WalkerBrain::Update(){
 
 void WalkerBrain::FixedUpdate(){
 
-
     auto& clients = ClientManager::GetAllCients();
     Client* client = nullptr;
 
@@ -208,6 +207,8 @@ void WalkerBrain::FixedUpdate(){
     if(client){
     
         Eigen::Vector2f input = client->GetJoystickPosition(GamepadKey::LeftJoystick);
+
+        LogDebug("WalkerBrain", iLog << input[0] << " / " << input[1]);
 
         float jx = -input[1];
         float jy = -input[0];
@@ -280,6 +281,7 @@ void WalkerBrain::FixedUpdate(){
             };
 
             for(int i = 0; i < 4; i++){
+
                 float fx = footPositions[i][0];
                 float fy = footPositions[i][1];
                 float flen = sqrtf(fx*fx+fy*fy);

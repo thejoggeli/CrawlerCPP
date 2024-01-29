@@ -20,9 +20,12 @@ private:
     Robot* robot;
     std::thread thread; 
     std::atomic<bool> exitRequested = false;
-    int nextJoint = 0;
-    int measureState = 0;
+    int voltTempMeasureState = 0;
+    int voltTempNextJoint = 0;
+    
     int nextLeg = 0;
+
+    int readMeasuredAngleIdx = 0;
 
     std::vector<Joint*> ledPolicyVector;
     std::vector<Joint*> ledColorVector;

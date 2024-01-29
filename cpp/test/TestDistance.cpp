@@ -12,6 +12,10 @@ int main(){
 
     LogInfo("main", "GPIO init");
     GPIO::setmode(GPIO::BCM);
+    GPIO::setup(4, GPIO::Directions::OUT);
+    GPIO::setup(5, GPIO::Directions::OUT);
+    GPIO::output(4, GPIO::HIGH);
+    GPIO::output(5, GPIO::HIGH);
 
     // create i2c bus
     I2CBus bus;
@@ -28,7 +32,7 @@ int main(){
 
     // init sensors
     std::vector<DistanceSensor*> sensors;
-    for(int i = 0; i < 2; i++){
+    for(int i = 0; i < 4; i++){
         DistanceSensor* sensor = new DistanceSensor();
         LogInfo("main", "DistanceSensor init");
         if(!sensor->Init(&mux, i)){
@@ -38,7 +42,7 @@ int main(){
             LogInfo("main", iLog << "sensor " << i << " Init() success");
         }
         sensors.push_back(sensor);
-    }
+    } 
 
     LogInfo("main", "starting read loop");
     while(1){
@@ -52,7 +56,7 @@ int main(){
             uint64_t t_total = t_end - t_start;
 
             char buffer[2000];
-            sprintf(buffer, "s%d -> dur: %5.2f ms, value: %5d | ", i, t_total/1000.0f, value);
+            sprintf(buffer, "s%d %5.2fms %5d | ", i, t_total/1000.0f, value);
             ss << buffer;
         }
         LogInfo("main", ss.str());

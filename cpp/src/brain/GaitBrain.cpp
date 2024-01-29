@@ -36,25 +36,315 @@ void GaitBrain::Init(){
         frame.footPositions[i] = leg->hipTransform * leg->fkJointsResult.footPosition;
     }
 
-
     unsigned int steps = 200;
-    float step = 1.0/(float)steps;
-    float speed = 0.4f;
     float a = 0.5f;
     float b = 1.0f - a;
+    float step = 1.0/(float)steps;
+    float speed = 0.5f;
+
+    step = 1.0/(float)steps;
+    speed = 0.5f;
     for(unsigned int i = 0; i < steps; i++){
         float t = (float)i*step;
         t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
-        float posy = sin(t*PI2f)*0.03f;
-        float posz = cos(t*PI2f)*0.03f + 0.05f;
-        float rotx = sin(t*PI2f) * 5.0f * DEG_2_RADf;
-        float rotz = -sin(t*PI2f) * 5.0f * DEG_2_RADf;
-        frame.bodyPosition = {0.0f, posy, posz};
-        frame.bodyRotation = {rotx, 0.0f, rotz};
+        float posx = sin(t*PI2f)*0.07f;
+        float posz = cos(t*PI2f)*0.07f + 0.06f;
+        frame.bodyPosition = {posx, 0.0f, posz};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
         gait->AddFrame(frame);
         gait->AddTransition(step/speed);
     }
-   
+
+    step = 1.0/(float)steps;
+    speed = 0.5f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = 1.0f - (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float posx = sin(t*PI2f)*0.07f;
+        float posz = cos(t*PI2f)*0.07f + 0.06f;
+        frame.bodyPosition = {posx, 0.0f, posz};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    step = 1.0/(float)steps;
+    speed = 0.5f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float posy = sin(t*PI2f)*0.07f;
+        float posz = cos(t*PI2f)*0.07f + 0.06f;
+        float rotx = sin(t*PI2f) * 15.0f * DEG_2_RADf;
+        frame.bodyPosition = {0.0f, posy, posz};
+        frame.bodyRotation = {rotx, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // move down
+    step = 1.0/(float)steps;
+    speed = 1.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float posz = 0.13f - (cos((t-1.0f) * PIf)*0.5f+0.5f) * 0.13f; 
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // move forward
+    step = 1.0/(float)steps;
+    speed = 2.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float posx = 0.0f + (cos((t-1.0f) * PIf)*0.5f+0.5f) * 0.05f;
+        frame.bodyPosition = {posx, 0.0f, 0.0f};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // circle 1
+    step = 1.0/(float)steps;
+    speed = 0.5f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float posx = cos(t*PI2f) * 0.05f;
+        float posy = sin(t*PI2f) * 0.05f;
+        frame.bodyPosition = {posx, posy, 0.0f};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // move backward
+    step = 1.0/(float)steps;
+    speed = 2.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float posx = 0.05f - (cos((t-1.0f) * PIf)*0.5f+0.5f) * 0.1f;
+        frame.bodyPosition = {posx, 0.0f, 0.0f};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // circle 2
+    step = 1.0/(float)steps;
+    speed = 0.5f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float posx = -cos(t*PI2f) * 0.05f;
+        float posy = sin(t*PI2f) * 0.05f;
+        frame.bodyPosition = {posx, posy, 0.0f};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // move back to center
+    step = 1.0/(float)steps;
+    speed = 2.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float posx = - 0.05f + (cos((t-1.0f) * PIf)*0.5f+0.5f) * 0.05f;
+        frame.bodyPosition = {posx, 0.0f, 0.0f};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate prep
+    step = 1.0/(float)steps;
+    speed = 2.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float posz = (cos((t-1.0f) * PIf)*0.5f+0.5f) * 0.05f; 
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate 1
+    step = 1.0/(float)steps;
+    speed = 0.25f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float rot = sin(t*PI2f) * 40.0f * DEG_2_RADf;
+        float posz = 0.05f;
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {rot, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+    
+
+    // rotate 2
+    step = 1.0/(float)steps;
+    speed = 0.25f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float rot = sin(t*PI2f) * 40.0f * DEG_2_RADf;
+        float posz = 0.05f;
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {0.0f, rot, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate 3
+    step = 1.0/(float)steps;
+    speed = 0.25f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float rot = sin(t*PI2f) * 20.0f * DEG_2_RADf;
+        float posz = 0.05f;
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {0.0f, 0.0f, rot};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate 4 prep
+    step = 1.0/(float)steps;
+    speed = 1.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float roty = (cos((t-1.0f) * PIf)*0.5f+0.5f) * 30.0f * DEG_2_RADf;
+        float posz = 0.05f;
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {0.0f, -roty, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate 4
+    step = 1.0/(float)steps;
+    speed = 0.5f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float roty = cos(t*PI2f) * 30.0f * DEG_2_RADf;
+        float rotx = sin(t*PI2f) * 30.0f * DEG_2_RADf;
+        float posz = 0.05f;
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {rotx, -roty, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate 5
+    step = 1.0/(float)steps;
+    speed = 0.5;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float roty = cos(t*PI2f) * 30.0f * DEG_2_RADf;
+        float rotx = -sin(t*PI2f) * 30.0f * DEG_2_RADf;
+        float posz = 0.05f;
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {rotx, -roty, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+    
+    // rotate-shift prep
+    step = 1.0/(float)steps;
+    speed = 1.0f;
+    float shift_r = 0.05;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float roty = 30.0f * DEG_2_RADf - (cos((t-1.0f) * PIf)*0.5f+0.5f) * 10.0f * DEG_2_RADf;
+        float posx = (cos((t-1.0f) * PIf)*0.5f+0.5f) * shift_r;
+        float posz = 0.05f;
+        frame.bodyPosition = {posx, 0.0f, posz};
+        frame.bodyRotation = {0.0f, -roty, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate-shift 1
+    step = 1.0/(float)steps;
+    speed = 0.25;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float roty = cos(t*PI2f) * 20.0f * DEG_2_RADf;
+        float rotx = sin(t*PI2f) * 20.0f * DEG_2_RADf;
+        float posz = 0.05f;
+        float posx = cos(t*PI2f) * shift_r;
+        float posy = sin(t*PI2f) * shift_r;
+        frame.bodyPosition = {posx, posy, posz};
+        frame.bodyRotation = {rotx, -roty, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate-shift 2
+    step = 1.0/(float)steps;
+    speed = 0.25;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float roty = cos(t*PI2f) * 20.0f * DEG_2_RADf;
+        float rotx = -sin(t*PI2f) * 20.0f * DEG_2_RADf;
+        float posz = 0.05f;
+        float posx = cos(t*PI2f) * shift_r;
+        float posy = -sin(t*PI2f) * shift_r;
+        frame.bodyPosition = {posx, posy, posz};
+        frame.bodyRotation = {rotx, -roty, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // rotate-shift undo
+    step = 1.0/(float)steps;
+    speed = 1.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float roty = 20.0f * DEG_2_RADf - (cos((t-1.0f) * PIf)*0.5f+0.5f) * 20.0f * DEG_2_RADf;
+        float posz = 0.05f - (cos((t-1.0f) * PIf)*0.5f+0.5f) * 0.05f; 
+        float posx = shift_r - (cos((t-1.0f) * PIf)*0.5f+0.5f) * shift_r; 
+        frame.bodyPosition = {posx, 0.0f, posz};
+        frame.bodyRotation = {0.0f, -roty, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    // move up
+    step = 1.0/(float)steps;
+    speed = 1.0f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = (float)i*step;
+        float posz = (cos((t-1.0f) * PIf)*0.5f+0.5f) * 0.13f; 
+        frame.bodyPosition = {0.0f, 0.0f, posz};
+        frame.bodyRotation = {0.0f, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
+    step = 1.0/(float)steps;
+    speed = 0.5f;
+    for(unsigned int i = 0; i < steps; i++){
+        float t = 1.0f - (float)i*step;
+        t = a*(-cos(t*PIf)*0.5f+0.5f) + b*t;
+        float posy = sin(t*PI2f)*0.07f;
+        float posz = cos(t*PI2f)*0.07f + 0.06f;
+        float rotx = sin(t*PI2f) * 15.0f * DEG_2_RADf;
+        frame.bodyPosition = {0.0f, posy, posz};
+        frame.bodyRotation = {rotx, 0.0f, 0.0f};
+        gait->AddFrame(frame);
+        gait->AddTransition(step/speed);
+    }
+
     // float dxy = 0.05f;
 
     // frame.bodyPosition = {dxy, 0.0f, 0.0f};

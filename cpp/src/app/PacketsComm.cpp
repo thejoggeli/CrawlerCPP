@@ -105,12 +105,12 @@ static void OnRequestIMU(void* caller, Packet& packet){
     // LogDebug("PacketsComm", "RequestLegIMUHandler()");
     auto request = (PacketRequestIMUData*)(&packet);
     auto response = std::make_shared<PacketRespondIMUData>();
-    response->acceleration.push_back(0.0f); // acceleration x
-    response->acceleration.push_back(0.0f); // acceleration y
-    response->acceleration.push_back(0.0f); // acceleration z
-    response->gyro.push_back(0.0f); // gyro x
-    response->gyro.push_back(0.0f); // gyro y
-    response->gyro.push_back(0.0f); // gyro z
+    response->acceleration.push_back(robot->imu_acc[0]); // acceleration x 
+    response->acceleration.push_back(robot->imu_acc[1]); // acceleration y
+    response->acceleration.push_back(robot->imu_acc[2]); // acceleration z
+    response->gyro.push_back(robot->imu_gyro[0]); // gyro x
+    response->gyro.push_back(robot->imu_gyro[1]); // gyro y
+    response->gyro.push_back(robot->imu_gyro[2]); // gyro z
     ClientManager::SendPacket(response, packet.clientId);
 }
 

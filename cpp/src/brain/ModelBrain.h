@@ -19,9 +19,15 @@ private:
     std::vector<float> oldMeasuredAngles;
     std::vector<float> angleVelocities;
 
+    std::vector<float> myAcc;
+    std::vector<float> myVel;
+    std::vector<float> myPos;
+
+
     void UpdateMeasuredAngles();
     void ApplyTargetAngles();
-    float OutputToAngle(float val, float low, float high);
+    void ApplyTargetAccelerations();
+    float OutputFromTo(float val, float low, float high);
 
 public:
 

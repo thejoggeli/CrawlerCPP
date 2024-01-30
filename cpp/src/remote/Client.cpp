@@ -15,6 +15,10 @@ Client::Client(int id){
 		onDownMap[i] = false;
 		onUpMap[i] = false;
 	}
+	for(int i = 0; i < NUM_GAMEPAD_JOYSTICKS; i++){
+		joystickPositions[i][0] = 0.0f;
+		joystickPositions[i][1] = 0.0f;
+	}
 }
 
 void Client::QueuePacket(std::shared_ptr<Packet> packet){ 
@@ -49,6 +53,7 @@ void Client::Update(){
 	for(auto& packet: packets){
 		switch(packet->type){
 		case PacketType::GamepadKey: {
+			// LogDebug("Client", iLog << "PacketGamepadKey received");
 			auto p = std::static_pointer_cast<PacketGamepadKey>(packet);
 			switch(p->state){
 				case GamepadKeyState::Pressed: {
@@ -68,10 +73,14 @@ void Client::Update(){
 			break;
 		}
 		case PacketType::GamepadJoystick: {
+			// LogDebug("Client", iLog << "PacketGamepadJoystick received");
 			auto p = std::static_pointer_cast<PacketGamepadJoystick>(packet);
-			unsigned int id = (unsigned int)(p->key) & GAMEPAD_JOYSTICK_MASK;
+			if(p->key == GamepadKey::LeftJoystick){
+				joystickPositions[0] = Eigen::Vector2f(p->x, p->y);
+			} else if(p->key == GamepadKey::RightJoystick) {
+				joystickPositions[1] = Eigen::Vector2f(p->x, p->y);
+			}
 			// LogDebug("Client", iLog << "x: " << x << ", y: " << y);
-			joystickPositions[id] = Eigen::Vector2f(p->x, p->y);
 			break;
 		}
 		}
@@ -91,8 +100,12 @@ bool Client::OnKeyUp(GamepadKey code){
 }
 
 Eigen::Vector2f Client::GetJoystickPosition(GamepadKey code){
-	int id = (uint8_t)(code) & GAMEPAD_JOYSTICK_MASK;
-	return joystickPositions[id];
+	if(code == GamepadKey::LeftJoystick){
+		return joystickPositions[0];
+	} else if(code == GamepadKey::RightJoystick) {
+		return joystickPositions[1];
+	}
+	return Eigen::Vector2f(0.0f, 0.0f);
 }
 
 void Client::SetFlag(uint32_t flag){

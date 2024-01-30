@@ -16,7 +16,7 @@ using namespace std;
 
 namespace Crawler {
 
-ModelBrain::ModelBrain() : Brain() {
+ModelBrain::ModelBrain() : Brain("model") {
 
 }
 
@@ -27,6 +27,8 @@ ModelBrain::~ModelBrain() {
 }
 
 void ModelBrain::Init(){
+
+    robot->Startup();
 
     onnxRunner = new OnnxRunner("Crawler2.pth.onnx");
 

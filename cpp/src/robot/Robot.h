@@ -32,6 +32,7 @@ public:
     MuxI2C* mux1 = nullptr;
 
     Brain* brain = nullptr;
+    Brain* newBrain = nullptr;
     SerialStream* servoSerialStream = nullptr;
     XYZServo* masterServo = nullptr;
 
@@ -53,6 +54,7 @@ public:
     void MoveJointsToTargetSync(float time, bool forceTorqueOn = false);
 
     void SetBrain(Brain* brain);
+    void ApplyBrain();
 
     void Update();
     void FixedUpdate();

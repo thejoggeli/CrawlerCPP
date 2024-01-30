@@ -394,7 +394,7 @@ void Joint::SetServoLedPolicySystem(bool buffer){
 
 void Joint::SetServoLedColor(int r, int g, int b, int w, bool buffer){
     // compress color into a single int 
-    unsigned int color = r | (g<<1) | (b<<2) | (w<<3);
+    unsigned int color = w | (b<<1) | (g<<2) | (r<<3);
     if(buffer){
         servoLedColor.BufferValue(color);
     } else {

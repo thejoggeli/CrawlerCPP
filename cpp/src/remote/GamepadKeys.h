@@ -7,12 +7,11 @@
 
 #define NUM_GAMEPAD_KEYS 0xFF
 #define NUM_GAMEPAD_JOYSTICKS 2
-#define GAMEPAD_JOYSTICK_MASK 0xF0
 
 namespace Crawler {
 
 enum class GamepadKey : uint8_t {
-	    None = 0x00,
+        None = 0x00,
         A = 0x10, 
         B = 0x11, 
         X = 0x12, 
@@ -23,7 +22,7 @@ enum class GamepadKey : uint8_t {
         Right = 0x23,
         Start = 0x40, 
         Select = 0x41,
-		LeftJoystick = 0xF0, 
+        LeftJoystick = 0xF0, 
         RightJoystick = 0xF1,
 };
 

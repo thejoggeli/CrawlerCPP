@@ -16,10 +16,14 @@ using namespace std;
 namespace Crawler {
 
 
-SurferBrain::SurferBrain() : Brain() {
+SurferBrain::SurferBrain() : Brain("surf") {
 }
 
 void SurferBrain::Init(){
+
+    if(startupOnInit){
+        robot->Startup();
+    }
 
     // stance from measured angles
     Leg* leg = robot->legs[0];
@@ -33,25 +37,34 @@ void SurferBrain::Init(){
     float stancePhi = 0.0f * DEG_2_RADf;
     SetStance(stanceXY, stanceZ, hipAngle, stancePhi);
 
+    bodyTranslationStart = {0.0f, 0.0f, 0.0f};
+    bodyTranslationTarget = {0.0f, 0.0f, 0.0f};
+    bodyTranslationDelta = {0.0f, 0.0f, 0.0f};
+    bodyTranslation = {0.0f, 0.0f, 0.0f};
+    bodyRotationStart = {0.0f, 0.0f, 0.0f};
+    bodyRotationTarget = {0.0f, 0.0f, 0.0f};
+    bodyRotationDelta = {0.0f, 0.0f, 0.0f};
+    bodyRotation = {0.0f, 0.0f, 0.0f};
+
 }
 
 void SurferBrain::Update(){
 
-    auto& clients = ClientManager::GetAllCients();
-    Client* client = nullptr;
+    // auto& clients = ClientManager::GetAllCients();
+    // Client* client = nullptr;
 
-    if(clients.size() > 0){
-        client = clients[0].get();
-    }
+    // if(clients.size() > 0){
+    //     client = clients[0].get();
+    // }
 
-    if(client){
+    // if(client){
 
-        if(client->OnKeyDown(GamepadKey::A)){
-            surfMode = (surfMode+1)%3;
-            LogInfo("SurferBrain", iLog << "Surf Mode is now " << surfMode);
-        }
+    //     if(client->OnKeyDown(GamepadKey::A)){
+    //         surfMode = (surfMode+1)%3;
+    //         LogInfo("SurferBrain", iLog << "Surf Mode is now " << surfMode);
+    //     }
 
-    }
+    // }
     
 
 }
@@ -79,27 +92,6 @@ void SurferBrain::FixedUpdate(){
             SetBodyRotationTarget(rx, ry, 0.0f);
             // LogDebug("SurferBrain", iLog << rx << ", " << ry);
 
-            // move base up and down
-            if(client->IsKeyDown(GamepadKey::Down)){
-                SetBodyTranslationTarget(bodyTranslationTarget[0], bodyTranslationTarget[1], bodyTranslationTarget[2] - 0.05f * Time::fixedDeltaTime);
-            } else if(client->IsKeyDown(GamepadKey::Up)){
-                SetBodyTranslationTarget(bodyTranslationTarget[0], bodyTranslationTarget[1], bodyTranslationTarget[2] + 0.05f * Time::fixedDeltaTime);
-            }
-
-            // change target phi angles
-            if(client->IsKeyDown(GamepadKey::Left)){
-                stancePhi -= 25.0f * Time::fixedDeltaTime * DEG_2_RADf;
-            } else if(client->IsKeyDown(GamepadKey::Right)){
-                stancePhi += 25.0f * Time::fixedDeltaTime * DEG_2_RADf;
-            }
-
-        } else if(surfMode == 1) {
-
-            float dx = input[1] *   0.05f;
-            float dy = -input[0] * 0.05f;
-            // LogDebug("SurferBrain", iLog << "dx=" << dx << ", dy=" << dy);
-            SetBodyTranslationTarget(dx, dy, bodyTranslationTarget[2]);
-
             // narrow or widen stance 
             if(client->IsKeyDown(GamepadKey::Down)){
                 SetStance(stanceXY - 0.05f * Time::fixedDeltaTime, stanceZ, stanceHipAngle, stancePhi);
@@ -112,6 +104,27 @@ void SurferBrain::FixedUpdate(){
                 SetStance(stanceXY, stanceZ, stanceHipAngle - 25.0f * Time::fixedDeltaTime * DEG_2_RADf, stancePhi);
             } else if(client->IsKeyDown(GamepadKey::Right)){
                 SetStance(stanceXY, stanceZ, stanceHipAngle + 25.0f * Time::fixedDeltaTime * DEG_2_RADf, stancePhi);
+            }
+
+        } else if(surfMode == 1) {
+
+            float dx = input[1] *   0.05f;
+            float dy = -input[0] * 0.05f;
+            // LogDebug("SurferBrain", iLog << "dx=" << dx << ", dy=" << dy);
+            SetBodyTranslationTarget(dx, dy, bodyTranslationTarget[2]);
+
+            // move base up and down
+            if(client->IsKeyDown(GamepadKey::Down)){
+                SetBodyTranslationTarget(bodyTranslationTarget[0], bodyTranslationTarget[1], bodyTranslationTarget[2] - 0.05f * Time::fixedDeltaTime);
+            } else if(client->IsKeyDown(GamepadKey::Up)){
+                SetBodyTranslationTarget(bodyTranslationTarget[0], bodyTranslationTarget[1], bodyTranslationTarget[2] + 0.05f * Time::fixedDeltaTime);
+            }
+
+            // change target phi angles
+            if(client->IsKeyDown(GamepadKey::Left)){
+                stancePhi -= 25.0f * Time::fixedDeltaTime * DEG_2_RADf;
+            } else if(client->IsKeyDown(GamepadKey::Right)){
+                stancePhi += 25.0f * Time::fixedDeltaTime * DEG_2_RADf;
             }
 
         } else if(surfMode == 2){

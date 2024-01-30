@@ -192,7 +192,7 @@ bool App::Run(){
     uint64_t lastUpdateTimeMicros = 0;
 
     // start up robot
-    robot->Startup();
+    // robot->Startup();
     // robot->PrintServoStatus();
 
     // walker
@@ -210,8 +210,11 @@ bool App::Run(){
 
     // model
     // robot->SetBrain(new ModelBrain());
+
+    // apply the brain
+    robot->ApplyBrain();      
     
-    // the beginning of time
+    // the beginning of time              
     Time::Start();
 
     // status timer
@@ -279,7 +282,9 @@ bool App::Run(){
             // ServoThread is waiting for next loop, meaning it is not modyfing the buffers
             // thus it is safe to apply the buffers here
             servoThread.ApplyBuffers();
-            
+
+            // set new robot brain
+            robot->ApplyBrain();                             
 
             // signal ServoThread that it can start the next loop
             servoThread.nextLoopSignal.Set();

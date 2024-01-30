@@ -27,11 +27,28 @@ export default class GamepadComponent extends React.Component {
         this.gamepad.subscribe("onButtonPress", this, this.onButtonPress)
         this.gamepad.subscribe("onButtonRelease", this, this.onButtonRelease)
         this.gamepad.subscribe("onJoystickMove", this, this.onJoystickMove)
-
+        
+        // Main.events.subscribe("update", this, this.handleUpdate)
+        Main.packetMessages.subscribe("getBrain", this, this.handleGetBrain)
+        
+        var msg = new PacketMessage("getBrain")
+        Main.addPacketMessage(msg)
+        
     }
 
     componentWillUnmount(){
         this.gamepad.uninstall();
+        // Main.events.unsubscribe("update", this)
+        Main.packetMessages.unsubscribe("getBrain", this)
+    }
+
+    handleGetBrain = (message) => {
+        console.log(message)
+        var mode = message.getString("brain")
+        this.setState({mode: mode});
+    }
+
+    handleUpdate = () => {
 
     }
     
@@ -61,19 +78,8 @@ export default class GamepadComponent extends React.Component {
         // console.log(event)
         var mode = event.target.value;
         this.setState({mode: mode});
-
         var msg = new PacketMessage("setBrain")
-        if(mode == 0){
-            msg.addString("name", "walk")
-        } else if(mode == 1){
-            msg.addString("name", "surf-1")            
-        } else if(mode == 2){
-            msg.addString("name", "surf-2")            
-        } else if(mode == 3){
-            msg.addString("name", "dance")            
-        } else if(mode == 4){
-            msg.addString("name", "calib")            
-        }
+        msg.addString("name", mode)    
         Main.addPacketMessage(msg)
     }
 
@@ -82,11 +88,11 @@ export default class GamepadComponent extends React.Component {
             <div id="gamepad-flexbox">
                 <div id="gamepad-navbar" >
                     <select value={this.state.mode} onChange={this.handleChange}>
-                        <option value={0}>Selected Mode: Walk</option>
-                        <option value={1}>Selected Mode: Translate</option>
-                        <option value={2}>Selected Mode: Rotate</option>
-                        <option value={3}>Selected Mode: Dance</option>
-                        <option value={4}>Selected Mode: Calibrate</option>
+                        <option value={"walk"}>Selected Mode: Walk (walk) </option>
+                        <option value={"surf-1"}>Selected Mode: Translate (surf-1)</option>
+                        <option value={"surf-2"}>Selected Mode: Rotate (surf-2)</option>
+                        <option value={"dance"}>Selected Mode: Dance (dance)</option>
+                        <option value={"calib"}>Selected Mode: Calibrate (calib)</option>
                     </select>
                 </div>
                 <div id="gamepad-container"></div>

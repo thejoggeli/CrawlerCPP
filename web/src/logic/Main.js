@@ -62,6 +62,7 @@ class Main {
                 Main.connection.send(packet.buffer.getDataView())
                 Main.bytesSent += packet.buffer.getDataSize()
                 Main.packetsSent += 1
+                // console.log("sending ", packet)
             }
             Main.packetSender.clearPackets()
 
@@ -104,9 +105,9 @@ class Main {
 
     static onConnectionOpenFailed(event){
         Log.debug("Main", "onConnectionOpenFailed");
-        setTimeout(() => {
-            Main.connection.connect();
-        }, 250);
+        // setTimeout(() => {
+        //     Main.connection.connect();
+        // }, 250);
     }
 
     static onConnectionClose(event){

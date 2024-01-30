@@ -14,14 +14,14 @@ using namespace std;
 namespace Crawler {
 
 
-CalibrationBrain::CalibrationBrain() : Brain() {
+CalibrationBrain::CalibrationBrain() : Brain("calib") {
     
 }
 
 void CalibrationBrain::Init(){
-    for(Joint* joint : robot->jointsList){
-        joint->TorqueOff(true);
-    }
+
+    robot->TorqueOff();
+
     ClientManager::SubscribeMessage("setCalib", this, [](void* caller, PacketMessage& msg){
         
         CalibrationBrain* self = (CalibrationBrain*)caller;
@@ -76,6 +76,7 @@ void CalibrationBrain::Init(){
 }
 
 void CalibrationBrain::Update(){
+    
 
 }
 

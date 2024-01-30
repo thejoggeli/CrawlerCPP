@@ -12,7 +12,7 @@
 
 namespace Crawler {
 
-GaitBrain::GaitBrain() : Brain() {
+GaitBrain::GaitBrain() : Brain("dance") {
 
 }
 
@@ -23,6 +23,8 @@ GaitBrain::~GaitBrain(){
 }
 
 void GaitBrain::Init(){
+
+    robot->Startup();
     
     gait = new Gait();
     

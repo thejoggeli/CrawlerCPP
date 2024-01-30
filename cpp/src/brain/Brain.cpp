@@ -11,8 +11,12 @@ using namespace std;
 
 namespace Crawler {
 
-Brain::Brain() {
+Brain::Brain(const std::string& name) {
+    this->name = name;
+}
 
+void Brain::Init(){
+    robot->Startup();
 }
 
 void Brain::SetRobot(Robot* robot){
@@ -70,19 +74,17 @@ bool Brain::ApplyPoseToJoints(Eigen::Vector3f footPositions[4], float footAngles
     }
 
     // set IK servo colors
-    if(false){
-        for(int i = 0; i < 4; i++){
-            Leg* leg = robot->legs[i];
-            int r, g, b, w;
-            if(ikSuccess[i]){
-                r = 0; g = 1; b = 1; w = 0;
-                r = 0; g = 1; b = 1; w = 0;
-            } else {
-                r = 1; g = 1; b = 0; w = 0;
-            }
-            for(Joint* joint : leg->joints){
-                joint->SetServoLedColor(r, g, b, w, true);
-            }
+    for(int i = 0; i < 4; i++){
+        Leg* leg = robot->legs[i];
+        int r, g, b, w;
+        if(ikSuccess[i]){
+            r = 0; g = 1; b = 1; w = 0;
+            // r = 0; g = 1; b = 1; w = 0;
+        } else {
+            r = 1; g = 1; b = 0; w = 0;
+        }
+        for(Joint* joint : leg->joints){
+            joint->SetServoLedColor(r, g, b, w, true);
         }
     }
 

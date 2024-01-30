@@ -191,15 +191,30 @@ bool Robot::Init(){
 
 void Robot::SetBrain(Brain* brain){
 
+    if(this->newBrain != nullptr){
+        this->newBrain->Destroy();
+        delete this->newBrain;
+    }
+
+    this->newBrain = brain;
+    this->newBrain->SetRobot(this);
+
+}
+
+void Robot::ApplyBrain(){
+
+    if(this->newBrain == nullptr){
+        return;
+    }
+
     if(this->brain != nullptr){
         this->brain->Destroy();
         delete this->brain;
     }
 
-    this->brain = brain;
-    this->brain->SetRobot(this);
-
-    brain->Init();
+    this->brain = newBrain;
+    this->brain->Init(); 
+    this->newBrain = nullptr;
 
 }
 
@@ -304,11 +319,12 @@ void Robot::Startup(){
     // set LED colors
     SetServosLedPolicyUser();
     for(Joint* joint : jointsList){
-        joint->SetServoLedColor(1, 0, 1, 0);
+        joint->SetServoLedColor(0, 0, 0, 1);
     }
 
     // move servos to initial position
     LogInfo("Robot", "moving to default position");
+    TorqueOn();
     for(Leg* leg : legs){
         leg->joints[0]->SetTargetAngle(DEG_2_RADf * 0.0f);
         leg->joints[1]->SetTargetAngle(DEG_2_RADf * -60.0f);
@@ -318,18 +334,14 @@ void Robot::Startup(){
     MoveJointsToTargetSync(2.0f);
     Time::Sleep(2.5f);
 
-    // set LED colors
-    for(Leg* leg : legs){
-        leg->joints[0]->SetServoLedColor(0, 0, 1, 0);
-        leg->joints[1]->SetServoLedColor(0, 0, 1, 0);
-        leg->joints[2]->SetServoLedColor(0, 0, 1, 0);
-        leg->joints[3]->SetServoLedColor(0, 0, 1, 0);
-    }
-
     // initialize joint states
     for(Joint* joint : jointsList){
         joint->ReadMeasuredStatus();
         joint->lastTargetAngle = joint->currentTargetAngle;
+    }
+
+    for(Joint* joint : jointsList){
+        joint->SetServoLedColor(0, 0, 0, 0);
     }
     
 }

@@ -12,7 +12,7 @@
 
 namespace Crawler {
 
-WalkerBrain::WalkerBrain() : Brain() {
+WalkerBrain::WalkerBrain() : Brain("walk") {
 
 }
 
@@ -32,6 +32,9 @@ WalkerBrain::~WalkerBrain(){
 }
 
 void WalkerBrain::Init(){
+
+    robot->Startup();
+
     InitGaitWalk();
     InitGaitTurn();
 
@@ -208,7 +211,7 @@ void WalkerBrain::FixedUpdate(){
     
         Eigen::Vector2f input = client->GetJoystickPosition(GamepadKey::LeftJoystick);
 
-        LogDebug("WalkerBrain", iLog << input[0] << " / " << input[1]);
+        // LogDebug("WalkerBrain", iLog << input[0] << " / " << input[1]);
 
         float jx = -input[1];
         float jy = -input[0];

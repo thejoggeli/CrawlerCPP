@@ -67,7 +67,7 @@ set(
     src/threading/BufferedValue.cpp
     src/threading/Semaphore.cpp
     src/threading/Barrier.cpp
-    src/threading/Signal.cpp
+    src/threading/Signal.cpp 
     src/remote/SocketServer.cpp
     src/remote/SocketMessage.cpp
     src/remote/SeasocksHandler.cpp

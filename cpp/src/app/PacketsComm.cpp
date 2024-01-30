@@ -7,6 +7,10 @@
 #include "remote/Packet.h"
 #include "core/Log.h"
 #include "math/Mathf.h"
+#include "brain/CalibrationBrain.h"
+#include "brain/WalkerBrain.h"
+#include "brain/SurferBrain.h"
+#include "brain/GaitBrain.h"
 
 using namespace std;
 
@@ -184,9 +188,63 @@ static void OnMessagePrintStatus(void* caller, PacketMessage& packet){
     }
 }
 
+static std::string GetRobotBrainName(Brain* brain){
+    std::string name = brain->name;
+    if(name == "surf"){
+        SurferBrain* surferBrain = (SurferBrain*) brain;
+        if(surferBrain->surfMode == 0){
+            name += "-2";
+        } else if(surferBrain->surfMode == 1){
+            name += "-1";
+        }
+    }
+    return name;
+}
+
 static void OnMessageSetBrain(void* caller, PacketMessage& packet){
     string brainName = packet.GetString("name");
-    LogInfo("PacketsComm", iLog << "SetBrain: " << brainName);
+
+    if(brainName == "calib"){
+        robot->SetBrain(new CalibrationBrain());
+    } else if(brainName == "walk"){
+        WalkerBrain* brain = new WalkerBrain();
+        robot->SetBrain(brain);
+    } else if(brainName == "surf-1"){
+        SurferBrain* brain = new SurferBrain();
+        if(robot->brain->name == "surf"){
+            brain->startupOnInit = false;
+        }
+        brain->surfMode = 1;
+        robot->SetBrain(brain);
+    } else if(brainName == "surf-2"){
+        SurferBrain* brain = new SurferBrain();
+        if(robot->brain->name == "surf"){
+            brain->startupOnInit = false;
+        }
+        brain->surfMode = 0;
+        robot->SetBrain(brain);
+    } else if(brainName == "dance"){
+        robot->SetBrain(new GaitBrain());
+    } else {
+        ClientManager::SendLogInfo("PacketsComm", iLog << "invalid brain name: " << brainName);
+    }
+
+    if(robot->newBrain != nullptr){
+        ClientManager::SendLogInfo("PacketsComm", iLog << "brain is now: " << GetRobotBrainName(robot->newBrain));
+    }
+
+}
+
+static void OnMessageGetBrain(void* caller, PacketMessage& packet){
+    auto response = std::make_shared<PacketMessage>("getBrain");
+    std::string name = GetRobotBrainName(robot->brain);
+    response->AddString("brain", name.c_str());
+    ClientManager::SendPacket(response, packet.clientId);   
+}
+
+static void OnMessagePrintBrain(void* caller, PacketMessage& packet){
+    std::string name = GetRobotBrainName(robot->brain);
+    ClientManager::SendLogInfo("PacketsComm", iLog << "current brain is " << name);
 }
 
 static void OnMessagePrintAngles(void* caller, PacketMessage& packet){
@@ -276,6 +334,8 @@ void PacketsComm::Init(Robot* robotPtr){
     ClientManager::SubscribeMessage("requestCalib", &caller, &OnMessageGetCalib);
     ClientManager::SubscribeMessage("setTorque", &caller, &OnMessageSetTorque);
     ClientManager::SubscribeMessage("setBrain", &caller, &OnMessageSetBrain);
+    ClientManager::SubscribeMessage("getBrain", &caller, &OnMessageGetBrain);
+    ClientManager::SubscribeMessage("printBrain", &caller, &OnMessagePrintBrain);
     ClientManager::SubscribeMessage("printStatus", &caller, &OnMessagePrintStatus);
     ClientManager::SubscribeMessage("printAngles", &caller, &OnMessagePrintAngles);
     ClientManager::SubscribeMessage("printPositions", &caller, &OnMessagePrintPositions);

@@ -11,12 +11,14 @@ class Brain {
 public:
 
     Robot* robot;
+    std::string name;
 
-    Brain();
+    Brain(const std::string& name);
 
     void SetRobot(Robot* robot);
 
-    virtual void Init() = 0;
+
+    virtual void Init();
     virtual void Update() = 0;
     virtual void FixedUpdate() = 0;
     virtual void Destroy() = 0;

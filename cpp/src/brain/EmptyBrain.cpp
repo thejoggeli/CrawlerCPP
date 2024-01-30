@@ -10,7 +10,7 @@ using namespace std;
 namespace Crawler {
 
 
-EmptyBrain::EmptyBrain() : Brain() {
+EmptyBrain::EmptyBrain() : Brain("empty") {
     
 }
 

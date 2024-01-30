@@ -14,13 +14,16 @@ private:
 
     Eigen::Vector3f footPositions[4];
     float stancePhi;
-    int surfMode = 0;
-    int stanceMode = 0;
     float stanceXY;
     float stanceZ;
     float stanceHipAngle;
 
 public:
+
+    bool startupOnInit = true;
+
+    int surfMode = 0;
+    int stanceMode = 0;
 
     Eigen::Affine3f pivotTransform = Eigen::Affine3f::Identity();
     Eigen::Affine3f pivotTransformInverse = Eigen::Affine3f::Identity();

@@ -88,8 +88,12 @@ export default class Console {
         } else if(cmd == "exit"){
             msg = new PacketMessage("exit")
         } else if(cmd == "brain"){
-            msg = new PacketMessage("setBrain")
-            msg.addString(split[1])
+            if(split.length == 1){
+                msg = new PacketMessage("printBrain")
+            } else {
+                msg = new PacketMessage("setBrain")
+                msg.addString("name", split[1])
+            }
         } else if(cmd == "body"){
             msg = new PacketMessage("setBodyPosition")
             err = "invalid argument for body command"
@@ -158,21 +162,22 @@ export default class Console {
 
     static printHelp(){
         this.addLine("exit - shut down server")
-        this.addLine("reboot - reboot servo motors")
+        // this.addLine("reboot - reboot servo motors")
         this.addLine("torque <on/off> - enable or disable servo motors")
         this.addLine("brain <brain> - set the brain. type 'brains' for a list of brains")
-        this.addLine("body - todo")
-        this.addLine("foot - todo")
-        this.addLine("joint - todo")
+        // this.addLine("body - todo")
+        // this.addLine("foot - todo")
+        // this.addLine("joint - todo")
         this.addLine("print <status/angles/positions>")
         this.addLine("clear - clears this console")
     }
 
     static printBrains(){
-        this.addLine("empty")
-        this.addLine("surfer")
-        this.addLine("calibration")
-        this.addLine("gait")
+        this.addLine("calib")
+        this.addLine("surf-1")
+        this.addLine("surf-2")
+        this.addLine("walk")
+        this.addLine("dance")
     }
     
 }

@@ -524,9 +524,9 @@ void Robot::ReadIMU(){
     // read gyro
     float gyro[3];
     imu->ReadGyro(gyro);
-    imu_gyro[0] = -gyro[1];
-    imu_gyro[1] = +gyro[0];
-    imu_gyro[2] = -gyro[2];
+    imu_gyro[0] = -gyro[1] * 1.0e-3f;
+    imu_gyro[1] = +gyro[0] * 1.0e-3f;
+    imu_gyro[2] = -gyro[2] * 1.0e-3f;
 
 }
 

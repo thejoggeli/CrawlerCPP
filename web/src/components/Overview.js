@@ -435,8 +435,8 @@ export default class Overview extends React.Component {
                                 return <th key={"servos.h2.temperature"+i}>{x}</th>
                             })}
                             <th key={"servos.h2.mean"}>Mean</th>
-                            <th key={"sensors.h2.distance"}>Distance (mm)</th>
-                            <th key={"sensors.h2.weight"}>Weight (kg)</th>
+                            <th key={"sensors.h2.distance"}>Distance</th>
+                            <th key={"sensors.h2.weight"}>Weight</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -472,9 +472,9 @@ export default class Overview extends React.Component {
                 <table className="imuTable">
                     <thead>
                         <tr key={"imu.h1"}>
-                            <th key="imu.h1.acc" colSpan={3}>IMU Acceleration (m/s²)</th>
-                            <th key="imu.h1.up" colSpan={3}>IMU Up Vector (?)</th>
-                            <th key="imu.h1.gyro" colSpan={3}>IMU Gryoscope (?)</th>
+                            <th key="imu.h1.acc" colSpan={3}>IMU Acceleration</th>
+                            <th key="imu.h1.up" colSpan={3}>IMU Up Vector</th>
+                            <th key="imu.h1.gyro" colSpan={3}>IMU Gryoscope</th>
                         </tr>
                         <tr key={"imu.h2"}>
                             <td key="imu.h2.acc.x" >X</td>

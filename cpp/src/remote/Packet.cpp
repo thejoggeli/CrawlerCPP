@@ -264,6 +264,7 @@ PacketRequestIMUData::PacketRequestIMUData() : Packet(PacketType::RequestIMUData
 PacketRespondIMUData::PacketRespondIMUData() : Packet(PacketType::RespondIMUData){}
 void PacketRespondIMUData::PackInner(ByteBufferWriter& writer){
     writer.WriteVector<float>(acceleration);
+    writer.WriteVector<float>(up);
     writer.WriteVector<float>(gyro);
 }
 

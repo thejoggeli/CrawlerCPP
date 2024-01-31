@@ -33,9 +33,14 @@
 .overview .tr-sum td {
     font-weight: bold;
 }
-.overview .sum {
+/* .overview .sum {
     font-weight: bold;
-}
+} */
 .overview .leg {
     font-weight: bold;
+}
+
+
+.overview table.imuTable td {
+    width:75px;
 }

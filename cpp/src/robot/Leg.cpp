@@ -58,8 +58,8 @@ Leg::~Leg(){
 }
 
 bool Leg::InitDistanceSensor(MuxI2C* mux, int channel){
-    return true;
-    // return this->distanceSensor->Init(mux, channel);
+    // return true;
+    return this->distanceSensor->Init(mux, channel);
 }
 
 bool Leg::InitWeightSensor(MuxI2C* mux, int channel){

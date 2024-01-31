@@ -23,7 +23,8 @@ export default class Robo3D {
         this.mouseNormalized = new THREE.Vector2(-1,1)
 
         this.lastAngleUpdateTime = 0
-        this.anglePacketUnderway = false
+        this.legDataPacketSent = false
+        this.imuDataPacketSent = false
 
         this.rendererSize = new THREE.Vector2();
 
@@ -37,9 +38,9 @@ export default class Robo3D {
 
         this.renderer.getSize(this.rendererSize);
         this.camera = new THREE.PerspectiveCamera(75, this.rendererSize.width/this.rendererSize.height, 0.1);
-        this.camera.position.x = -0.75;
-        this.camera.position.y = +0.75;
-        this.camera.position.z = -1.5;
+        this.camera.position.x = -0.2;
+        this.camera.position.y = +0.2;
+        this.camera.position.z = -0.5
 
         // var geometry = new THREE.BoxGeometry(1,1,1);
         // var material = new THREE.MeshStandardMaterial({
@@ -113,6 +114,7 @@ export default class Robo3D {
         Main.messenger.subscribe("footDragStart", this, this.onFootDragStart)
         Main.messenger.subscribe("footDragStop", this, this.onFootDragStop)
         Main.packetReceiver.subscribe("RespondLegAngles", this, this.handleRespondLegAngles)
+        Main.packetReceiver.subscribe("RespondIMUData", this, this.handleRespondIMUData)
     }
 
     unmount(){
@@ -121,6 +123,7 @@ export default class Robo3D {
         Main.messenger.unsubscribe("footDragStart", this)
         Main.messenger.unsubscribe("footDragStop", this)
         Main.packetReceiver.unsubscribe("RespondLegAngles", this)
+        Main.packetReceiver.unsubscribe("RespondIMUData", this)
         Gfw.destroyCanvas(this.canvas.id)
     }
 
@@ -159,16 +162,19 @@ export default class Robo3D {
         // normalized mouse position
         this.mouseNormalized.x = +(input.mouse.relativePosition.x / this.canvas.element.width) * 2 - 1;
         this.mouseNormalized.y = -(input.mouse.relativePosition.y / this.canvas.element.height) * 2 + 1;
-        
-        // request new angles from server
-        if(Time.currentTime - this.lastAngleUpdateTime > 0.02 && !this.anglePacketUnderway){
-            this.lastAngleUpdateTime = Time.currentTime
+
+        if(!this.legDataPacketSent){
             Main.addPacket("RequestLegAngles", {
                 "legIds": [0, 1, 2, 3],
                 "targetAngle": true,
                 "measuredAngle": true,
             })
-            this.anglePacketUnderway = true
+            this.legDataPacketSent = true
+        }
+
+        if(!this.imuDataPacketSent){
+            Main.addPacket("RequestIMUData", {})
+            this.imuDataPacketSent = true
         }
 
         // set light position and rotation
@@ -226,9 +232,8 @@ export default class Robo3D {
     }
 
     handleRespondLegAngles(packet){
-        this.anglePacketUnderway = false
+        this.legDataPacketSent = false
         var data = packet.data
-        console.log(packet)
         if(data.targetAngle){
             for(var leg of data.legs){
                 for(var j in leg.joints){
@@ -243,6 +248,12 @@ export default class Robo3D {
                 }
             }
         }
+    }
+
+    handleRespondIMUData(packet){
+        this.imuDataPacketSent = false
+        var up = packet.data.up
+        this.robot.setUpVector(up.x, up.y, up.z)
     }
 
 }

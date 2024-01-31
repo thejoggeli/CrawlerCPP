@@ -28,21 +28,23 @@ public:
     Eigen::Affine3f pivotTransform = Eigen::Affine3f::Identity();
     Eigen::Affine3f pivotTransformInverse = Eigen::Affine3f::Identity();
     
-    float bodyTranslationSpeed = 0.1f;
+    float bodyTranslationSpeed = 0.2f;
     float bodyTranslationTime;
     float bodyTranslationDuration;
     Eigen::Vector3f bodyTranslationStart;
     Eigen::Vector3f bodyTranslationTarget;
     Eigen::Vector3f bodyTranslationDelta;
     Eigen::Vector3f bodyTranslation;
+    Eigen::Vector3f bodyTranslationOld;
 
-    float bodyRotationSpeed = 30.0f * DEG_2_RADf;
+    float bodyRotationSpeed = 60.0f * DEG_2_RADf;
     float bodyRotationTime;
     float bodyRotationDuration;
     Eigen::Vector3f bodyRotationStart;
     Eigen::Vector3f bodyRotationTarget;
     Eigen::Vector3f bodyRotationDelta;
     Eigen::Vector3f bodyRotation;
+    Eigen::Vector3f bodyRotationOld;
 
     Eigen::Affine3f bodyTransform = Eigen::Affine3f::Identity();
 
@@ -61,10 +63,10 @@ public:
     void SetBodyTranslationTarget(const Eigen::Vector3f& translation);
 
     void SetBodyRotationTarget(float x, float y, float z);
-    void SetbodyRotationTarget(const Eigen::Vector3f& rotation);
+    void SetBodyRotationTarget(const Eigen::Vector3f& rotation);
     void SetbodyRotationTarget(const Eigen::Matrix3f& rotation);
 
-    void SetbodyTranslationSpeed(float speed);
+    void SetBodyTranslationSpeed(float speed);
     void SetbodyRotationSpeed(float speed);
 
     void AutoSurf();

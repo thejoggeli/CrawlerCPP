@@ -105,9 +105,9 @@ class Main {
 
     static onConnectionOpenFailed(event){
         Log.debug("Main", "onConnectionOpenFailed");
-        // setTimeout(() => {
-        //     Main.connection.connect();
-        // }, 250);
+        setTimeout(() => {
+            Main.connection.connect();
+        }, 250);
     }
 
     static onConnectionClose(event){

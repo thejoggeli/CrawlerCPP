@@ -283,7 +283,33 @@ void Robot::Update(){
     brain->Update();
 }
 
+void Robot::UpdateAngleLimits(){
+
+    legs[0]->joints[0]->limitMax = legs[1]->joints[0]->currentTargetAngle + 95.0f * DEG_2_RADf; 
+    if(legs[0]->joints[0]->limitMax > 95.0f * DEG_2_RADf){
+        legs[0]->joints[0]->limitMax = 95.0f * DEG_2_RADf;
+    }
+    // LogDebug("Robot", iLog << legs[0]->joints[0]->limitMax * RAD_2_DEGf);
+
+    legs[1]->joints[0]->limitMin = legs[0]->joints[0]->currentTargetAngle - 95.0f * DEG_2_RADf; 
+    if(legs[1]->joints[0]->limitMin < -95.0f * DEG_2_RADf){
+        legs[1]->joints[0]->limitMin = -95.0f * DEG_2_RADf;
+    }
+
+    legs[2]->joints[0]->limitMax = legs[3]->joints[0]->currentTargetAngle + 95.0f * DEG_2_RADf; 
+    if(legs[2]->joints[0]->limitMax > 95.0f * DEG_2_RADf){
+        legs[2]->joints[0]->limitMax = 95.0f * DEG_2_RADf;
+    }
+
+    legs[3]->joints[0]->limitMin = legs[2]->joints[0]->currentTargetAngle - 95.0f * DEG_2_RADf; 
+    if(legs[3]->joints[0]->limitMin < -95.0f * DEG_2_RADf){
+        legs[3]->joints[0]->limitMin = -95.0f * DEG_2_RADf;
+    }
+
+}
+
 void Robot::FixedUpdate(){
+
     brain->FixedUpdate();
 }
 
@@ -474,25 +500,47 @@ void Robot::TorqueOff(bool buffer){
 }
 
 void Robot::ReadIMU(){
+
     // read acceleration
     float acc[3];
     imu->ReadAcceleration(acc);
     imu_acc[0] = -acc[1];
     imu_acc[1] = +acc[0];
-    imu_acc[2] = +acc[2];
+    imu_acc[2] = -acc[2];
+
+    // compute up vector
+    float x = imu_acc[0];
+    float y = imu_acc[1];
+    float z = -imu_acc[2];
+    float mag = sqrtf(x*x + y*y + z*z);
+    float magInv = 1.0f/mag;
+    x *= magInv;
+    y *= magInv;
+    z *= magInv;
+    imu_up[0] = x;
+    imu_up[1] = y;
+    imu_up[2] = z;    
 
     // read gyro
-    // float gyro[3];
-    // imu->ReadGyro(gyro);
-    // imu_gyro[0] = -gyro[1];
-    // imu_gyro[1] = +gyro[0];
-    // imu_gyro[2] = +gyro[2];
+    float gyro[3];
+    imu->ReadGyro(gyro);
+    imu_gyro[0] = -gyro[1];
+    imu_gyro[1] = +gyro[0];
+    imu_gyro[2] = -gyro[2];
+
 }
 
 void Robot::ReadMeasuredWeight(){
     // read acceleration
     for(Leg* leg : legs){
         leg->ReadMeasuredWeight(false);
+    }
+}
+
+void Robot::ReadMeasuredDistance(){
+    // read acceleration
+    for(Leg* leg : legs){
+        leg->ReadMeasuredDistance(false);
     }
 }
 

@@ -209,6 +209,11 @@ export default function PacketTypes(){
                 y: buffer.readFloat32(),
                 z: buffer.readFloat32(),
             }
+            data.up = {
+                x: buffer.readFloat32(),
+                y: buffer.readFloat32(),
+                z: buffer.readFloat32(),
+            }
             data.gyro = {
                 x: buffer.readFloat32(),
                 y: buffer.readFloat32(),

@@ -23,8 +23,9 @@ export default class Overview extends React.Component {
             "robotTime": 0,
             "legs": [],
             "imu": {
-                "acceleration": vec3.create(0, 0, 0),
-                "gyro": vec3.create(0, 0, 0),
+                "acceleration": {},
+                "up": {},
+                "gyro": {},
             },
             "currentSumAll": 0,
             "currentSumJoints": [0, 0, 0, 0],
@@ -180,6 +181,9 @@ export default class Overview extends React.Component {
         state.imu.acceleration.x = data.acceleration.x
         state.imu.acceleration.y = data.acceleration.y
         state.imu.acceleration.z = data.acceleration.z
+        state.imu.up.x = data.up.x
+        state.imu.up.y = data.up.y
+        state.imu.up.z = data.up.z
         state.imu.gyro.x = data.gyro.x
         state.imu.gyro.y = data.gyro.y
         state.imu.gyro.z = data.gyro.z
@@ -284,7 +288,7 @@ export default class Overview extends React.Component {
                         })}
                     </tbody>
                 </table>
-                <table style={{display:"none"}}>
+                {/* <table>
                     <thead>
                         <tr key={"servos.h1"}>
                             <th key={"servos.h1.1"} colSpan={2}>Leg</th>
@@ -356,7 +360,6 @@ export default class Overview extends React.Component {
                         </tr>
                     </tbody>
                 </table>
-                {/* <table style={{display:"none"}}> */}
                 <table>
                     <thead>
                         <tr key={"state.h1"}>
@@ -413,17 +416,73 @@ export default class Overview extends React.Component {
                             )
                         })}
                     </tbody>
-                </table>
+                </table> */}
                 <table>
+                    <thead>
+                        <tr key={"state.h1"}>
+                            <th key={"state.h1.leg"} colSpan={2}>Leg</th>
+                            <th key={"servos.h1.3"} colSpan={4}>Voltage (V)</th>
+                            <th key={"servos.h1.4"} colSpan={5}>Temperature (degC)</th>
+                            <th key={"sensors.h1.long"} colSpan={2}>Sensors</th>
+                        </tr>
+                        <tr key={"state.h2"}>
+                            <th key={"state.h2.id"}>ID</th>
+                            <th key={"state.h2.name"}>Name</th>
+                            {this.jointNamesShort.map((x, i) => {
+                                return <th key={"servos.h2.voltage"+i}>{x}</th>
+                            })}
+                            {this.jointNamesShort.map((x, i) => {
+                                return <th key={"servos.h2.temperature"+i}>{x}</th>
+                            })}
+                            <th key={"servos.h2.mean"}>Mean</th>
+                            <th key={"sensors.h2.distance"}>Distance (mm)</th>
+                            <th key={"sensors.h2.weight"}>Weight (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.state.legs.map((leg, i) => {
+                            return (
+                                <tr key={"state.leg" + i}>
+                                    <td className="leg" key={"state.leg.id"+i}>{leg.id}</td>
+                                    <td className="leg" key={"state.leg.name"+i}>{leg.name}</td>
+                                    {leg.joints.map((joint, j) => {
+                                        return <td key={"servos.leg"+i + ".joint"+j + ".voltage"} className="voltage">{
+                                            Numbers.roundToFixed(joint.voltage, 1)
+                                        }</td>
+                                    })}
+                                    {leg.joints.map((joint, j) => {
+                                        return <td key={"servos.leg"+i + ".joint"+j + ".temperature"} className="temperature">{
+                                            Numbers.roundToFixed(joint.temperature, 1) 
+                                        }</td>
+                                    })}
+                                    <td key={"servos.leg"+i+".temperature.mean"} className="sum">{
+                                        Numbers.roundToFixed(leg.temperatureMean, 1)
+                                    }</td>
+                                    <td key={"sensors.leg.id"+i+".distance"}>{
+                                        Numbers.roundToFixed(leg.distance, 1)
+                                    }</td>
+                                    <td key={"sensors.leg.id"+i+".weight"}>{
+                                        Numbers.roundToFixed(leg.weight, 3)
+                                    }</td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                </table>
+                <table className="imuTable">
                     <thead>
                         <tr key={"imu.h1"}>
                             <th key="imu.h1.acc" colSpan={3}>IMU Acceleration (m/s²)</th>
+                            <th key="imu.h1.up" colSpan={3}>IMU Up Vector (?)</th>
                             <th key="imu.h1.gyro" colSpan={3}>IMU Gryoscope (?)</th>
                         </tr>
                         <tr key={"imu.h2"}>
                             <td key="imu.h2.acc.x" >X</td>
                             <td key="imu.h2.acc.y" >Y</td>
                             <td key="imu.h2.acc.z" >Z</td>
+                            <td key="imu.h2.up.x" >X</td>
+                            <td key="imu.h2.up.y" >Y</td>
+                            <td key="imu.h2.up.z" >Z</td>
                             <td key="imu.h2.gyro.x" >X</td>
                             <td key="imu.h2.gyro.y" >Y</td>
                             <td key="imu.h2.gyro.z" >Z</td>
@@ -431,12 +490,17 @@ export default class Overview extends React.Component {
                     </thead>
                     <tbody>
                         <tr key={"imu.content"}>
-                            {Array.from(this.state.imu.acceleration).map((val, i) => {
+                            {Object.values(this.state.imu.acceleration).map((val, i) => {
                                 return <td key={"imu.acc"+i}>{
                                     Numbers.roundToFixed(val, 2)
                                 }</td>
                             })}
-                            {Array.from(this.state.imu.gyro).map((val, i) => {
+                            {Object.values(this.state.imu.up).map((val, i) => {
+                                return <td key={"imu.up"+i}>{
+                                    Numbers.roundToFixed(val, 2)
+                                }</td>
+                            })}
+                            {Object.values(this.state.imu.gyro).map((val, i) => {
                                 return <td key={"imu.gyro"+i}>{
                                     Numbers.roundToFixed(val, 2)
                                 }</td>

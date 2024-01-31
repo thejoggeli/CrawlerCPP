@@ -18,8 +18,9 @@ export default class App extends React.Component {
 
     constructor(props){
         super(props);
+        this.previousView = 0;
         this.state = {
-            view: 4,
+            view: -1,
             connected: false,
         }
     }
@@ -37,13 +38,16 @@ export default class App extends React.Component {
     onConnectionOpen(){
         this.setState({
             connected: true,
+            view: this.previousView,
         })
         $(".blocker").fadeOut()
     }
 
     onConnectionClose(){
+        this.previousView = this.state.view;
         this.setState({
             connected: false,
+            view: -1,
         })
         $(".blocker").fadeIn()
     }
@@ -63,6 +67,10 @@ export default class App extends React.Component {
     };
 
     onSelectView = (view) => {
+        this.previousView = this.state.view;
+        if(this.previousView == -1){
+            this.previousView = 0;
+        }
         this.setState({
             view: view,
         })
@@ -78,8 +86,10 @@ export default class App extends React.Component {
             view = <GamepadComponent />
         } else if(this.state.view == 3){
             view = <CalibComponent />
-        } else {
+        } else if(this.state.view == 4){
             view = <ConsoleComponent />
+        } else {
+            view = null
         }
         return (
             <div className="wrapper">

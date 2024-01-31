@@ -97,8 +97,6 @@ static void OnRequestLegData(void* caller, Packet& packet){
             response->statusDetail.push_back(joint->statusDetail);
             response->statusError.push_back(joint->statusError);
         }
-        // leg->ReadMeasuredDistance(false);
-        // leg->ReadMeasuredWeight(false);
         response->distance.push_back(leg->measuredDistance.value);
         response->weight.push_back(leg->measuredWeight.value);
     }
@@ -112,6 +110,9 @@ static void OnRequestIMU(void* caller, Packet& packet){
     response->acceleration.push_back(robot->imu_acc[0]); // acceleration x 
     response->acceleration.push_back(robot->imu_acc[1]); // acceleration y
     response->acceleration.push_back(robot->imu_acc[2]); // acceleration z
+    response->up.push_back(robot->imu_up[0]); // up x
+    response->up.push_back(robot->imu_up[1]); // up y
+    response->up.push_back(robot->imu_up[2]); // up z
     response->gyro.push_back(robot->imu_gyro[0]); // gyro x
     response->gyro.push_back(robot->imu_gyro[1]); // gyro y
     response->gyro.push_back(robot->imu_gyro[2]); // gyro z

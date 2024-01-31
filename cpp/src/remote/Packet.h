@@ -129,6 +129,7 @@ struct PacketRequestIMUData : public Packet {
 struct PacketRespondIMUData : public Packet {
     PacketType type = PacketType::RespondIMUData;
     std::vector<float> acceleration;
+    std::vector<float> up;
     std::vector<float> gyro;
     PacketRespondIMUData();
     void PackInner(ByteBufferWriter& writer) override;

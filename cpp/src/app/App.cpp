@@ -80,6 +80,12 @@ bool App::Init(){
     LogInfo("App", "GPIO setup");
     GPIO::setmode(GPIO::BCM);
 
+    // set both multiplexer NRST pins to high
+    GPIO::setup(4, GPIO::Directions::OUT);
+    GPIO::setup(5, GPIO::Directions::OUT);
+    GPIO::output(4, GPIO::HIGH);
+    GPIO::output(5, GPIO::HIGH);
+
     // init main button
     mainButton->Init();
     mainButtonLED->Init(true);
@@ -284,7 +290,10 @@ bool App::Run(){
             servoThread.ApplyBuffers();
 
             // set new robot brain
-            robot->ApplyBrain();                             
+            robot->ApplyBrain();             
+
+            // update robot angle limits
+            robot->UpdateAngleLimits();                
 
             // signal ServoThread that it can start the next loop
             servoThread.nextLoopSignal.Set();
@@ -295,7 +304,13 @@ bool App::Run(){
             // call fixed update
             robot->ReadIMU();
             robot->ReadMeasuredWeight();
+            robot->ReadMeasuredDistance();
             robot->FixedUpdate();
+            // LogDebug("Robot", iLog << "imu: " 
+            //     << robot->imu_acc[0] << ", " 
+            //     << robot->imu_acc[1] << ", " 
+            //     << robot->imu_acc[2]
+            // );
 
             // increase fixed fps counter
             fixedUpsCounter += 1;

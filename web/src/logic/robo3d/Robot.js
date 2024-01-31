@@ -17,7 +17,7 @@ export default class Robot {
         }
 
         // body size
-        this.bodySize = new THREE.Vector3(0.5, 0.25, 0.5)
+        this.bodySize = new THREE.Vector3(0.065*2, 0.06, 0.065*2)
 
         // set hip transform
         this.legs[0].setHipTranslation(new THREE.Vector3(-this.bodySize.x*0.5, 0, -this.bodySize.z*0.5))
@@ -26,25 +26,25 @@ export default class Robot {
         this.legs[3].setHipTranslation(new THREE.Vector3(+this.bodySize.x*0.5, 0, -this.bodySize.z*0.5))
 
         // set hip translation
-        this.legs[0].setHipRotation(+90.0 * Numbers.deg2rad)
-        this.legs[1].setHipRotation(+90.0 * Numbers.deg2rad)
-        this.legs[2].setHipRotation(-90.0 * Numbers.deg2rad)
-        this.legs[3].setHipRotation(-90.0 * Numbers.deg2rad)
+        this.legs[0].setHipRotation(+45.0 * Numbers.deg2rad)
+        this.legs[1].setHipRotation(+135.0 * Numbers.deg2rad)
+        this.legs[2].setHipRotation(-135.0 * Numbers.deg2rad)
+        this.legs[3].setHipRotation(-45.0 * Numbers.deg2rad)
 
-        var jointSize = 0.08
+        var jointSize = 0.022
         for(var i = 0; i < 4; i++){
 
             // set limb lengths
-            this.legs[i].joints[0].setLimbLength(0.2)
-            this.legs[i].joints[1].setLimbLength(0.2)
-            this.legs[i].joints[2].setLimbLength(0.2)
-            this.legs[i].joints[3].setLimbLength(0.2)
+            this.legs[i].joints[0].setLimbLength(0.058)
+            this.legs[i].joints[1].setLimbLength(0.078)
+            this.legs[i].joints[2].setLimbLength(0.078)
+            this.legs[i].joints[3].setLimbLength(0.078)
 
             // set limb sizes
-            this.legs[i].joints[0].setLimbSize(0.04)
-            this.legs[i].joints[1].setLimbSize(0.04)
-            this.legs[i].joints[2].setLimbSize(0.04)
-            this.legs[i].joints[3].setLimbSize(0.04)
+            this.legs[i].joints[0].setLimbSize(0.011)
+            this.legs[i].joints[1].setLimbSize(0.011)
+            this.legs[i].joints[2].setLimbSize(0.011)
+            this.legs[i].joints[3].setLimbSize(0.011)
             
             // set joints sizes
             this.legs[i].joints[0].setJointSize(jointSize)
@@ -158,5 +158,8 @@ export default class Robot {
     setEyesColor(color){
         this.eyeMesh1.material.color = color
         this.eyeMesh2.material.color = color
+    }
+    setUpVector(x, y, z){
+        // todo
     }
 }

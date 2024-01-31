@@ -41,6 +41,7 @@ public:
     std::vector<Joint*> jointsList;
 
     float imu_acc[3] = {0, 0, 0};
+    float imu_up[3] = {0, 0, 0};
     float imu_gyro[3] = {0, 0, 0};
 
     Robot();
@@ -58,6 +59,7 @@ public:
 
     void Update();
     void FixedUpdate();
+    void UpdateAngleLimits();
 
     void Startup();
     void Shutdown();
@@ -75,6 +77,7 @@ public:
 
     void ReadIMU();
     void ReadMeasuredWeight();
+    void ReadMeasuredDistance();
 
 };
 

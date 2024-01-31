@@ -9,6 +9,7 @@
 #include "parts/WeightSensor.h"
 #include "parts/DistanceSensor.h"
 #include "parts/MuxI2C.h"
+#include "remote/ClientManager.h"
 
 using namespace std;
 
@@ -43,15 +44,15 @@ Leg::Leg(Robot* robot, unsigned int id, const std::string& name){
 }
 
 Leg::~Leg(){
-    LogInfo("Leg", "deleting joints");
+    ClientManager::SendLogInfo("Leg", "deleting joints");
     for(Joint* joint : joints){
         delete joint;
     }
-    LogInfo("Leg", "deleting weight sensor");
+    ClientManager::SendLogInfo("Leg", "deleting weight sensor");
     if(weightSensor){
         delete weightSensor;
     }
-    LogInfo("Leg", "deleting distance sensor");
+    ClientManager::SendLogInfo("Leg", "deleting distance sensor");
     if(distanceSensor){
         delete distanceSensor;
     }

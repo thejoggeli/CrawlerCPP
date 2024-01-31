@@ -12,7 +12,12 @@ using namespace std;
 
 namespace Crawler {
 
+struct SendMessageQueueEntry {
+	shared_ptr<PacketMessage> packet;
+	int clientId;
+};
 
+static vector<SendMessageQueueEntry> sendMessageQueue;
 
 int ClientManager::initCounter = 0;
 
@@ -163,12 +168,23 @@ void ClientManager::SendMessage(const char* message, int clientId){
 	SocketServer::SendPacket(packet, clientId);
 }
 
+void ClientManager::SendLogMessages(){
+	std::lock_guard<std::mutex> lock(mutex);
+	for(SendMessageQueueEntry& entry : sendMessageQueue){
+		SocketServer::SendPacket(entry.packet, entry.clientId);
+	}
+	sendMessageQueue.clear();
+}
+
 static void SendLogInner(const char* from, const char* str, int clientId, const char* type){
     std::shared_ptr<PacketMessage> packet = std::make_shared<PacketMessage>("log");
 	packet->AddString("type", type);
 	packet->AddString("from", from);
 	packet->AddString("msg", str);
-	SocketServer::SendPacket(packet, clientId);
+	SendMessageQueueEntry entry;
+	entry.packet = packet;
+	entry.clientId = clientId;
+	sendMessageQueue.push_back(entry);
 }
 
 void ClientManager::SendLogInfo(const char* from, const char* str, int clientId){

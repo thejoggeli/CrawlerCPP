@@ -44,6 +44,8 @@ public:
 
 	static void SendPacket(std::shared_ptr<Packet> packet, int clientId = -1);
 	static void SendMessage(const char* message, int clientId = -1);
+
+	static void SendLogMessages();
 	
 	static void SendLogInfo(const char* from, const char* str, int clientId = -1);
 	static void SendLogError(const char* from, const char* str, int clientId = -1);

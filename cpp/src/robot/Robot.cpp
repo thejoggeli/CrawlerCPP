@@ -13,6 +13,7 @@
 #include "parts/MuxI2C.h"
 #include "comm/I2CBus.h"
 #include "parts/IMU.h"
+#include "remote/ClientManager.h"
 
 using namespace std;
 
@@ -25,13 +26,13 @@ Robot::Robot(){
 Robot::~Robot(){ 
 
     // delete legs
-    LogInfo("Robot", "deleting legs");
+    ClientManager::SendLogInfo("Robot", "deleting legs");
     for(Leg* leg : legs){
         delete leg;
     }
 
     // delete servos
-    LogInfo("Robot", "deleting servos");
+    ClientManager::SendLogInfo("Robot", "deleting servos");
     for(XYZServo* servo : jointServos){
         delete servo;
     }
@@ -40,37 +41,37 @@ Robot::~Robot(){
     }
 
     // delete imu
-    LogInfo("Robot", "deleting IMU");
+    ClientManager::SendLogInfo("Robot", "deleting IMU");
     if(imu){
         delete imu;
     }
 
     // delete muxers
-    LogInfo("Robot", "deleting mux0");
+    ClientManager::SendLogInfo("Robot", "deleting mux0");
     if(mux0){
         mux0->Shutdown();
         delete mux0;
     }
-    LogInfo("Robot", "deleting mux1");
+    ClientManager::SendLogInfo("Robot", "deleting mux1");
     if(mux1){
         mux1->Shutdown();
         delete mux1;
     }
 
     // closes i2c bus
-    LogInfo("Robot", "deleting i2c bus0");
+    ClientManager::SendLogInfo("Robot", "deleting i2c bus0");
     if(bus0){
         bus0->Close();
         delete bus0;
     }
-    LogInfo("Robot", "deleting i2c bus1");
+    ClientManager::SendLogInfo("Robot", "deleting i2c bus1");
     if(bus1){
         bus1->Close();
         delete bus1;
     }
 
     // close serial stream
-    LogInfo("Robot", "deleting servo serial stream");
+    ClientManager::SendLogInfo("Robot", "deleting servo serial stream");
     if(servoSerialStream){
         servoSerialStream->close();
         delete servoSerialStream;
@@ -82,7 +83,7 @@ bool Robot::Init(){
     // imu
     imu = new IMU();
     if(!imu->Init(bus1->fd)){
-        LogError("Robot", iLog << "IMU init failed");
+        ClientManager::SendLogError("Robot", iLog << "IMU init failed");
         // return false;
     }
 
@@ -114,18 +115,18 @@ bool Robot::Init(){
 
         // init distance sensor
         if(!leg->InitDistanceSensor(mux1, i)){
-            LogError("Robot", iLog << "InitDistanceSensor() failed, legId=" << leg->id);
+            ClientManager::SendLogError("Robot", iLog << "InitDistanceSensor() failed, legId=" << leg->id);
             return false;
         } else {
-            LogInfo("Robot", iLog << "InitDistanceSensor() success, legId=" << leg->id);
+            ClientManager::SendLogInfo("Robot", iLog << "InitDistanceSensor() success, legId=" << leg->id);
         }
 
         // init weight sensor
         if(!leg->InitWeightSensor(mux0, i)){
-            LogError("Robot", iLog << "InitWeightSensor() failed, legId=" << leg->id);
+            ClientManager::SendLogError("Robot", iLog << "InitWeightSensor() failed, legId=" << leg->id);
             return false;
         } else {
-            LogInfo("Robot", iLog << "InitWeightSensor() success, legId=" << leg->id);
+            ClientManager::SendLogInfo("Robot", iLog << "InitWeightSensor() success, legId=" << leg->id);
         }
 
         // add all joints of current leg to jointsList
@@ -220,7 +221,7 @@ void Robot::ApplyBrain(){
 
 bool Robot::OpenSerialStream(const char* device){
     if(servoSerialStream){
-        LogError("Robot", "servoSerialStream is not null");
+        ClientManager::SendLogError("Robot", "servoSerialStream is not null");
         return false;
     }
     // create serial stream for servo communication
@@ -234,14 +235,14 @@ bool Robot::OpenI2C(){
     // open bus 0
     bus0 = new I2CBus();
     if(!bus0->Open("/dev/i2c-1")){
-        LogError("Robot", iLog << "i2cBus0 Open() failed");
+        ClientManager::SendLogError("Robot", iLog << "i2cBus0 Open() failed");
         return false;
     }
 
     // open bus 1
     bus1 = new I2CBus();
     if(!bus1->Open("/dev/i2c-8")){
-        LogError("Robot", iLog << "i2cBus1 Open() failed");
+        ClientManager::SendLogError("Robot", iLog << "i2cBus1 Open() failed");
         return false;
     }
 
@@ -250,12 +251,12 @@ bool Robot::OpenI2C(){
     mux1 = new MuxI2C();
 
     if(!mux0->Init(bus0->fd)){
-        LogError("Robot", iLog << "mux0 init failed");
+        ClientManager::SendLogError("Robot", iLog << "mux0 init failed");
         return false;
     }
 
     if(!mux1->Init(bus1->fd)){
-        LogError("Robot", iLog << "mux1 init failed");
+        ClientManager::SendLogError("Robot", iLog << "mux1 init failed");
         return false;
     }
 
@@ -314,7 +315,7 @@ void Robot::FixedUpdate(){
 }
 
 void Robot::RebootServos(float sleepTime){
-    LogInfo("Robot", iLog << "RebootServos(sleepTime=" << sleepTime << ")");
+    ClientManager::SendLogInfo("Robot", iLog << "RebootServos(sleepTime=" << sleepTime << ")");
     for(Joint* joint : jointsList){
         joint->RebootServo();
     }
@@ -322,7 +323,7 @@ void Robot::RebootServos(float sleepTime){
 }
 
 bool Robot::PingServos(){
-    LogInfo("Robot", "PingServos()");
+    ClientManager::SendLogInfo("Robot", "PingServos()");
     bool result = true;
     for(Joint* joint : jointsList){
         joint->PingServo();
@@ -331,16 +332,16 @@ bool Robot::PingServos(){
         }
     }
     if(result){
-        LogInfo("Robot", "PingServos() success");
+        ClientManager::SendLogInfo("Robot", "PingServos() success");
     } else {
-        LogError("Robot", "PingServos() failed");
+        ClientManager::SendLogError("Robot", "PingServos() failed");
     }
     return result;
 }
 
 void Robot::Startup(){
 
-    LogInfo("Robot", "Startup()");
+    ClientManager::SendLogInfo("Robot", "Startup()");
 
     // set LED colors
     SetServosLedPolicyUser();
@@ -349,7 +350,7 @@ void Robot::Startup(){
     }
 
     // move servos to initial position
-    LogInfo("Robot", "moving to default position");
+    ClientManager::SendLogInfo("Robot", "moving to default position");
     TorqueOn();
     for(Leg* leg : legs){
         leg->joints[0]->SetTargetAngle(DEG_2_RADf * 0.0f);
@@ -385,7 +386,7 @@ void Robot::SetServosLedPolicySystem(bool buffer){
 
 void Robot::Shutdown(){
 
-    LogInfo("Robot", "Shutdown()");
+    ClientManager::SendLogInfo("Robot", "Shutdown()");
 
     for(Joint* joint : jointsList){
         joint->TorqueOff();
@@ -394,7 +395,7 @@ void Robot::Shutdown(){
 }
 
 void Robot::PrintServoStatus(){
-    LogInfo("Robot", "Status Error:");
+    ClientManager::SendLogInfo("Robot", "Status Error:");
     char buffer[100];
     for(Leg* leg : legs){
         sprintf(buffer, "%s %02X %02X %02X %02X", leg->name.c_str(),
@@ -403,9 +404,9 @@ void Robot::PrintServoStatus(){
             leg->joints[2]->statusError.value,
             leg->joints[3]->statusError.value
         );
-        LogInfo("Robot", buffer);
+        ClientManager::SendLogInfo("Robot", buffer);
     }
-    LogInfo("Robot", "Status Detail:");
+    ClientManager::SendLogInfo("Robot", "Status Detail:");
     for(Leg* leg : legs){
         sprintf(buffer, "%s %02X %02X %02X %02X", leg->name.c_str(),
             leg->joints[0]->statusDetail.value,
@@ -413,9 +414,9 @@ void Robot::PrintServoStatus(){
             leg->joints[2]->statusDetail.value,
             leg->joints[3]->statusDetail.value
         );
-        LogInfo("Robot", buffer);
+        ClientManager::SendLogInfo("Robot", buffer);
     }
-    LogInfo("Robot", "Target Angles (deg):");
+    ClientManager::SendLogInfo("Robot", "Target Angles (deg):");
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
             leg->joints[0]->currentTargetAngle * RAD_2_DEGf,
@@ -423,9 +424,9 @@ void Robot::PrintServoStatus(){
             leg->joints[2]->currentTargetAngle * RAD_2_DEGf,
             leg->joints[3]->currentTargetAngle * RAD_2_DEGf
         );
-        LogInfo("Robot", buffer);
+        ClientManager::SendLogInfo("Robot", buffer);
     }
-    LogInfo("Robot", "Measured Angles (deg):");
+    ClientManager::SendLogInfo("Robot", "Measured Angles (deg):");
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
             leg->joints[0]->measuredAngle.value * RAD_2_DEGf,
@@ -433,9 +434,9 @@ void Robot::PrintServoStatus(){
             leg->joints[2]->measuredAngle.value * RAD_2_DEGf,
             leg->joints[3]->measuredAngle.value * RAD_2_DEGf
         );
-        LogInfo("Robot", buffer);
+        ClientManager::SendLogInfo("Robot", buffer);
     }
-    LogInfo("Robot", "(Measured - Target) Angles (deg):");
+    ClientManager::SendLogInfo("Robot", "(Measured - Target) Angles (deg):");
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
             (leg->joints[0]->measuredAngle.value - leg->joints[0]->currentTargetAngle) * RAD_2_DEGf,
@@ -443,9 +444,9 @@ void Robot::PrintServoStatus(){
             (leg->joints[2]->measuredAngle.value - leg->joints[2]->currentTargetAngle) * RAD_2_DEGf,
             (leg->joints[3]->measuredAngle.value - leg->joints[3]->currentTargetAngle) * RAD_2_DEGf
         );
-        LogInfo("Robot", buffer);
+        ClientManager::SendLogInfo("Robot", buffer);
     }
-    LogInfo("Robot", "Measured Temperature (degC):");
+    ClientManager::SendLogInfo("Robot", "Measured Temperature (degC):");
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
             leg->joints[0]->measuredTemperature.value,
@@ -453,9 +454,9 @@ void Robot::PrintServoStatus(){
             leg->joints[2]->measuredTemperature.value,
             leg->joints[3]->measuredTemperature.value
         );
-        LogInfo("Robot", buffer);
+        ClientManager::SendLogInfo("Robot", buffer);
     }
-    LogInfo("Robot", "Measured Voltage (V):");
+    ClientManager::SendLogInfo("Robot", "Measured Voltage (V):");
     for(Leg* leg : legs){
         sprintf(buffer, "%s %6.1f %6.1f %6.1f %6.1f", leg->name.c_str(),
             leg->joints[0]->measuredVoltage.value,
@@ -463,13 +464,13 @@ void Robot::PrintServoStatus(){
             leg->joints[2]->measuredVoltage.value,
             leg->joints[3]->measuredVoltage.value
         );
-        LogInfo("Robot", buffer);
+        ClientManager::SendLogInfo("Robot", buffer);
     }
     float currentSumRobot = 0;
     for(Joint* joint : jointsList){
         currentSumRobot += joint->measuredCurrent.value;
     }
-    LogInfo("Robot", "Measured Current (mA):");
+    ClientManager::SendLogInfo("Robot", "Measured Current (mA):");
     for(Leg* leg : legs){
         float currentSumLeg = 0;
         for(Joint* joint : leg->joints){
@@ -482,9 +483,9 @@ void Robot::PrintServoStatus(){
             leg->joints[3]->measuredCurrent.value,
             currentSumLeg
         );
-        LogInfo("Robot", buffer);
+        ClientManager::SendLogInfo("Robot", buffer);
     }
-    LogInfo("Robot", iLog << "Total Current (mA): " << currentSumRobot);
+    ClientManager::SendLogInfo("Robot", iLog << "Total Current (mA): " << currentSumRobot);
 }
 
 void Robot::TorqueOn(bool buffer){

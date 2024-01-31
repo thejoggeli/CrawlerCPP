@@ -249,6 +249,9 @@ bool App::Run(){
         // update clients
         ClientManager::Update();
 
+        // send queued messages
+        ClientManager::SendLogMessages();
+
         // update buttons
         mainButton->Update();
         if(mainButton->onPress){
@@ -290,10 +293,10 @@ bool App::Run(){
             servoThread.ApplyBuffers();
 
             // set new robot brain
-            robot->ApplyBrain();             
+            robot->ApplyBrain();
 
             // update robot angle limits
-            robot->UpdateAngleLimits();                
+            robot->UpdateAngleLimits();
 
             // signal ServoThread that it can start the next loop
             servoThread.nextLoopSignal.Set();

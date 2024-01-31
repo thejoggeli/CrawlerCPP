@@ -3,6 +3,7 @@
 #include "math/Mathf.h"
 #include "core/Log.h"
 #include "Leg.h"
+#include "remote/ClientManager.h"
 
 namespace Crawler {
 
@@ -134,11 +135,11 @@ bool Joint::PingServo(){
     uint16_t xyz = servo->readPosition();
     if(servo->getLastError()){
         SetServoState(ServoState::Error);
-        LogError("Joint", iLog << debugName << " PingServo() failed");
+        ClientManager::SendLogError("Joint", iLog << debugName << " PingServo() failed");
         lastPingServoResult = false;
         return false;
     }
-    LogInfo("Joint", iLog << debugName << " PingServo() OK");
+    ClientManager::SendLogInfo("Joint", iLog << debugName << " PingServo() OK");
     lastPingServoResult = true;
     SetServoState(ServoState::OK);
     return true;
@@ -165,7 +166,7 @@ void Joint::SetTargetAngle(float angle, bool buffer){
 
 void Joint::MoveServoToTargetAngle(float seconds){
     if(seconds > 2.5f){
-        LogWarning("Joint", iLog << debugName << " MoveServoToTargetAngle seconds=" << seconds << " is too large");
+        ClientManager::SendLogWarning("Joint", iLog << debugName << " MoveServoToTargetAngle seconds=" << seconds << " is too large");
         seconds = 2.5f;
     }
     uint16_t angle = currentTargetXYZ;
@@ -180,11 +181,11 @@ bool Joint::ReadMeasuredStatus(bool buffer, int retries){
     XYZServoStatus status = servo->readStatus();
     if(servo->getLastError()){
         if(retries > 0){
-            LogWarning("Joint", iLog << debugName << " ReadMeasuredStatus() failed, retries=" << retries);
+            ClientManager::SendLogWarning("Joint", iLog << debugName << " ReadMeasuredStatus() failed, retries=" << retries);
             return ReadMeasuredStatus(buffer, retries-1);
         } else {
             // SetServoState(ServoState::Error);
-            LogError("Joint", iLog << debugName << " ReadMeasuredStatus() failed");
+            ClientManager::SendLogError("Joint", iLog << debugName << " ReadMeasuredStatus() failed");
             return false;
         }
     }
@@ -213,11 +214,11 @@ bool Joint::ReadMeasuredAngle(bool buffer, int retries){
     uint16_t xyz = servo->readPosition();
     if(servo->getLastError()){
         if(retries > 0){
-            LogWarning("Joint", iLog << debugName << " ReadMeasuredAngle() failed, retries=" << retries);
+            ClientManager::SendLogWarning("Joint", iLog << debugName << " ReadMeasuredAngle() failed, retries=" << retries);
             return ReadMeasuredAngle(buffer, retries-1);
         } else {
             // SetServoState(ServoState::Error);
-            LogError("Joint", iLog << debugName << " ReadMeasuredAngle() failed");
+            ClientManager::SendLogError("Joint", iLog << debugName << " ReadMeasuredAngle() failed");
             return false;
         }
     }
@@ -238,11 +239,11 @@ bool Joint::ReadMeasuredCurrent(bool buffer, int retries){
     uint16_t iBus = servo->readCurrent();
     if(servo->getLastError()){
         if(retries > 0){
-            LogWarning("Joint", iLog << debugName << " ReadMeasuredCurrent() failed, retries=" << retries);
+            ClientManager::SendLogWarning("Joint", iLog << debugName << " ReadMeasuredCurrent() failed, retries=" << retries);
             return ReadMeasuredCurrent(buffer, retries-1);
         } else {
             // SetServoState(ServoState::Error);
-            LogError("Joint", iLog << debugName << " ReadMeasuredCurrent() failed");
+            ClientManager::SendLogError("Joint", iLog << debugName << " ReadMeasuredCurrent() failed");
             return false;
         }
     }
@@ -261,11 +262,11 @@ bool Joint::ReadMeasuredVoltage(bool buffer, int retries){
     uint8_t voltage = servo->readVoltage();
     if(servo->getLastError()){
         if(retries > 0){
-            LogWarning("Joint", iLog << debugName << " ReadMeasuredVoltage() failed, retries=" << retries);
+            ClientManager::SendLogWarning("Joint", iLog << debugName << " ReadMeasuredVoltage() failed, retries=" << retries);
             return ReadMeasuredVoltage(buffer, retries-1);
         } else {
             // SetServoState(ServoState::Error);
-            LogError("Joint", iLog << debugName << " ReadMeasuredVoltage() failed");
+            ClientManager::SendLogError("Joint", iLog << debugName << " ReadMeasuredVoltage() failed");
             return false;
         }
     }
@@ -284,11 +285,11 @@ bool Joint::ReadMeasuredTemperature(bool buffer, int retries){
     uint8_t temperature = servo->readTemperature();
     if(servo->getLastError()){
         if(retries > 0){
-            LogWarning("Joint", iLog << debugName << " ReadMeasuredTemperature() failed, retries=" << retries);
+            ClientManager::SendLogWarning("Joint", iLog << debugName << " ReadMeasuredTemperature() failed, retries=" << retries);
             return ReadMeasuredTemperature(buffer, retries-1);
         } else {
             // SetServoState(ServoState::Error);
-            LogError("Joint", iLog << debugName << " ReadMeasuredTemperature() failed");
+            ClientManager::SendLogError("Joint", iLog << debugName << " ReadMeasuredTemperature() failed");
             return false;
         }
     }
@@ -307,11 +308,11 @@ bool Joint::ReadStatusError(bool buffer, int retries){
     uint8_t statusError = servo->readStatusError();
     if(servo->getLastError()){
         if(retries > 0){
-            LogWarning("Joint", iLog << debugName << " ReadStatusError() failed, retries=" << retries);
+            ClientManager::SendLogWarning("Joint", iLog << debugName << " ReadStatusError() failed, retries=" << retries);
             return ReadStatusError(buffer, retries-1);
         } else {
             // SetServoState(ServoState::Error);
-            LogError("Joint", iLog << debugName << " ReadStatusError() failed");
+            ClientManager::SendLogError("Joint", iLog << debugName << " ReadStatusError() failed");
             return false;
         }
     }
@@ -330,11 +331,11 @@ bool Joint::ReadStatusDetail(bool buffer, int retries){
     uint8_t statusDetail = servo->readStatusDetail();
     if(servo->getLastError()){
         if(retries > 0){
-            LogWarning("Joint", iLog << debugName << " ReadStatusDetail() failed, retries=" << retries);
+            ClientManager::SendLogWarning("Joint", iLog << debugName << " ReadStatusDetail() failed, retries=" << retries);
             return ReadStatusDetail(buffer, retries-1);
         } else {
             // SetServoState(ServoState::Error);
-            LogError("Joint", iLog << debugName << " ReadStatusDetail() failed");
+            ClientManager::SendLogError("Joint", iLog << debugName << " ReadStatusDetail() failed");
             return false;
         }
     }

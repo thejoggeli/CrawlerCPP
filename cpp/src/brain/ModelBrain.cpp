@@ -30,7 +30,7 @@ void ModelBrain::Init(){
 
     robot->Startup();
 
-    onnxRunner = new OnnxRunner("Crawler2.pth.onnx");
+    onnxRunner = new OnnxRunner("Crawler2Simple.pth.onnx");
 
     // initialize input values vector
     inputValues = std::vector<float> (onnxRunner->GetInputSize());    
@@ -128,10 +128,10 @@ void ModelBrain::FixedUpdate(){
     }
 
     // set input values - current angle velocities
-    const float dof_vel_scale = 0.2f;
-    for(int i = 0; i < angleVelocities.size(); i++){
-        inputValues[idx++] = angleVelocities[i] * dof_vel_scale;
-    }
+    // const float dof_vel_scale = 0.2f;
+    // for(int i = 0; i < angleVelocities.size(); i++){
+    //     inputValues[idx++] = angleVelocities[i] * dof_vel_scale;
+    // }
 
     // set input values - myVel
     for(int i = 0; i < myVel.size(); i++){
@@ -192,27 +192,47 @@ float ModelBrain::OutputFromTo(float val, float low, float high){
 void ModelBrain::ApplyTargetAccelerations(){
 
     for(int i = 0; i < 16; i++){
-        myAcc[i] = OutputFromTo(outputValues[i], -25, 25);
+
+        myAcc[i] = OutputFromTo(outputValues[i], -1.0f, 1.0f);
+
         myVel[i] += myAcc[i] * Time::fixedDeltaTime;
+        if(myVel[i] < -1.0f){
+            myVel[i] = -1.0f;
+        } else if(myVel[i] > 1.0f){
+            myVel[i] = 1.0f;
+        } 
+
         myPos[i] += myVel[i] * Time::fixedDeltaTime;
     }
 
-    robot->legs[0]->joints[0]->SetTargetAngle(myPos[0],  true);
-    robot->legs[0]->joints[1]->SetTargetAngle(myPos[1],  true);
-    robot->legs[0]->joints[2]->SetTargetAngle(myPos[2],  true);
-    robot->legs[0]->joints[3]->SetTargetAngle(myPos[3],  true);
-    robot->legs[1]->joints[0]->SetTargetAngle(myPos[4],  true);
-    robot->legs[1]->joints[1]->SetTargetAngle(myPos[5],  true);
-    robot->legs[1]->joints[2]->SetTargetAngle(myPos[6],  true);
-    robot->legs[1]->joints[3]->SetTargetAngle(myPos[7],  true);
-    robot->legs[2]->joints[0]->SetTargetAngle(myPos[8],  true);
-    robot->legs[2]->joints[1]->SetTargetAngle(myPos[9],  true);
-    robot->legs[2]->joints[2]->SetTargetAngle(myPos[10], true);
-    robot->legs[2]->joints[3]->SetTargetAngle(myPos[11], true);
-    robot->legs[3]->joints[0]->SetTargetAngle(myPos[12], true);
-    robot->legs[3]->joints[1]->SetTargetAngle(myPos[13], true);
-    robot->legs[3]->joints[2]->SetTargetAngle(myPos[14], true);
-    robot->legs[3]->joints[3]->SetTargetAngle(myPos[15], true);
+    for(int i = 0; i < 4; i++){
+
+        float angleSum = myPos[i*4+1] + myPos[i*4+2] + myPos[i*4+3];
+
+        // LogDebug("ModelBrain", iLog << "i=" << i
+        //     << " sum=" << angleSum * RAD_2_DEGf
+        //     << " a0=" << myPos[i*4+0] * RAD_2_DEGf
+        //     << " a1=" << myPos[i*4+1] * RAD_2_DEGf
+        //     << " a2=" << myPos[i*4+2] * RAD_2_DEGf
+        //     << " a3=" << myPos[i*4+3] * RAD_2_DEGf
+        // );
+
+        if(angleSum < 135.0f * DEG_2_RADf && angleSum > -135.0f * DEG_2_RADf){
+            robot->legs[i]->joints[0]->SetTargetAngle(myPos[i*4+0], true);
+            robot->legs[i]->joints[1]->SetTargetAngle(myPos[i*4+1], true);
+            robot->legs[i]->joints[2]->SetTargetAngle(myPos[i*4+2], true);
+            robot->legs[i]->joints[3]->SetTargetAngle(myPos[i*4+3], true);
+            for(Joint* joint : robot->legs[i]->joints){
+                joint->SetServoLedColor(0, 1, 0, 0, true);
+            }
+        } else {
+            for(Joint* joint : robot->legs[i]->joints){
+                joint->SetServoLedColor(1, 0, 0, 0, true);
+            }
+        }
+
+    }
+
 
 }
 

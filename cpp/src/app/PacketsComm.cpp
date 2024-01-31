@@ -11,6 +11,7 @@
 #include "brain/WalkerBrain.h"
 #include "brain/SurferBrain.h"
 #include "brain/GaitBrain.h"
+#include "brain/ModelBrain.h"
 
 using namespace std;
 
@@ -226,6 +227,8 @@ static void OnMessageSetBrain(void* caller, PacketMessage& packet){
         robot->SetBrain(brain);
     } else if(brainName == "dance"){
         robot->SetBrain(new GaitBrain());
+    } else if(brainName == "model"){
+        robot->SetBrain(new ModelBrain());
     } else {
         ClientManager::SendLogInfo("PacketsComm", iLog << "invalid brain name: " << brainName);
     }
